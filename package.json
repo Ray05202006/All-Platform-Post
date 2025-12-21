@@ -1,0 +1,31 @@
+{
+  "name": "all-platform-post",
+  "version": "1.0.0",
+  "description": "Multi-platform social media posting system",
+  "private": true,
+  "scripts": {
+    "dev": "pnpm --parallel -r dev",
+    "build": "pnpm -r build",
+    "start": "pnpm --parallel -r start",
+    "lint": "pnpm -r lint",
+    "test": "pnpm -r test",
+    "clean": "pnpm -r clean && rm -rf node_modules"
+  },
+  "keywords": [
+    "social-media",
+    "automation",
+    "facebook",
+    "instagram",
+    "twitter",
+    "threads"
+  ],
+  "author": "",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0",
+    "pnpm": ">=8.0.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.3.3"
+  }
+}
