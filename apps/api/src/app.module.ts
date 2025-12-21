@@ -5,6 +5,9 @@ import { BullModule } from '@nestjs/bullmq';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { PrismaModule } from './modules/prisma/prisma.module';
+import { AuthModule } from './modules/auth/auth.module';
+import { PostModule } from './modules/post/post.module';
+import { PlatformModule } from './modules/platform/platform.module';
 
 @Module({
   imports: [
@@ -28,10 +31,16 @@ import { PrismaModule } from './modules/prisma/prisma.module';
     // Prisma
     PrismaModule,
 
+    // Auth (OAuth for Facebook, Twitter, Instagram, Threads)
+    AuthModule,
+
+    // Post management
+    PostModule,
+
+    // Platform API integrations
+    PlatformModule,
+
     // Future modules will be added here
-    // AuthModule,
-    // PostModule,
-    // PlatformModule,
     // MediaModule,
   ],
   controllers: [AppController],
