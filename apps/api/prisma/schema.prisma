@@ -1,0 +1,110 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../node_modules/.prisma/client"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ================================
+// User Model
+// ================================
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  connections PlatformConnection[]
+  posts       Post[]
+
+  @@map("users")
+}
+
+// ================================
+// Platform Connection (OAuth)
+// ================================
+model PlatformConnection {
+  id               String    @id @default(cuid())
+  userId           String
+  platform         String    // 'facebook', 'instagram', 'twitter', 'threads'
+  platformUserId   String
+  platformUsername String?
+
+  // Encrypted tokens
+  accessToken    String    @db.Text
+  refreshToken   String?   @db.Text
+  tokenExpiresAt DateTime?
+
+  // Additional platform-specific data
+  // e.g., Facebook Page ID, Instagram Business Account ID
+  metadata Json?
+
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, platform])
+  @@index([userId])
+  @@map("platform_connections")
+}
+
+// ================================
+// Post Model
+// ================================
+model Post {
+  id        String   @id @default(cuid())
+  userId    String
+  content   String   @db.Text
+  platforms String[] // ['facebook', 'twitter', 'instagram', 'threads']
+
+  // Media files
+  mediaUrls String[]
+  mediaType String? // 'image', 'video', null
+
+  // Scheduling
+  scheduledAt DateTime?
+  publishedAt DateTime?
+  status      String    @default("draft") // 'draft', 'scheduled', 'publishing', 'published', 'failed'
+
+  // Publish results per platform
+  // {
+  //   facebook: { postId: '123', url: 'https://...', error: null },
+  //   twitter: { postId: null, url: null, error: 'Rate limit exceeded' }
+  // }
+  results Json?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, status])
+  @@index([scheduledAt])
+  @@map("posts")
+}
+
+// ================================
+// Publish Log (for analytics)
+// ================================
+model PublishLog {
+  id          String   @id @default(cuid())
+  userId      String
+  postId      String
+  platform    String
+  success     Boolean
+  error       String?  @db.Text
+  publishedAt DateTime @default(now())
+
+  @@index([userId, platform])
+  @@index([publishedAt])
+  @@map("publish_logs")
+}
