@@ -1,13 +1,18 @@
-import { Module } from '@nestjs/common';
+import { Module, OnModuleInit } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { ScheduleModule } from '@nestjs/schedule';
 import { BullModule } from '@nestjs/bullmq';
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { join } from 'path';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { PrismaModule } from './modules/prisma/prisma.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { PostModule } from './modules/post/post.module';
 import { PlatformModule } from './modules/platform/platform.module';
+import { SchedulerModule } from './modules/scheduler/scheduler.module';
+import { SchedulerService } from './modules/scheduler/scheduler.service';
+import { MediaModule } from './modules/media/media.module';
 
 @Module({
   imports: [
@@ -28,6 +33,12 @@ import { PlatformModule } from './modules/platform/platform.module';
       },
     }),
 
+    // Static files (uploads)
+    ServeStaticModule.forRoot({
+      rootPath: join(process.cwd(), 'uploads'),
+      serveRoot: '/uploads',
+    }),
+
     // Prisma
     PrismaModule,
 
@@ -40,10 +51,20 @@ import { PlatformModule } from './modules/platform/platform.module';
     // Platform API integrations
     PlatformModule,
 
-    // Future modules will be added here
-    // MediaModule,
+    // Scheduler (BullMQ job queue)
+    SchedulerModule,
+
+    // Media upload and processing
+    MediaModule,
   ],
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule {}
+export class AppModule implements OnModuleInit {
+  constructor(private schedulerService: SchedulerService) {}
+
+  async onModuleInit() {
+    // 系统启动时恢复未执行的排程任务
+    await this.schedulerService.restoreScheduledPosts();
+  }
+}

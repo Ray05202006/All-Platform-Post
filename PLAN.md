@@ -1138,51 +1138,51 @@ export default function SettingsPage() {
 ### 第 1-2 周：基础架构
 
 - [x] 初始化 Monorepo（pnpm workspace）
-- [ ] 配置 Next.js 前端
-- [ ] 配置 NestJS 后端
-- [ ] 设置 PostgreSQL + Prisma
-- [ ] 设置 Redis
-- [ ] 实现基础 UI（shadcn/ui）
+- [x] 配置 Next.js 前端
+- [x] 配置 NestJS 后端
+- [x] 设置 PostgreSQL + Prisma
+- [x] 设置 Redis
+- [x] 实现基础 UI（shadcn/ui）
 
 ### 第 3-4 周：OAuth 认证
 
-- [ ] 实现 Facebook OAuth
-- [ ] 实现 Instagram OAuth
-- [ ] 实现 Twitter OAuth
-- [ ] 实现 Threads OAuth
-- [ ] Token 加密存储
-- [ ] Token 刷新机制
+- [x] 实现 Facebook OAuth
+- [x] 实现 Instagram OAuth
+- [x] 实现 Twitter OAuth
+- [x] 实现 Threads OAuth
+- [x] Token 加密存储
+- [x] Token 刷新机制
 
 ### 第 5-6 周：核心功能
 
-- [ ] 实现 Facebook 发文 API
-- [ ] 实现 Instagram 发文 API
-- [ ] 实现 Twitter 发文 API
-- [ ] 实现 Threads 发文 API
-- [ ] 实现智能字数分割算法
-- [ ] 实现自动留言功能
+- [x] 实现 Facebook 发文 API
+- [x] 实现 Instagram 发文 API
+- [x] 实现 Twitter 发文 API
+- [x] 实现 Threads 发文 API
+- [x] 实现智能字数分割算法
+- [x] 实现自动留言功能
 
 ### 第 7 周：定时发布
 
-- [ ] 集成 BullMQ
-- [ ] 实现排程创建
-- [ ] 实现排程取消
-- [ ] 实现任务监控
+- [x] 集成 BullMQ
+- [x] 实现排程创建
+- [x] 实现排程取消
+- [x] 实现任务监控
 
 ### 第 8 周：媒体处理
 
-- [ ] 实现文件上传
-- [ ] 实现图片压缩
-- [ ] 实现各平台媒体上传
-- [ ] 实现媒体预览
+- [x] 实现文件上传
+- [x] 实现图片压缩
+- [x] 实现各平台媒体上传
+- [x] 实现媒体预览
 
 ### 第 9-10 周：前端完善
 
-- [ ] 发文编辑器
-- [ ] 实时预览
-- [ ] 排程管理界面
-- [ ] 发文历史
-- [ ] 设置页面
+- [x] 发文编辑器
+- [x] 实时预览
+- [x] 排程管理界面
+- [x] 发文历史
+- [x] 设置页面
 
 ### 第 11-12 周：测试与优化
 

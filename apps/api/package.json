@@ -26,6 +26,7 @@
     "@nestjs/passport": "^10.0.3",
     "@nestjs/schedule": "^4.0.0",
     "@nestjs/bullmq": "^10.0.1",
+    "@nestjs/serve-static": "^4.0.0",
     "@prisma/client": "^5.8.1",
     "passport": "^0.7.0",
     "passport-facebook": "^3.0.0",

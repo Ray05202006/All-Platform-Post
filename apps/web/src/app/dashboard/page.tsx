@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useMutation } from '@tanstack/react-query';
-import { api, SplitResult } from '@/lib/api';
+import Link from 'next/link';
+import { api, SplitResult, MediaFile } from '@/lib/api';
 import { useConnections } from '@/hooks/useConnections';
 import { useAuth } from '@/hooks/useAuth';
 
@@ -18,11 +19,16 @@ const PLATFORMS: { id: Platform; name: string; icon: string; maxLength: number }
 export default function DashboardPage() {
   const { isLoading: authLoading } = useAuth();
   const { connections, isConnected } = useConnections();
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [content, setContent] = useState('');
   const [selectedPlatforms, setSelectedPlatforms] = useState<Platform[]>([]);
   const [splitPreviews, setSplitPreviews] = useState<SplitResult[]>([]);
   const [isPreviewLoading, setIsPreviewLoading] = useState(false);
+  const [mediaFiles, setMediaFiles] = useState<MediaFile[]>([]);
+  const [isUploading, setIsUploading] = useState(false);
+  const [scheduledAt, setScheduledAt] = useState<string>('');
+  const [showScheduler, setShowScheduler] = useState(false);
 
   // 创建并发布贴文
   const publishMutation = useMutation({
@@ -31,19 +37,40 @@ export default function DashboardPage() {
       const post = await api.createPost({
         content,
         platforms: selectedPlatforms,
+        mediaUrls: mediaFiles.map((f) => f.url),
+        mediaType: mediaFiles.length > 0 ? (mediaFiles[0].mimetype.startsWith('video/') ? 'video' : 'image') : undefined,
       });
       // 2. 立即发布
       return api.publishPost(post.id);
     },
     onSuccess: (data) => {
       alert('发布成功！');
-      setContent('');
-      setSelectedPlatforms([]);
-      setSplitPreviews([]);
+      resetForm();
       console.log('Publish results:', data.results);
     },
     onError: (error: Error) => {
       alert(`发布失败：${error.message}`);
+    },
+  });
+
+  // 排程发布
+  const scheduleMutation = useMutation({
+    mutationFn: async () => {
+      const post = await api.createPost({
+        content,
+        platforms: selectedPlatforms,
+        mediaUrls: mediaFiles.map((f) => f.url),
+        mediaType: mediaFiles.length > 0 ? (mediaFiles[0].mimetype.startsWith('video/') ? 'video' : 'image') : undefined,
+        scheduledAt: scheduledAt ? new Date(scheduledAt).toISOString() : undefined,
+      });
+      return post;
+    },
+    onSuccess: () => {
+      alert('已添加到排程！');
+      resetForm();
+    },
+    onError: (error: Error) => {
+      alert(`排程失败：${error.message}`);
     },
   });
 
@@ -53,6 +80,8 @@ export default function DashboardPage() {
       api.createPost({
         content,
         platforms: selectedPlatforms,
+        mediaUrls: mediaFiles.map((f) => f.url),
+        mediaType: mediaFiles.length > 0 ? (mediaFiles[0].mimetype.startsWith('video/') ? 'video' : 'image') : undefined,
       }),
     onSuccess: () => {
       alert('草稿已保存！');
@@ -61,6 +90,53 @@ export default function DashboardPage() {
       alert(`保存失败：${error.message}`);
     },
   });
+
+  // 重置表单
+  const resetForm = () => {
+    setContent('');
+    setSelectedPlatforms([]);
+    setSplitPreviews([]);
+    setMediaFiles([]);
+    setScheduledAt('');
+    setShowScheduler(false);
+  };
+
+  // 上传媒体文件
+  const handleFileUpload = async (files: FileList | null) => {
+    if (!files || files.length === 0) return;
+
+    setIsUploading(true);
+    try {
+      const result = await api.uploadMultipleMedia(Array.from(files));
+      setMediaFiles((prev) => [...prev, ...result.files]);
+    } catch (error) {
+      alert(error instanceof Error ? error.message : 'Upload failed');
+    } finally {
+      setIsUploading(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
+  };
+
+  // 删除媒体文件
+  const handleRemoveMedia = async (index: number) => {
+    const file = mediaFiles[index];
+    try {
+      await api.deleteMedia(file.filename);
+      setMediaFiles((prev) => prev.filter((_, i) => i !== index));
+    } catch (error) {
+      console.error('Failed to delete media:', error);
+      setMediaFiles((prev) => prev.filter((_, i) => i !== index));
+    }
+  };
+
+  // 获取最小排程时间（5 分钟后）
+  const getMinDateTime = () => {
+    const now = new Date();
+    now.setMinutes(now.getMinutes() + 5);
+    return now.toISOString().slice(0, 16);
+  };
 
   // 预览分割结果（防抖）
   const previewSplit = useCallback(async () => {
@@ -122,11 +198,34 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="text-2xl font-bold text-gray-900">发文编辑器</h2>
-        <p className="mt-1 text-sm text-gray-500">
-          创建新贴文并发布到多个平台
-        </p>
+      {/* 页面标题和导航 */}
+      <div className="flex justify-between items-start">
+        <div>
+          <h2 className="text-2xl font-bold text-gray-900">发文编辑器</h2>
+          <p className="mt-1 text-sm text-gray-500">
+            创建新贴文并发布到多个平台
+          </p>
+        </div>
+        <div className="flex gap-2">
+          <Link
+            href="/dashboard/scheduled"
+            className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
+          >
+            排程管理
+          </Link>
+          <Link
+            href="/dashboard/history"
+            className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
+          >
+            发文历史
+          </Link>
+          <Link
+            href="/dashboard/settings"
+            className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
+          >
+            设置
+          </Link>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -217,6 +316,85 @@ export default function DashboardPage() {
               )}
             </div>
 
+            {/* 媒体上传 */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                媒体文件
+              </label>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*,video/*"
+                multiple
+                onChange={(e) => handleFileUpload(e.target.files)}
+                className="hidden"
+              />
+              <div className="flex flex-wrap gap-2 mb-2">
+                {mediaFiles.map((file, index) => (
+                  <div key={index} className="relative group">
+                    <div className="w-20 h-20 bg-gray-100 rounded overflow-hidden">
+                      {file.mimetype.startsWith('image/') ? (
+                        <img
+                          src={api.getMediaUrl(file.filename)}
+                          alt=""
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-gray-400">
+                          🎬
+                        </div>
+                      )}
+                    </div>
+                    <button
+                      onClick={() => handleRemoveMedia(index)}
+                      className="absolute -top-2 -right-2 w-5 h-5 bg-red-500 text-white rounded-full text-xs opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      ×
+                    </button>
+                  </div>
+                ))}
+                <button
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={isUploading}
+                  className="w-20 h-20 border-2 border-dashed border-gray-300 rounded flex items-center justify-center text-gray-400 hover:border-gray-400 hover:text-gray-500 disabled:opacity-50"
+                >
+                  {isUploading ? '...' : '+'}
+                </button>
+              </div>
+              <p className="text-xs text-gray-500">
+                支持 JPG、PNG、GIF、MP4，最大 100MB
+              </p>
+            </div>
+
+            {/* 排程设置 */}
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <label className="block text-sm font-medium text-gray-700">
+                  排程发布
+                </label>
+                <button
+                  onClick={() => setShowScheduler(!showScheduler)}
+                  className="text-sm text-blue-600 hover:underline"
+                >
+                  {showScheduler ? '取消排程' : '设置排程'}
+                </button>
+              </div>
+              {showScheduler && (
+                <div className="p-3 bg-gray-50 rounded-lg">
+                  <input
+                    type="datetime-local"
+                    value={scheduledAt}
+                    onChange={(e) => setScheduledAt(e.target.value)}
+                    min={getMinDateTime()}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                  <p className="mt-1 text-xs text-gray-500">
+                    选择发布时间（至少 5 分钟后）
+                  </p>
+                </div>
+              )}
+            </div>
+
             {/* 操作按钮 */}
             <div className="pt-4 border-t flex justify-between items-center">
               <button
@@ -227,17 +405,34 @@ export default function DashboardPage() {
                 {saveDraftMutation.isPending ? '保存中...' : '保存草稿'}
               </button>
 
-              <button
-                onClick={() => publishMutation.mutate()}
-                disabled={
-                  !content.trim() ||
-                  selectedPlatforms.length === 0 ||
-                  publishMutation.isPending
-                }
-                className="px-6 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:opacity-50"
-              >
-                {publishMutation.isPending ? '发布中...' : '立即发布'}
-              </button>
+              <div className="flex gap-2">
+                {showScheduler && scheduledAt ? (
+                  <button
+                    onClick={() => scheduleMutation.mutate()}
+                    disabled={
+                      !content.trim() ||
+                      selectedPlatforms.length === 0 ||
+                      !scheduledAt ||
+                      scheduleMutation.isPending
+                    }
+                    className="px-6 py-2 text-sm font-medium text-white bg-purple-600 rounded-md hover:bg-purple-700 disabled:opacity-50"
+                  >
+                    {scheduleMutation.isPending ? '排程中...' : '排程发布'}
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => publishMutation.mutate()}
+                    disabled={
+                      !content.trim() ||
+                      selectedPlatforms.length === 0 ||
+                      publishMutation.isPending
+                    }
+                    className="px-6 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:opacity-50"
+                  >
+                    {publishMutation.isPending ? '发布中...' : '立即发布'}
+                  </button>
+                )}
+              </div>
             </div>
           </div>
         </div>
