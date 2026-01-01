@@ -19,7 +19,8 @@
     "start": "pnpm --parallel -r start",
     "lint": "pnpm -r lint",
     "test": "pnpm -r test",
-    "clean": "pnpm -r clean && rm -rf node_modules"
+    "clean": "pnpm -r clean && rm -rf node_modules",
+    "generate-keys": "node scripts/generate-env-keys.js"
   },
   "keywords": [
     "social-media",

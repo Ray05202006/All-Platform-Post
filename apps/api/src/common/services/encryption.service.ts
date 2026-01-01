@@ -13,11 +13,31 @@ export class EncryptionService {
 
   constructor(private configService: ConfigService) {
     const encryptionKey = this.configService.get<string>('ENCRYPTION_KEY');
-    if (!encryptionKey || encryptionKey.length !== 64) {
+    
+    if (!encryptionKey) {
       throw new Error(
-        'ENCRYPTION_KEY must be a 64-character hex string (32 bytes). Generate with: openssl rand -hex 32',
+        'ENCRYPTION_KEY environment variable is required but not set.\n' +
+        'Please set it in your deployment environment.\n' +
+        'Generate a secure key with: openssl rand -hex 32\n' +
+        'For Zeabur: Add ENCRYPTION_KEY to your environment variables in the service settings.',
       );
     }
+    
+    if (encryptionKey.length !== 64) {
+      throw new Error(
+        `ENCRYPTION_KEY must be exactly 64 characters (32 bytes in hex format), but got ${encryptionKey.length} characters.\n` +
+        'Generate a new key with: openssl rand -hex 32',
+      );
+    }
+    
+    // Validate that the key is a valid hex string
+    if (!/^[0-9a-fA-F]{64}$/.test(encryptionKey)) {
+      throw new Error(
+        'ENCRYPTION_KEY must contain only hexadecimal characters (0-9, a-f, A-F).\n' +
+        'Generate a new key with: openssl rand -hex 32',
+      );
+    }
+    
     this.key = Buffer.from(encryptionKey, 'hex');
   }
 
