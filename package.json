@@ -3,6 +3,16 @@
   "version": "1.0.0",
   "description": "Multi-platform social media posting system",
   "private": true,
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "@nestjs/core",
+      "@prisma/client",
+      "@prisma/engines",
+      "prisma",
+      "sharp",
+      "msgpackr-extract"
+    ]
+  },
   "scripts": {
     "dev": "pnpm --parallel -r dev",
     "build": "pnpm -r build",

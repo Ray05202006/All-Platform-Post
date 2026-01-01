@@ -112,6 +112,84 @@ class ApiClient {
       body: JSON.stringify({ content, platforms }),
     });
   }
+
+  // ==================== Schedule endpoints ====================
+
+  async updateSchedule(postId: string, scheduledAt: Date): Promise<Post> {
+    return this.fetch(`/posts/${postId}/schedule`, {
+      method: 'PUT',
+      body: JSON.stringify({ scheduledAt: scheduledAt.toISOString() }),
+    });
+  }
+
+  async cancelSchedule(postId: string): Promise<Post> {
+    return this.fetch(`/posts/${postId}/schedule`, {
+      method: 'DELETE',
+    });
+  }
+
+  async getScheduleStatus(postId: string): Promise<ScheduleStatus> {
+    return this.fetch(`/posts/${postId}/schedule-status`);
+  }
+
+  async getPendingSchedules(): Promise<PendingJob[]> {
+    return this.fetch('/scheduler/pending');
+  }
+
+  // ==================== Media endpoints ====================
+
+  async uploadMedia(file: File): Promise<UploadResult> {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const token = this.getToken();
+    const response = await fetch(`${this.baseUrl}/api/media/upload`, {
+      method: 'POST',
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+      body: formData,
+    });
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ message: 'Upload failed' }));
+      throw new Error(error.message || `HTTP ${response.status}`);
+    }
+
+    return response.json();
+  }
+
+  async uploadMultipleMedia(files: File[]): Promise<{ success: boolean; files: MediaFile[] }> {
+    const formData = new FormData();
+    files.forEach((file) => formData.append('files', file));
+
+    const token = this.getToken();
+    const response = await fetch(`${this.baseUrl}/api/media/upload-multiple`, {
+      method: 'POST',
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+      body: formData,
+    });
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ message: 'Upload failed' }));
+      throw new Error(error.message || `HTTP ${response.status}`);
+    }
+
+    return response.json();
+  }
+
+  async validateMedia(filename: string, platforms: string[]): Promise<MediaValidation> {
+    return this.fetch('/media/validate', {
+      method: 'POST',
+      body: JSON.stringify({ filename, platforms }),
+    });
+  }
+
+  async deleteMedia(filename: string): Promise<void> {
+    return this.fetch(`/media/${filename}`, { method: 'DELETE' });
+  }
+
+  getMediaUrl(filename: string): string {
+    return `${this.baseUrl}/uploads/media/${filename}`;
+  }
 }
 
 // ==================== Types ====================
@@ -151,6 +229,44 @@ export interface SplitResult {
   platform: string;
   chunks: string[];
   needsSplitting: boolean;
+}
+
+export interface ScheduleStatus {
+  exists: boolean;
+  status?: string;
+  scheduledFor?: string;
+}
+
+export interface PendingJob {
+  id: string;
+  postId: string;
+  userId: string;
+  delay: number;
+  scheduledFor: string;
+  attemptsMade: number;
+}
+
+export interface MediaFile {
+  filename: string;
+  originalname: string;
+  mimetype: string;
+  size: number;
+  path: string;
+  url: string;
+  width?: number;
+  height?: number;
+  thumbnail?: string;
+}
+
+export interface UploadResult {
+  success: boolean;
+  file: MediaFile;
+}
+
+export interface MediaValidation {
+  valid: boolean;
+  errors: Record<string, string[]>;
+  file: MediaFile;
 }
 
 export const api = new ApiClient(API_URL);

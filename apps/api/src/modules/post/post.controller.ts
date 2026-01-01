@@ -2,6 +2,7 @@ import {
   Controller,
   Get,
   Post,
+  Put,
   Delete,
   Body,
   Param,
@@ -12,6 +13,7 @@ import { PostService } from './post.service';
 import { CreatePostDto } from './dto/create-post.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
+import { SplitResult } from '../platform/platform.service';
 
 @Controller('posts')
 @UseGuards(JwtAuthGuard)
@@ -32,6 +34,34 @@ export class PostController {
   @Post(':id/publish')
   async publishPost(@CurrentUser() user: any, @Param('id') postId: string) {
     return this.postService.publishPost(user.id, postId);
+  }
+
+  /**
+   * 更新排程时间
+   */
+  @Put(':id/schedule')
+  async updateSchedule(
+    @CurrentUser() user: any,
+    @Param('id') postId: string,
+    @Body() body: { scheduledAt: string },
+  ) {
+    return this.postService.updateSchedule(user.id, postId, new Date(body.scheduledAt));
+  }
+
+  /**
+   * 取消排程
+   */
+  @Delete(':id/schedule')
+  async cancelSchedule(@CurrentUser() user: any, @Param('id') postId: string) {
+    return this.postService.cancelSchedule(user.id, postId);
+  }
+
+  /**
+   * 获取排程状态
+   */
+  @Get(':id/schedule-status')
+  async getScheduleStatus(@Param('id') postId: string) {
+    return this.postService.getScheduleStatus(postId);
   }
 
   /**
@@ -67,7 +97,7 @@ export class PostController {
   @Post('preview-split')
   async previewSplit(
     @Body() body: { content: string; platforms: string[] },
-  ) {
+  ): Promise<SplitResult[]> {
     return this.postService.previewSplit(body.content, body.platforms);
   }
 }

@@ -1,20 +1,31 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { PlatformService } from '../platform/platform.service';
+import { PlatformService, SplitResult } from '../platform/platform.service';
 import { CreatePostDto } from './dto/create-post.dto';
-import { SplitResult } from '../platform/platform.service';
+import { SchedulerService } from '../scheduler/scheduler.service';
 
 @Injectable()
 export class PostService {
+  private schedulerService: SchedulerService | null = null;
+
   constructor(
     private prisma: PrismaService,
     private platformService: PlatformService,
   ) {}
 
   /**
+   * 设置 SchedulerService（避免循环依赖）
+   */
+  setSchedulerService(schedulerService: SchedulerService) {
+    this.schedulerService = schedulerService;
+  }
+
+  /**
    * 创建新贴文
    */
   async createPost(userId: string, dto: CreatePostDto) {
+    const scheduledAt = dto.scheduledAt ? new Date(dto.scheduledAt) : null;
+
     const post = await this.prisma.post.create({
       data: {
         userId,
@@ -22,12 +33,98 @@ export class PostService {
         platforms: dto.platforms,
         mediaUrls: dto.mediaUrls || [],
         mediaType: dto.mediaType,
-        scheduledAt: dto.scheduledAt ? new Date(dto.scheduledAt) : null,
-        status: dto.scheduledAt ? 'scheduled' : 'draft',
+        scheduledAt,
+        status: scheduledAt ? 'scheduled' : 'draft',
       },
     });
 
+    // 如果是排程贴文，添加到任务队列
+    if (scheduledAt) {
+      if (!this.schedulerService) {
+        throw new BadRequestException('Scheduler service is not available');
+      }
+      await this.schedulerService.schedulePost(post.id, userId, scheduledAt);
+    }
+
     return post;
+  }
+
+  /**
+   * 更新排程时间
+   */
+  async updateSchedule(userId: string, postId: string, newScheduledAt: Date) {
+    const post = await this.prisma.post.findFirst({
+      where: { id: postId, userId },
+    });
+
+    if (!post) {
+      throw new BadRequestException('Post not found');
+    }
+
+    if (post.status !== 'scheduled' && post.status !== 'draft') {
+      throw new BadRequestException('Cannot reschedule a post that is already published or publishing');
+    }
+
+    // 更新数据库
+    const updatedPost = await this.prisma.post.update({
+      where: { id: postId },
+      data: {
+        scheduledAt: newScheduledAt,
+        status: 'scheduled',
+      },
+    });
+
+    // 更新任务队列
+    if (!this.schedulerService) {
+      throw new BadRequestException('Scheduler service is not available');
+    }
+    await this.schedulerService.reschedulePost(postId, userId, newScheduledAt);
+
+    return updatedPost;
+  }
+
+  /**
+   * 取消排程
+   */
+  async cancelSchedule(userId: string, postId: string) {
+    const post = await this.prisma.post.findFirst({
+      where: { id: postId, userId },
+    });
+
+    if (!post) {
+      throw new BadRequestException('Post not found');
+    }
+
+    if (post.status !== 'scheduled') {
+      throw new BadRequestException('Post is not scheduled');
+    }
+
+    // 更新数据库
+    const updatedPost = await this.prisma.post.update({
+      where: { id: postId },
+      data: {
+        scheduledAt: null,
+        status: 'draft',
+      },
+    });
+
+    // 从任务队列移除
+    if (!this.schedulerService) {
+      throw new BadRequestException('Scheduler service is not available');
+    }
+    await this.schedulerService.cancelSchedule(postId);
+
+    return updatedPost;
+  }
+
+  /**
+   * 获取排程状态
+   */
+  async getScheduleStatus(postId: string) {
+    if (!this.schedulerService) {
+      return { exists: false };
+    }
+    return this.schedulerService.getJobStatus(postId);
   }
 
   /**
@@ -148,7 +245,7 @@ export class PostService {
   /**
    * 预览分割结果
    */
-  async previewSplit(content: string, platforms: string[]) {
+  async previewSplit(content: string, platforms: string[]): Promise<SplitResult[]> {
     return this.platformService.previewSplit(content, platforms);
   }
 }

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useConnections } from '@/hooks/useConnections';
 
@@ -44,6 +44,14 @@ const PLATFORMS: PlatformInfo[] = [
 ];
 
 export default function SettingsPage() {
+  return (
+    <Suspense fallback={<div className="p-6 text-center text-gray-500">加载中...</div>}>
+      <SettingsContent />
+    </Suspense>
+  );
+}
+
+function SettingsContent() {
   const searchParams = useSearchParams();
   const [notification, setNotification] = useState<{
     type: 'success' | 'error';
