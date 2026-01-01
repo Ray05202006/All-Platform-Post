@@ -2,7 +2,7 @@
   "$schema": "https://schema.zeabur.app/zeabur.json",
   "build": {
     "type": "nodejs",
-    "build_command": "pnpm install && npx prisma generate && npx nest build",
+    "build_command": "pnpm install --frozen-lockfile && npx prisma generate && npx nest build",
     "output_dir": "dist"
   },
   "start": {

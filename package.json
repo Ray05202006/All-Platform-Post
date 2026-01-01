@@ -10,8 +10,7 @@
       "@prisma/engines",
       "prisma",
       "sharp",
-      "msgpackr-extract",
-      "unrs-resolver"
+      "msgpackr-extract"
     ]
   },
   "scripts": {

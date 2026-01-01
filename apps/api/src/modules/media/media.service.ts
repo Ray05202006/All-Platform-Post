@@ -48,17 +48,18 @@ export class MediaService {
    */
   async processImage(file: Express.Multer.File): Promise<ProcessedMedia> {
     const filePath = file.path;
+    let processedPath = filePath;
+    let needsResize = false;
 
     try {
       const image = sharp(filePath);
       const metadata = await image.metadata();
 
-      let processedPath = filePath;
       let width = metadata.width;
       let height = metadata.height;
 
       // 如果图片过大，进行压缩
-      const needsResize = (width && width > 1440) || (height && height > 1440);
+      needsResize = (width && width > 1440) || (height && height > 1440);
       if (needsResize) {
         const resizedFilename = this.getResizedFilename(file.filename);
         processedPath = join(this.uploadDir, resizedFilename);
@@ -76,21 +77,26 @@ export class MediaService {
         width = resizedMetadata.width;
         height = resizedMetadata.height;
 
-        // 删除原始文件
-        if (filePath !== processedPath && existsSync(filePath)) {
-          unlinkSync(filePath);
-        }
-
         this.logger.log(`Resized image from ${metadata.width}x${metadata.height} to ${width}x${height}`);
       }
 
       // 生成缩略图
       const thumbnailFilename = this.getThumbnailFilename(file.filename);
       const thumbnailPath = join(this.uploadDir, thumbnailFilename);
-      await sharp(processedPath)
-        .resize(200, 200, { fit: 'cover' })
-        .jpeg({ quality: 70 })
-        .toFile(thumbnailPath);
+      const thumbnailImage = sharp(processedPath).resize(200, 200, { fit: 'cover' });
+      const ext = extname(file.filename).toLowerCase();
+      if (ext === '.png') {
+        await thumbnailImage.png().toFile(thumbnailPath);
+      } else if (ext === '.webp') {
+        await thumbnailImage.webp({ quality: 70 }).toFile(thumbnailPath);
+      } else {
+        await thumbnailImage.jpeg({ quality: 70 }).toFile(thumbnailPath);
+      }
+
+      // 只有所有处理都成功后才删除原始文件
+      if (needsResize && filePath !== processedPath && existsSync(filePath)) {
+        unlinkSync(filePath);
+      }
 
       const finalFilename = needsResize ? this.getResizedFilename(file.filename) : file.filename;
       const stats = statSync(processedPath);
@@ -107,6 +113,10 @@ export class MediaService {
         thumbnail: `/uploads/media/${thumbnailFilename}`,
       };
     } catch (error) {
+      // Clean up any partially created files on error
+      if (needsResize && processedPath !== filePath && existsSync(processedPath)) {
+        unlinkSync(processedPath);
+      }
       this.logger.error(`Failed to process image: ${error.message}`);
       throw new BadRequestException(`Failed to process image: ${error.message}`);
     }

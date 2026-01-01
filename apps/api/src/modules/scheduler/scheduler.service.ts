@@ -21,10 +21,33 @@ export class SchedulerService {
    * 添加排程发布任务
    */
   async schedulePost(postId: string, userId: string, scheduledAt: Date): Promise<Job<ScheduledPostJob>> {
-    const delay = scheduledAt.getTime() - Date.now();
+    const scheduledTime = scheduledAt.getTime();
+    if (Number.isNaN(scheduledTime)) {
+      throw new Error('Invalid scheduled time');
+    }
+
+    const now = Date.now();
+    let delay = scheduledTime - now;
+
+    // Allow a small tolerance for client/server clock skew (e.g., 5 minutes)
+    const pastToleranceMs = 5 * 60 * 1000;
+    // Guard against unreasonable future times (e.g., > 365 days)
+    const maxFutureMs = 365 * 24 * 60 * 60 * 1000;
+
+    if (delay < -pastToleranceMs) {
+      throw new Error('Scheduled time is too far in the past. Please check your device time and timezone.');
+    }
+
+    if (delay > maxFutureMs) {
+      throw new Error('Scheduled time is too far in the future.');
+    }
 
     if (delay <= 0) {
-      throw new Error('Scheduled time must be in the future');
+      this.logger.warn(
+        `Scheduled time ${scheduledAt.toISOString()} is slightly in the past; ` +
+          'adjusting to immediate execution to account for possible clock skew.',
+      );
+      delay = 0;
     }
 
     this.logger.log(`Scheduling post ${postId} for ${scheduledAt.toISOString()} (delay: ${delay}ms)`);
@@ -141,8 +164,21 @@ export class SchedulerService {
    * 清理过期的失败任务
    */
   async cleanupFailedJobs(olderThanMs: number = 24 * 60 * 60 * 1000): Promise<number> {
-    const cleaned = await this.postQueue.clean(olderThanMs, 100, 'failed');
-    this.logger.log(`Cleaned ${cleaned.length} failed jobs`);
-    return cleaned.length;
+    const batchSize = 100;
+    let totalCleaned = 0;
+
+    // 分批清理所有符合条件的失败任务，直到没有更多任务为止
+    // eslint-disable-next-line no-constant-condition
+    while (true) {
+      const cleanedBatch = await this.postQueue.clean(olderThanMs, batchSize, 'failed');
+      totalCleaned += cleanedBatch.length;
+
+      if (cleanedBatch.length < batchSize) {
+        break;
+      }
+    }
+
+    this.logger.log(`Cleaned ${totalCleaned} failed jobs`);
+    return totalCleaned;
   }
 }

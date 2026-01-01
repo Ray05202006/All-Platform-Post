@@ -73,11 +73,12 @@ export class CleanupService {
   @Cron(CronExpression.EVERY_MINUTE)
   async checkExpiredSchedules() {
     // 查找状态为 scheduled 但排程时间已过的贴文
+    // 使用30分钟缓冲避免暂时性故障导致误报
     const expiredPosts = await this.prisma.post.findMany({
       where: {
         status: 'scheduled',
         scheduledAt: {
-          lt: new Date(Date.now() - 5 * 60 * 1000), // 5 分钟前
+          lt: new Date(Date.now() - 30 * 60 * 1000), // 30 分钟前
         },
       },
     });

@@ -1,4 +1,4 @@
-import { Injectable, BadRequestException, Inject, forwardRef } from '@nestjs/common';
+import { Injectable, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { PlatformService, SplitResult } from '../platform/platform.service';
 import { CreatePostDto } from './dto/create-post.dto';
@@ -39,7 +39,10 @@ export class PostService {
     });
 
     // 如果是排程贴文，添加到任务队列
-    if (scheduledAt && this.schedulerService) {
+    if (scheduledAt) {
+      if (!this.schedulerService) {
+        throw new BadRequestException('Scheduler service is not available');
+      }
       await this.schedulerService.schedulePost(post.id, userId, scheduledAt);
     }
 
@@ -72,9 +75,10 @@ export class PostService {
     });
 
     // 更新任务队列
-    if (this.schedulerService) {
-      await this.schedulerService.reschedulePost(postId, userId, newScheduledAt);
+    if (!this.schedulerService) {
+      throw new BadRequestException('Scheduler service is not available');
     }
+    await this.schedulerService.reschedulePost(postId, userId, newScheduledAt);
 
     return updatedPost;
   }
@@ -105,9 +109,10 @@ export class PostService {
     });
 
     // 从任务队列移除
-    if (this.schedulerService) {
-      await this.schedulerService.cancelSchedule(postId);
+    if (!this.schedulerService) {
+      throw new BadRequestException('Scheduler service is not available');
     }
+    await this.schedulerService.cancelSchedule(postId);
 
     return updatedPost;
   }
