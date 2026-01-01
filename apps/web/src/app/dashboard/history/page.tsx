@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { api, Post } from '@/lib/api';
+import { extractFilenameFromUrl, getResultError, getResultPostId, PostResult } from '@/lib/utils';
 
 const STATUS_LABELS: Record<string, { label: string; color: string }> = {
   draft: { label: '草稿', color: 'bg-gray-500' },
@@ -170,7 +171,7 @@ export default function HistoryPage() {
                         className="w-16 h-16 bg-gray-700 rounded overflow-hidden"
                       >
                         <img
-                          src={api.getMediaUrl(url.split('/').pop() || '')}
+                          src={api.getMediaUrl(extractFilenameFromUrl(url))}
                           alt=""
                           className="w-full h-full object-cover"
                         />
@@ -199,23 +200,25 @@ export default function HistoryPage() {
                   <div className="bg-gray-900/50 rounded p-3 mb-4 text-sm">
                     <div className="font-medium mb-2">发布结果：</div>
                     <div className="space-y-1">
-                      {Object.entries(post.results).map(([platform, result]) => (
-                        <div key={platform} className="flex items-center gap-2">
-                          <span>{PLATFORM_ICONS[platform] || '📝'}</span>
-                          <span>{platform}:</span>
-                          {(result as any).error ? (
-                            <span className="text-red-400">
-                              {(result as any).error}
-                            </span>
-                          ) : (result as any).postId ? (
-                            <span className="text-green-400">成功</span>
-                          ) : (
-                            <span className="text-gray-400">
-                              {JSON.stringify(result)}
-                            </span>
-                          )}
-                        </div>
-                      ))}
+                      {Object.entries(post.results).map(([platform, result]) => {
+                        const error = getResultError(result);
+                        const postId = getResultPostId(result);
+                        return (
+                          <div key={platform} className="flex items-center gap-2">
+                            <span>{PLATFORM_ICONS[platform] || '📝'}</span>
+                            <span>{platform}:</span>
+                            {error ? (
+                              <span className="text-red-400">{error}</span>
+                            ) : postId ? (
+                              <span className="text-green-400">成功</span>
+                            ) : (
+                              <span className="text-gray-400">
+                                {JSON.stringify(result)}
+                              </span>
+                            )}
+                          </div>
+                        );
+                      })}
                     </div>
                   </div>
                 )}

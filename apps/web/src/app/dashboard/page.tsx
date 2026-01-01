@@ -33,12 +33,26 @@ export default function DashboardPage() {
   // 创建并发布贴文
   const publishMutation = useMutation({
     mutationFn: async () => {
+      // 验证媒体类型一致性
+      const mediaType =
+        mediaFiles.length === 0
+          ? undefined
+          : mediaFiles.every((f) => f.mimetype.startsWith('video/'))
+          ? 'video'
+          : mediaFiles.every((f) => f.mimetype.startsWith('image/'))
+          ? 'image'
+          : undefined;
+
+      if (mediaFiles.length > 0 && !mediaType) {
+        throw new Error('不能混合上传图片和视频');
+      }
+
       // 1. 创建贴文
       const post = await api.createPost({
         content,
         platforms: selectedPlatforms,
         mediaUrls: mediaFiles.map((f) => f.url),
-        mediaType: mediaFiles.length > 0 ? (mediaFiles[0].mimetype.startsWith('video/') ? 'video' : 'image') : undefined,
+        mediaType,
       });
       // 2. 立即发布
       return api.publishPost(post.id);
@@ -56,11 +70,25 @@ export default function DashboardPage() {
   // 排程发布
   const scheduleMutation = useMutation({
     mutationFn: async () => {
+      // 验证媒体类型一致性
+      const mediaType =
+        mediaFiles.length === 0
+          ? undefined
+          : mediaFiles.every((f) => f.mimetype.startsWith('video/'))
+          ? 'video'
+          : mediaFiles.every((f) => f.mimetype.startsWith('image/'))
+          ? 'image'
+          : undefined;
+
+      if (mediaFiles.length > 0 && !mediaType) {
+        throw new Error('不能混合上传图片和视频');
+      }
+
       const post = await api.createPost({
         content,
         platforms: selectedPlatforms,
         mediaUrls: mediaFiles.map((f) => f.url),
-        mediaType: mediaFiles.length > 0 ? (mediaFiles[0].mimetype.startsWith('video/') ? 'video' : 'image') : undefined,
+        mediaType,
         scheduledAt: scheduledAt ? new Date(scheduledAt).toISOString() : undefined,
       });
       return post;
@@ -76,13 +104,28 @@ export default function DashboardPage() {
 
   // 保存草稿
   const saveDraftMutation = useMutation({
-    mutationFn: () =>
-      api.createPost({
+    mutationFn: () => {
+      // 验证媒体类型一致性
+      const mediaType =
+        mediaFiles.length === 0
+          ? undefined
+          : mediaFiles.every((f) => f.mimetype.startsWith('video/'))
+          ? 'video'
+          : mediaFiles.every((f) => f.mimetype.startsWith('image/'))
+          ? 'image'
+          : undefined;
+
+      if (mediaFiles.length > 0 && !mediaType) {
+        throw new Error('不能混合上传图片和视频');
+      }
+
+      return api.createPost({
         content,
         platforms: selectedPlatforms,
         mediaUrls: mediaFiles.map((f) => f.url),
-        mediaType: mediaFiles.length > 0 ? (mediaFiles[0].mimetype.startsWith('video/') ? 'video' : 'image') : undefined,
-      }),
+        mediaType,
+      });
+    },
     onSuccess: () => {
       alert('草稿已保存！');
     },
@@ -127,7 +170,7 @@ export default function DashboardPage() {
       setMediaFiles((prev) => prev.filter((_, i) => i !== index));
     } catch (error) {
       console.error('Failed to delete media:', error);
-      setMediaFiles((prev) => prev.filter((_, i) => i !== index));
+      alert(error instanceof Error ? error.message : '删除媒体文件失败，请稍后重试');
     }
   };
 
@@ -155,6 +198,15 @@ export default function DashboardPage() {
       setIsPreviewLoading(false);
     }
   }, [content, selectedPlatforms]);
+
+  // Cleanup effect for file input ref when component unmounts
+  useEffect(() => {
+    return () => {
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    };
+  }, []);
 
   // 内容或平台变化时更新预览
   useEffect(() => {

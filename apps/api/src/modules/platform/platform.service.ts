@@ -8,7 +8,7 @@ import { ThreadsService } from './services/threads.service';
 import { InstagramService } from './services/instagram.service';
 import { EncryptionService } from '../../common/services/encryption.service';
 
-// 导出 SplitResult 类型
+// SplitResult 类型：表示 text-splitter 的分割结果，并对外导出
 export interface SplitResult {
   platform: string;
   chunks: string[];

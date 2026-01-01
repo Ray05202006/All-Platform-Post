@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { api, Post } from '@/lib/api';
+import { extractFilenameFromUrl } from '@/lib/utils';
 
 const PLATFORM_ICONS: Record<string, string> = {
   facebook: '📘',
@@ -45,7 +46,7 @@ export default function ScheduledPage() {
     if (!confirm('确定要取消这个排程吗？贴文将转为草稿。')) return;
 
     try {
-      const updated = await api.cancelSchedule(postId);
+      await api.cancelSchedule(postId);
       setPosts(posts.filter((p) => p.id !== postId));
     } catch (err) {
       alert(err instanceof Error ? err.message : 'Failed to cancel schedule');
@@ -219,7 +220,7 @@ export default function ScheduledPage() {
                         className="w-12 h-12 bg-gray-700 rounded overflow-hidden"
                       >
                         <img
-                          src={api.getMediaUrl(url.split('/').pop() || '')}
+                          src={api.getMediaUrl(extractFilenameFromUrl(url))}
                           alt=""
                           className="w-full h-full object-cover"
                         />
