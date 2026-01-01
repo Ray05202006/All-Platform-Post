@@ -14,10 +14,9 @@ import {
 } from '@nestjs/common';
 import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import { Response } from 'express';
-import { join } from 'path';
+import { join, resolve } from 'path';
 import { existsSync } from 'fs';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { MediaService } from './media.service';
 
 @Controller('media')
@@ -108,16 +107,30 @@ export class MediaController {
    * 生产环境应该由 Nginx 或 CDN 提供
    */
   @Get(':filename')
+  @UseGuards(JwtAuthGuard)
   async serveMedia(
     @Param('filename') filename: string,
     @Res() res: Response,
   ) {
-    const filePath = join(process.cwd(), 'uploads', 'media', filename);
+    // Sanitize filename to prevent path traversal attacks
+    const sanitizedFilename = filename.replace(/[^a-zA-Z0-9._-]/g, '');
+    if (!sanitizedFilename || sanitizedFilename !== filename || filename.includes('..') || filename.includes('/') || filename.includes('\\')) {
+      return res.status(400).json({ error: 'Invalid filename' });
+    }
 
-    if (!existsSync(filePath)) {
+    const uploadsDir = resolve(process.cwd(), 'uploads', 'media');
+    const filePath = join(uploadsDir, sanitizedFilename);
+    
+    // Ensure the resolved path is within the uploads directory
+    const resolvedPath = resolve(filePath);
+    if (!resolvedPath.startsWith(uploadsDir)) {
+      return res.status(403).json({ error: 'Access denied' });
+    }
+
+    if (!existsSync(resolvedPath)) {
       return res.status(404).json({ error: 'File not found' });
     }
 
-    return res.sendFile(filePath);
+    return res.sendFile(resolvedPath);
   }
 }

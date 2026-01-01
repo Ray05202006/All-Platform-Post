@@ -1,4 +1,4 @@
-import { Module, OnModuleInit } from '@nestjs/common';
+import { Module, OnApplicationBootstrap } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { ScheduleModule } from '@nestjs/schedule';
 import { BullModule } from '@nestjs/bullmq';
@@ -60,11 +60,11 @@ import { MediaModule } from './modules/media/media.module';
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule implements OnModuleInit {
+export class AppModule implements OnApplicationBootstrap {
   constructor(private schedulerService: SchedulerService) {}
 
-  async onModuleInit() {
-    // 系统启动时恢复未执行的排程任务
+  async onApplicationBootstrap() {
+    // 系统启动时恢复未执行的排程任务（在所有模块初始化后）
     await this.schedulerService.restoreScheduledPosts();
   }
 }
