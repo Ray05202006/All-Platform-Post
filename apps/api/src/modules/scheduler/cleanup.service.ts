@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
+import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../prisma/prisma.service';
 import { SchedulerService } from './scheduler.service';
 
@@ -10,6 +11,7 @@ export class CleanupService {
   constructor(
     private prisma: PrismaService,
     private schedulerService: SchedulerService,
+    private configService: ConfigService,
   ) {}
 
   /**
@@ -19,9 +21,10 @@ export class CleanupService {
   async cleanupOldPosts() {
     this.logger.log('Running daily cleanup of old posts...');
 
-    // 删除 90 天前的已发布贴文
+    // 删除指定天数前的已发布贴文（默认 90 天，可通过环境变量配置）
+    const retentionDays = this.configService.get<number>('CLEANUP_POSTS_RETENTION_DAYS', 90);
     const cutoffDate = new Date();
-    cutoffDate.setDate(cutoffDate.getDate() - 90);
+    cutoffDate.setDate(cutoffDate.getDate() - retentionDays);
 
     const result = await this.prisma.post.deleteMany({
       where: {
@@ -30,7 +33,7 @@ export class CleanupService {
       },
     });
 
-    this.logger.log(`Deleted ${result.count} old published posts`);
+    this.logger.log(`Deleted ${result.count} old published posts (retention: ${retentionDays} days)`);
   }
 
   /**
@@ -40,11 +43,13 @@ export class CleanupService {
   async cleanupFailedJobs() {
     this.logger.log('Running hourly cleanup of failed jobs...');
 
+    // 删除指定小时前的失败任务（默认 24 小时，可通过环境变量配置）
+    const retentionHours = this.configService.get<number>('CLEANUP_FAILED_JOBS_RETENTION_HOURS', 24);
     const cleaned = await this.schedulerService.cleanupFailedJobs(
-      24 * 60 * 60 * 1000, // 24 小时前的失败任务
+      retentionHours * 60 * 60 * 1000,
     );
 
-    this.logger.log(`Cleaned ${cleaned} failed jobs`);
+    this.logger.log(`Cleaned ${cleaned} failed jobs (retention: ${retentionHours} hours)`);
   }
 
   /**
@@ -54,9 +59,10 @@ export class CleanupService {
   async cleanupOldLogs() {
     this.logger.log('Running daily cleanup of old publish logs...');
 
-    // 删除 30 天前的发布日志
+    // 删除指定天数前的发布日志（默认 30 天，可通过环境变量配置）
+    const retentionDays = this.configService.get<number>('CLEANUP_LOGS_RETENTION_DAYS', 30);
     const cutoffDate = new Date();
-    cutoffDate.setDate(cutoffDate.getDate() - 30);
+    cutoffDate.setDate(cutoffDate.getDate() - retentionDays);
 
     const result = await this.prisma.publishLog.deleteMany({
       where: {
@@ -64,7 +70,7 @@ export class CleanupService {
       },
     });
 
-    this.logger.log(`Deleted ${result.count} old publish logs`);
+    this.logger.log(`Deleted ${result.count} old publish logs (retention: ${retentionDays} days)`);
   }
 
   /**
