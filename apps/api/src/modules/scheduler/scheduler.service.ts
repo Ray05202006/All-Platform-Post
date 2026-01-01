@@ -166,17 +166,13 @@ export class SchedulerService {
   async cleanupFailedJobs(olderThanMs: number = 24 * 60 * 60 * 1000): Promise<number> {
     const batchSize = 100;
     let totalCleaned = 0;
+    let cleanedBatch: string[];
 
     // 分批清理所有符合条件的失败任务，直到没有更多任务为止
-    // eslint-disable-next-line no-constant-condition
-    while (true) {
-      const cleanedBatch = await this.postQueue.clean(olderThanMs, batchSize, 'failed');
+    do {
+      cleanedBatch = await this.postQueue.clean(olderThanMs, batchSize, 'failed');
       totalCleaned += cleanedBatch.length;
-
-      if (cleanedBatch.length < batchSize) {
-        break;
-      }
-    }
+    } while (cleanedBatch.length === batchSize);
 
     this.logger.log(`Cleaned ${totalCleaned} failed jobs`);
     return totalCleaned;

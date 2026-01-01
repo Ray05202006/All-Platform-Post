@@ -117,6 +117,11 @@ export class MediaService {
       if (needsResize && processedPath !== filePath && existsSync(processedPath)) {
         unlinkSync(processedPath);
       }
+      const thumbnailFilename = this.getThumbnailFilename(file.filename);
+      const thumbnailPath = join(this.uploadDir, thumbnailFilename);
+      if (existsSync(thumbnailPath)) {
+        unlinkSync(thumbnailPath);
+      }
       this.logger.error(`Failed to process image: ${error.message}`);
       throw new BadRequestException(`Failed to process image: ${error.message}`);
     }

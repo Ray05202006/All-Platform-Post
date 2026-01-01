@@ -114,7 +114,7 @@ export class MediaController {
   ) {
     // Sanitize filename to prevent path traversal attacks
     const sanitizedFilename = filename.replace(/[^a-zA-Z0-9._-]/g, '');
-    if (sanitizedFilename !== filename || filename.includes('..') || filename.includes('/') || filename.includes('\\')) {
+    if (!sanitizedFilename || sanitizedFilename !== filename || filename.includes('..') || filename.includes('/') || filename.includes('\\')) {
       return res.status(400).json({ error: 'Invalid filename' });
     }
 

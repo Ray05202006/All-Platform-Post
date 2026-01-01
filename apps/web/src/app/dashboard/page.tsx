@@ -201,9 +201,10 @@ export default function DashboardPage() {
 
   // Cleanup effect for file input ref when component unmounts
   useEffect(() => {
+    const currentRef = fileInputRef.current;
     return () => {
-      if (fileInputRef.current) {
-        fileInputRef.current.value = '';
+      if (currentRef) {
+        currentRef.value = '';
       }
     };
   }, []);
