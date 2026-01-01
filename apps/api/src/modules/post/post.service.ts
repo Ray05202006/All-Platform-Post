@@ -2,6 +2,7 @@ import { Injectable, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { PlatformService } from '../platform/platform.service';
 import { CreatePostDto } from './dto/create-post.dto';
+import { SplitResult } from '../platform/platform.service';
 
 @Injectable()
 export class PostService {

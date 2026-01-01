@@ -9,7 +9,7 @@ import { InstagramService } from './services/instagram.service';
 import { EncryptionService } from '../../common/services/encryption.service';
 
 // 导入 text-splitter
-interface SplitResult {
+export interface SplitResult {
   platform: string;
   chunks: string[];
   needsSplitting: boolean;
