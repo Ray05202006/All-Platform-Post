@@ -1,0 +1,11 @@
+{
+  "$schema": "https://schema.zeabur.app/zeabur.json",
+  "build": {
+    "type": "nodejs",
+    "build_command": "pnpm install && npx prisma generate && npx nest build",
+    "output_dir": "dist"
+  },
+  "start": {
+    "command": "node dist/main.js"
+  }
+}
