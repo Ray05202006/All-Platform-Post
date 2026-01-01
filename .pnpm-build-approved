@@ -1,0 +1,7 @@
+@nestjs/core
+@prisma/client
+@prisma/engines
+msgpackr-extract
+prisma
+sharp
+unrs-resolver

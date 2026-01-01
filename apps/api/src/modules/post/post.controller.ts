@@ -13,6 +13,7 @@ import { PostService } from './post.service';
 import { CreatePostDto } from './dto/create-post.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
+import { SplitResult } from '../platform/platform.service';
 
 @Controller('posts')
 @UseGuards(JwtAuthGuard)
@@ -96,7 +97,7 @@ export class PostController {
   @Post('preview-split')
   async previewSplit(
     @Body() body: { content: string; platforms: string[] },
-  ) {
+  ): Promise<SplitResult[]> {
     return this.postService.previewSplit(body.content, body.platforms);
   }
 }

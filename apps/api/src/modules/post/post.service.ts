@@ -240,7 +240,7 @@ export class PostService {
   /**
    * 预览分割结果
    */
-  async previewSplit(content: string, platforms: string[]) {
+  async previewSplit(content: string, platforms: string[]): Promise<SplitResult[]> {
     return this.platformService.previewSplit(content, platforms);
   }
 }
