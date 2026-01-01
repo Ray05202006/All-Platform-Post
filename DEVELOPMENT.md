@@ -51,7 +51,12 @@ pnpm prisma:migrate
 
 # 5. 配置环境变量
 cp .env.example .env
-# 编辑 .env 填入你的配置
+
+# 生成安全密钥
+node scripts/generate-env-keys.js
+
+# 编辑 .env 填入生成的密钥和其他配置
+# 确保设置 ENCRYPTION_KEY 和 JWT_SECRET
 ```
 
 ### 启动开发服务器
@@ -291,7 +296,25 @@ console.log(result);
 
 ## 环境变量配置
 
-编辑 `.env` 文件：
+### 生成安全密钥
+
+运行以下命令生成 `ENCRYPTION_KEY` 和 `JWT_SECRET`：
+
+```bash
+# 使用 Node.js 脚本（推荐，跨平台）
+node scripts/generate-env-keys.js
+
+# 或使用 Bash 脚本（仅限 Linux/macOS）
+bash scripts/generate-env-keys.sh
+
+# 或手动使用 openssl
+openssl rand -hex 32  # 生成 ENCRYPTION_KEY
+openssl rand -hex 32  # 生成 JWT_SECRET
+```
+
+### 编辑 .env 文件
+
+将生成的密钥填入 `.env` 文件：
 
 ```bash
 # 数据库
@@ -301,11 +324,11 @@ DATABASE_URL="postgresql://postgres:postgres@localhost:5432/allplatformpost"
 REDIS_HOST="localhost"
 REDIS_PORT=6379
 
-# 加密密钥（生成：openssl rand -hex 32）
-ENCRYPTION_KEY="your-64-char-hex-key"
+# 加密密钥（必须是 64 字符的十六进制字符串）
+ENCRYPTION_KEY="<从上面生成的密钥>"
 
-# JWT Secret
-JWT_SECRET="your-jwt-secret"
+# JWT Secret（必须是 64 字符的十六进制字符串）
+JWT_SECRET="<从上面生成的密钥>"
 
 # 应用 URL
 NEXT_PUBLIC_APP_URL="http://localhost:3000"
@@ -321,6 +344,12 @@ FACEBOOK_APP_SECRET="your-app-secret"
 TWITTER_CLIENT_ID="your-client-id"
 TWITTER_CLIENT_SECRET="your-client-secret"
 ```
+
+**重要提示**：
+- `ENCRYPTION_KEY` 必须是 64 个字符的十六进制字符串（32 字节）
+- `JWT_SECRET` 也建议使用相同长度的安全密钥
+- 这些密钥用于加密存储 OAuth tokens 和会话管理
+- 在生产环境中，绝不要使用示例密钥或提交真实密钥到版本控制
 
 ## 数据库管理
 
@@ -380,6 +409,24 @@ docker exec -it allplatformpost-postgres psql -U postgres -d allplatformpost
 ```
 
 ## 常见问题
+
+### Q: 启动时报错 "ENCRYPTION_KEY must be a 64-character hex string"
+
+**A**: 这表示环境变量未设置或格式不正确。
+
+**解决方法**：
+1. 确保已复制 `.env.example` 到 `.env`
+2. 运行密钥生成脚本：
+   ```bash
+   node scripts/generate-env-keys.js
+   ```
+3. 复制生成的 `ENCRYPTION_KEY` 到 `.env` 文件
+4. 确保密钥是 64 个字符的十六进制字符串（不包含空格或引号）
+5. 重启应用
+
+**部署环境**：
+- 在 Zeabur/Vercel/Railway 等平台，需要在环境变量设置中添加 `ENCRYPTION_KEY`
+- 确保每个环境（开发、测试、生产）都有独立的密钥
 
 ### Q: pnpm install 失败
 
