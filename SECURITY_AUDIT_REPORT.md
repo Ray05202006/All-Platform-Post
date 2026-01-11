@@ -190,13 +190,12 @@ export class AppModule {}
 
 ```typescript
 // apps/api/src/main.ts
-import { ThrottlerGuard } from '@nestjs/throttler';
+// Note: ThrottlerGuard should be registered in the module providers array
+// using APP_GUARD, not as a global guard in main.ts. See app.module.ts.example
+// for the correct implementation.
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-
-  // 全域 Rate Limiting
-  app.useGlobalGuards(new ThrottlerGuard());
 
   // ... 其他配置
 }
@@ -228,11 +227,11 @@ const sanitizedFilename = filename.replace(/[^a-zA-Z0-9._-]/g, '');
 **改進建議**:
 ```typescript
 // apps/api/src/modules/media/media.service.ts
-import * as fileType from 'file-type';
+import { fileTypeFromFile } from 'file-type';
 
 async processImage(file: Express.Multer.File): Promise<ProcessedMedia> {
   // 驗證文件魔術數字
-  const detectedType = await fileType.fromFile(file.path);
+  const detectedType = await fileTypeFromFile(file.path);
 
   if (!detectedType || !detectedType.mime.startsWith('image/')) {
     throw new BadRequestException('Invalid image file');
@@ -252,7 +251,6 @@ async processImage(file: Express.Multer.File): Promise<ProcessedMedia> {
 ```bash
 cd apps/api
 pnpm add file-type
-pnpm add -D @types/file-type
 ```
 
 ---

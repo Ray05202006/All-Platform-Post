@@ -48,7 +48,6 @@ cd apps/api
 pnpm add helmet
 pnpm add @nestjs/throttler
 pnpm add file-type
-pnpm add -D @types/file-type
 
 cd ../..
 ```
@@ -205,7 +204,7 @@ git checkout apps/api/src/modules/media/media.service.ts
 
 # 卸載套件
 cd apps/api
-pnpm remove helmet @nestjs/throttler file-type @types/file-type
+pnpm remove helmet @nestjs/throttler file-type
 ```
 
 ## 📚 更多資訊
