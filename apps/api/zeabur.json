@@ -2,10 +2,10 @@
   "$schema": "https://schema.zeabur.app/zeabur.json",
   "build": {
     "type": "nodejs",
-    "build_command": "pnpm install --frozen-lockfile && npx prisma generate && npx nest build",
+    "build_command": "cd ../.. && pnpm install --frozen-lockfile && cd apps/api && npx prisma generate && npx nest build",
     "output_dir": "dist"
   },
   "start": {
-    "command": "node dist/main.js"
+    "command": "npx prisma migrate deploy && node dist/main.js"
   }
 }

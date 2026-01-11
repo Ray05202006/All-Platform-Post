@@ -1,5 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  output: 'standalone',
   reactStrictMode: true,
   transpilePackages: ['@all-platform-post/shared', '@all-platform-post/text-splitter'],
 
@@ -11,7 +12,10 @@ const nextConfig = {
 
   // Image optimization
   images: {
-    domains: ['localhost'],
+    remotePatterns: [
+      { protocol: 'https', hostname: '*.zeabur.app' },
+      { protocol: 'http', hostname: 'localhost' },
+    ],
   },
 
   // Redirects

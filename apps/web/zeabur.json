@@ -1,6 +1,7 @@
 {
   "$schema": "https://schema.zeabur.app/zeabur.json",
   "build": {
-    "type": "nextjs"
+    "type": "nextjs",
+    "build_command": "cd ../.. && pnpm install --frozen-lockfile && cd apps/web && pnpm build"
   }
 }
