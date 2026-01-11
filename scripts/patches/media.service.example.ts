@@ -59,7 +59,13 @@ export class MediaService {
       // MIME type 與擴展名一致性檢查
       const expectedExt = detectedType.ext;
       const actualExt = extname(file.originalname).toLowerCase().slice(1);
-      if (expectedExt !== actualExt && !(expectedExt === 'jpg' && actualExt === 'jpeg')) {
+      if (
+        !(
+          expectedExt === actualExt ||
+          (expectedExt === 'jpg' && actualExt === 'jpeg') ||
+          (expectedExt === 'jpeg' && actualExt === 'jpg')
+        )
+      ) {
         this.logger.warn(
           `File extension mismatch: expected .${expectedExt}, got .${actualExt} for ${file.originalname}`,
         );

@@ -26,6 +26,11 @@ echo -e "${GREEN}✓ 依賴項更新完成${NC}"
 # 步驟 2: 安裝安全套件
 echo -e "\n${YELLOW}步驟 2/3: 安裝安全相關套件${NC}"
 
+if [ ! -d "apps/api" ]; then
+  echo -e "${RED}錯誤：找不到目錄 apps/api，請從專案根目錄執行此腳本。${NC}"
+  exit 1
+fi
+
 cd apps/api
 
 # Helmet
@@ -39,7 +44,6 @@ pnpm add @nestjs/throttler
 # File Type Validation
 echo "安裝 file-type (文件類型驗證)..."
 pnpm add file-type
-pnpm add -D @types/file-type
 
 cd ../..
 

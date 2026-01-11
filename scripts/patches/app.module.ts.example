@@ -91,7 +91,7 @@ export class AppModule implements OnApplicationBootstrap {
   constructor(private schedulerService: SchedulerService) {}
 
   async onApplicationBootstrap() {
-    // 系统启动时恢复未执行的排程任务（在所有模块初始化后）
+    // 系統啟動時恢復未執行的排程任務（在所有模組初始化後）
     await this.schedulerService.restoreScheduledPosts();
   }
 }
