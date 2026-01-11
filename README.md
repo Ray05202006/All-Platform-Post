@@ -62,7 +62,11 @@ pnpm install
 # 复制环境变量文件
 cp .env.example .env
 
-# 编辑 .env 填入你的配置
+# 生成安全密钥（ENCRYPTION_KEY 和 JWT_SECRET）
+node scripts/generate-env-keys.js
+# 或使用 Bash 版本: bash scripts/generate-env-keys.sh
+
+# 编辑 .env 填入生成的密钥和其他配置
 nano .env
 
 # 初始化数据库
@@ -167,6 +171,68 @@ pnpm dev
 - 其他平台 API: $0（完全免费）
 - **总计**: $5-220/月
 
+## 部署指南
+
+### Zeabur 部署
+
+1. **准备环境变量**
+
+   首先生成安全密钥：
+   ```bash
+   node scripts/generate-env-keys.js
+   ```
+
+2. **在 Zeabur 配置环境变量**
+
+   在你的 Zeabur 服务设置中添加以下环境变量：
+   
+   **必需的环境变量**：
+   ```
+   ENCRYPTION_KEY=<生成的64位hex密钥>
+   JWT_SECRET=<生成的64位hex密钥>
+   DATABASE_URL=<Zeabur提供的PostgreSQL连接字符串>
+   REDIS_HOST=<Zeabur提供的Redis主机>
+   REDIS_PORT=<Zeabur提供的Redis端口>
+   ```
+
+   **平台 API 密钥**（按需配置）：
+   ```
+   FACEBOOK_APP_ID=<你的Facebook App ID>
+   FACEBOOK_APP_SECRET=<你的Facebook App Secret>
+   TWITTER_CLIENT_ID=<你的Twitter Client ID>
+   TWITTER_CLIENT_SECRET=<你的Twitter Client Secret>
+   TWITTER_API_KEY=<你的Twitter API Key>
+   TWITTER_API_SECRET=<你的Twitter API Secret>
+   ```
+
+   **应用 URL**：
+   ```
+   NEXT_PUBLIC_APP_URL=<你的前端URL>
+   API_URL=<你的后端URL>
+   ```
+
+3. **部署应用**
+
+   推送代码到 GitHub，Zeabur 将自动构建和部署。
+
+### 其他平台部署
+
+对于其他托管平台（如 Vercel、Railway、Render 等），请确保：
+
+1. 设置所有必需的环境变量（特别是 `ENCRYPTION_KEY` 和 `JWT_SECRET`）
+2. 配置 PostgreSQL 数据库连接
+3. 配置 Redis 连接（用于任务队列）
+4. 运行数据库迁移：`pnpm --filter api prisma migrate deploy`
+
+### 环境变量故障排除
+
+如果遇到 `ENCRYPTION_KEY must be a 64-character hex string` 错误：
+
+1. 确保已在部署平台设置 `ENCRYPTION_KEY` 环境变量
+2. 密钥必须是 64 个字符的十六进制字符串（32 字节）
+3. 使用 `node scripts/generate-env-keys.js` 生成有效的密钥
+4. 不要在密钥前后添加引号或空格
+
 ## 贡献
 
 欢迎提交 Issue 和 Pull Request！
@@ -198,3 +264,10 @@ A: 目前支持 Facebook/Instagram/Twitter/Threads。未来可扩展 LinkedIn、
 
 ### Q: 数据存储在哪里？
 A: 所有数据（包括 OAuth 令牌）存储在你自己的 PostgreSQL 数据库，完全私有。
+
+### Q: 部署时遇到 ENCRYPTION_KEY 错误怎么办？
+A: 这个错误表示环境变量未设置或格式不正确。解决方法：
+1. 运行 `node scripts/generate-env-keys.js` 生成密钥
+2. 在部署平台的环境变量设置中添加 `ENCRYPTION_KEY`
+3. 确保密钥是 64 个字符的十六进制字符串
+4. 重新部署应用
