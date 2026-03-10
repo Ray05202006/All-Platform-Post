@@ -1,7 +1,5 @@
 import { Module, OnApplicationBootstrap } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { ScheduleModule } from '@nestjs/schedule';
-import { BullModule } from '@nestjs/bullmq';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 import { AppController } from './app.controller';
@@ -20,18 +18,6 @@ import { MediaModule } from './modules/media/media.module';
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: '../../.env',
-    }),
-
-    // Scheduling
-    ScheduleModule.forRoot(),
-
-    // BullMQ (Task Queue)
-    BullModule.forRoot({
-      connection: {
-        host: process.env.REDIS_HOST || 'localhost',
-        port: parseInt(process.env.REDIS_PORT || '6379'),
-        password: process.env.REDIS_PASSWORD || undefined,
-      },
     }),
 
     // Static files (uploads)

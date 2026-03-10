@@ -1,6 +1,4 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { InjectQueue } from '@nestjs/bullmq';
-import { Queue, Job } from 'bullmq';
 import { PrismaService } from '../prisma/prisma.service';
 
 export interface ScheduledPostJob {
@@ -8,30 +6,42 @@ export interface ScheduledPostJob {
   userId: string;
 }
 
+export interface JobStatus {
+  exists: boolean;
+  status?: string;
+  scheduledFor?: Date;
+}
+
+export interface PendingJob {
+  id: string;
+  postId: string;
+  userId: string;
+  scheduledFor: string;
+}
+
+/**
+ * DB-based scheduler — no Redis/BullMQ required.
+ * Scheduling state is stored directly in the Post.status + Post.scheduledAt columns.
+ * An Azure Timer Trigger polls every minute and publishes due posts.
+ */
 @Injectable()
 export class SchedulerService {
   private readonly logger = new Logger(SchedulerService.name);
 
-  constructor(
-    @InjectQueue('scheduled-posts') private postQueue: Queue<ScheduledPostJob>,
-    private prisma: PrismaService,
-  ) {}
+  constructor(private prisma: PrismaService) {}
 
   /**
-   * 添加排程发布任务
+   * Schedule a post: just set scheduledAt and status in DB.
    */
-  async schedulePost(postId: string, userId: string, scheduledAt: Date): Promise<Job<ScheduledPostJob>> {
+  async schedulePost(postId: string, userId: string, scheduledAt: Date): Promise<void> {
     const scheduledTime = scheduledAt.getTime();
     if (Number.isNaN(scheduledTime)) {
       throw new Error('Invalid scheduled time');
     }
 
     const now = Date.now();
-    let delay = scheduledTime - now;
-
-    // Allow a small tolerance for client/server clock skew (e.g., 5 minutes)
+    const delay = scheduledTime - now;
     const pastToleranceMs = 5 * 60 * 1000;
-    // Guard against unreasonable future times (e.g., > 365 days)
     const maxFutureMs = 365 * 24 * 60 * 60 * 1000;
 
     if (delay < -pastToleranceMs) {
@@ -42,42 +52,31 @@ export class SchedulerService {
       throw new Error('Scheduled time is too far in the future.');
     }
 
-    if (delay <= 0) {
-      this.logger.warn(
-        `Scheduled time ${scheduledAt.toISOString()} is slightly in the past; ` +
-          'adjusting to immediate execution to account for possible clock skew.',
-      );
-      delay = 0;
-    }
+    this.logger.log(`Scheduling post ${postId} for ${scheduledAt.toISOString()}`);
 
-    this.logger.log(`Scheduling post ${postId} for ${scheduledAt.toISOString()} (delay: ${delay}ms)`);
-
-    const job = await this.postQueue.add(
-      'publish-post',
-      { postId, userId },
-      {
-        delay,
-        jobId: `post-${postId}`, // 使用唯一 ID 便于取消
+    await this.prisma.post.update({
+      where: { id: postId, userId },
+      data: {
+        status: 'scheduled',
+        scheduledAt,
       },
-    );
-
-    return job;
+    });
   }
 
   /**
-   * 取消排程
+   * Cancel schedule: revert status to draft, clear scheduledAt.
    */
   async cancelSchedule(postId: string): Promise<boolean> {
-    const jobId = `post-${postId}`;
-
     try {
-      const job = await this.postQueue.getJob(jobId);
-      if (job) {
-        await job.remove();
-        this.logger.log(`Cancelled scheduled post ${postId}`);
-        return true;
-      }
-      return false;
+      await this.prisma.post.update({
+        where: { id: postId },
+        data: {
+          status: 'draft',
+          scheduledAt: null,
+        },
+      });
+      this.logger.log(`Cancelled scheduled post ${postId}`);
+      return true;
     } catch (error) {
       this.logger.error(`Failed to cancel schedule for post ${postId}:`, error);
       return false;
@@ -85,96 +84,108 @@ export class SchedulerService {
   }
 
   /**
-   * 更新排程时间
+   * Reschedule: update scheduledAt.
    */
-  async reschedulePost(postId: string, userId: string, newScheduledAt: Date): Promise<Job<ScheduledPostJob>> {
-    // 先取消旧的排程
-    await this.cancelSchedule(postId);
-
-    // 添加新的排程
+  async reschedulePost(postId: string, userId: string, newScheduledAt: Date): Promise<void> {
     return this.schedulePost(postId, userId, newScheduledAt);
   }
 
   /**
-   * 获取排程任务状态
+   * Get schedule status for a post.
    */
-  async getJobStatus(postId: string): Promise<{
-    exists: boolean;
-    status?: string;
-    scheduledFor?: Date;
-  }> {
-    const jobId = `post-${postId}`;
-    const job = await this.postQueue.getJob(jobId);
+  async getJobStatus(postId: string): Promise<JobStatus> {
+    const post = await this.prisma.post.findUnique({
+      where: { id: postId },
+      select: { status: true, scheduledAt: true },
+    });
 
-    if (!job) {
+    if (!post || post.status !== 'scheduled') {
       return { exists: false };
     }
 
-    const state = await job.getState();
-    const delay = job.opts.delay || 0;
-    const scheduledFor = new Date(job.timestamp + delay);
-
     return {
       exists: true,
-      status: state,
-      scheduledFor,
+      status: post.status,
+      scheduledFor: post.scheduledAt ?? undefined,
     };
   }
 
   /**
-   * 获取所有待处理的排程任务
+   * Get all pending scheduled posts (for dashboard display).
    */
-  async getPendingJobs(): Promise<Job<ScheduledPostJob>[]> {
-    return this.postQueue.getJobs(['delayed', 'waiting']);
+  async getPendingJobs(): Promise<PendingJob[]> {
+    const posts = await this.prisma.post.findMany({
+      where: {
+        status: 'scheduled',
+        scheduledAt: { gt: new Date() },
+      },
+      select: { id: true, userId: true, scheduledAt: true },
+      orderBy: { scheduledAt: 'asc' },
+    });
+
+    return posts.map((post) => ({
+      id: post.id,
+      postId: post.id,
+      userId: post.userId,
+      scheduledFor: post.scheduledAt!.toISOString(),
+    }));
   }
 
   /**
-   * 系统启动时恢复未执行的排程
+   * Called by Azure Timer Trigger every minute.
+   * Finds all due posts and publishes them.
    */
-  async restoreScheduledPosts(): Promise<void> {
-    this.logger.log('Restoring scheduled posts from database...');
-
-    // 查找所有状态为 scheduled 的贴文
-    const scheduledPosts = await this.prisma.post.findMany({
+  async processDuePosts(publishPost: (userId: string, postId: string) => Promise<any>): Promise<void> {
+    const duePosts = await this.prisma.post.findMany({
       where: {
         status: 'scheduled',
-        scheduledAt: {
-          gt: new Date(), // 只恢复未来的排程
-        },
+        scheduledAt: { lte: new Date() },
       },
     });
 
-    for (const post of scheduledPosts) {
+    if (duePosts.length === 0) return;
+
+    this.logger.log(`Processing ${duePosts.length} due posts`);
+
+    for (const post of duePosts) {
       try {
-        // 检查任务是否已存在
-        const existingJob = await this.postQueue.getJob(`post-${post.id}`);
-        if (!existingJob) {
-          await this.schedulePost(post.id, post.userId, post.scheduledAt!);
-          this.logger.log(`Restored scheduled post ${post.id}`);
-        }
+        // Mark as publishing to prevent double-processing
+        await this.prisma.post.update({
+          where: { id: post.id },
+          data: { status: 'publishing' },
+        });
+
+        await publishPost(post.userId, post.id);
+        this.logger.log(`Published scheduled post ${post.id}`);
       } catch (error) {
-        this.logger.error(`Failed to restore scheduled post ${post.id}:`, error);
+        this.logger.error(`Failed to publish post ${post.id}:`, error);
+        await this.prisma.post.update({
+          where: { id: post.id },
+          data: {
+            status: 'failed',
+            results: { error: (error as Error).message },
+          },
+        });
       }
     }
-
-    this.logger.log(`Restored ${scheduledPosts.length} scheduled posts`);
   }
 
-  /**
-   * 清理过期的失败任务
-   */
+  /** No-op: kept for API compatibility (no jobs to restore with DB-based approach) */
+  async restoreScheduledPosts(): Promise<void> {
+    this.logger.log('DB-based scheduler: no restoration needed');
+  }
+
+  /** Cleanup old failed posts (optional maintenance) */
   async cleanupFailedJobs(olderThanMs: number = 24 * 60 * 60 * 1000): Promise<number> {
-    const batchSize = 100;
-    let totalCleaned = 0;
-    let cleanedBatch: string[];
-
-    // 分批清理所有符合条件的失败任务，直到没有更多任务为止
-    do {
-      cleanedBatch = await this.postQueue.clean(olderThanMs, batchSize, 'failed');
-      totalCleaned += cleanedBatch.length;
-    } while (cleanedBatch.length === batchSize);
-
-    this.logger.log(`Cleaned ${totalCleaned} failed jobs`);
-    return totalCleaned;
+    const cutoff = new Date(Date.now() - olderThanMs);
+    const result = await this.prisma.post.updateMany({
+      where: {
+        status: 'failed',
+        updatedAt: { lt: cutoff },
+      },
+      data: { status: 'failed' }, // no-op update just to count; real cleanup is app-specific
+    });
+    this.logger.log(`Found ${result.count} old failed posts`);
+    return result.count;
   }
 }
