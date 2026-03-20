@@ -176,6 +176,28 @@ GitHub Actions workflows in `.github/workflows/`:
 - `deploy-api.yml` — Deploy Azure Functions
 - `deploy-frontend.yml` — Deploy Next.js static build to GitHub Pages
 
+### Required GitHub Repository Secrets
+
+Configure these in **Settings → Secrets and variables → Actions**:
+
+| Secret | Description |
+|--------|-------------|
+| `AZURE_FUNCTIONS_URL` | Full Azure Functions base URL (e.g. `https://your-app.azurewebsites.net`) — used as `NEXT_PUBLIC_API_URL` at frontend build time |
+| `AZURE_CREDENTIALS` | Azure service principal JSON for `azure/login` action |
+| `AZURE_FUNCTION_APP_NAME` | Azure Function App name |
+| `AZURE_RESOURCE_GROUP` | Azure resource group name (required for CORS env var deployment) |
+| `POSTGRES_CONNECTION_STRING` | Production PostgreSQL connection string for Prisma migrations |
+
+### GitHub Pages Setup
+
+1. Go to **Settings → Pages** → set Source to **GitHub Actions**
+2. First deploy triggers automatically on push to `main`
+3. Site URL: `https://Ray05202006.github.io/All-Platform-Post`
+
+### CORS Configuration Note
+
+The Azure Functions backend reads `CORS_ORIGIN` env var (set automatically by `deploy-api.yml` to `https://Ray05202006.github.io`). This is the browser `Origin` header value — **no path**, just scheme + host.
+
 ## Key Conventions
 
 - **Path aliases**: `@/*` → `src/*` in both API and web apps

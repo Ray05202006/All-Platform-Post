@@ -49,6 +49,13 @@ jobs:
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
+      - name: Set Azure Functions app settings
+        run: |
+          az functionapp config appsettings set \
+            --name ${{ secrets.AZURE_FUNCTION_APP_NAME }} \
+            --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} \
+            --settings CORS_ORIGIN=https://${{ github.repository_owner }}.github.io
+
       - name: Deploy to Azure Functions
         uses: Azure/functions-action@v1
         with:
