@@ -1,93 +1,105 @@
 # All-Platform-Post
 
-个人自建的多平台社交媒体发文系统，支持 Facebook、Instagram、Twitter/X、Threads 四大平台的统一发文管理。
+個人自建的多平台社群媒體發文系統，支援 Facebook、Instagram、Twitter/X、Threads 四大平台的統一發文管理。
+
+**線上展示**：[https://Ray05202006.github.io/All-Platform-Post](https://Ray05202006.github.io/All-Platform-Post)
 
 ## 核心功能
 
-- ✅ **多平台发布**：一次编写，同时发布到 Facebook、Instagram、Twitter、Threads
-- ✅ **智能字数分割**：自动检测各平台字数限制，智能断句分段
-- ✅ **定时发布**：支持预约发文，自动在指定时间发布
-- ✅ **媒体上传**：支持图片和视频上传，自动适配各平台格式要求
-- ✅ **OAuth 认证**：安全的平台账号连接，加密存储访问令牌
-- ✅ **实时预览**：编辑时实时查看各平台的分割效果
+- ✅ **多平台發布**：一次編寫，同時發布到 Facebook、Instagram、Twitter、Threads
+- ✅ **智慧字數分割**：自動偵測各平台字數限制，智慧斷句分段
+- ✅ **定時發布**：支援預約發文，自動在指定時間發布
+- ✅ **媒體上傳**：支援圖片和影片上傳，自動適配各平台格式要求
+- ✅ **OAuth 認證**：安全的平台帳號連接，加密儲存存取令牌
+- ✅ **即時預覽**：編輯時即時查看各平台的分割效果
 
-## 技术栈
+## 技術棧
 
 ### 前端
-- **Next.js 14** (App Router)
+- **Next.js 14** (App Router，靜態匯出部署至 GitHub Pages)
 - **React 18** + TypeScript
 - **Tailwind CSS** + shadcn/ui
-- **TanStack Query** (数据管理)
+- **TanStack Query** (資料管理)
 
-### 后端
-- **NestJS 10** + TypeScript
+### 後端
+- **NestJS 10** + TypeScript（部署至 Azure Functions）
 - **Prisma** (ORM)
-- **PostgreSQL** (数据库)
-- **Redis** + **BullMQ** (任务队列)
-- **Passport.js** (OAuth 认证)
+- **PostgreSQL** (資料庫)
+- **Passport.js** (OAuth 認證)
 
-## 项目结构
+### 部署架構
+
+```
+GitHub Pages (靜態 Next.js)
+        │ HTTP API 呼叫
+        ▼
+Azure Functions
+  ├── HTTP trigger  — 包裝整個 NestJS 應用程式
+  └── Timer trigger — 每分鐘輪詢資料庫執行定時發文
+        │
+        ▼
+    PostgreSQL (Azure Database / 本機 Docker)
+```
+
+## 專案結構
 
 ```
 .
 ├── apps/
-│   ├── web/                 # Next.js 前端
-│   └── api/                 # NestJS 后端
+│   ├── web/              # Next.js 前端
+│   ├── api/              # NestJS 後端
+│   └── azure-functions/  # Azure Functions 封裝
 ├── packages/
-│   ├── shared/              # 共享类型和工具
-│   └── text-splitter/       # 智能字数分割库
-├── PLAN.md                  # 详细技术实现计划
+│   ├── shared/           # 共用型別與工具
+│   └── text-splitter/    # 智慧字數分割函式庫
 └── README.md
 ```
 
-## 快速开始
+## 快速開始
 
 ### 前置要求
 
 - Node.js >= 18.0.0
 - pnpm >= 8.0.0
-- PostgreSQL >= 15
-- Redis >= 7
+- Docker（用於本機 PostgreSQL）或自備 PostgreSQL >= 15
 
-### 安装
+### 安裝
 
 ```bash
-# 克隆仓库
-git clone https://github.com/yourusername/All-Platform-Post.git
+# 複製儲存庫
+git clone https://github.com/Ray05202006/All-Platform-Post.git
 cd All-Platform-Post
 
-# 安装依赖
+# 安裝依賴
 pnpm install
 
-# 复制环境变量文件
+# 複製環境變數檔案
 cp .env.example .env
 
-# 生成安全密钥（ENCRYPTION_KEY 和 JWT_SECRET）
-node scripts/generate-env-keys.js
-# 或使用 Bash 版本: bash scripts/generate-env-keys.sh
+# 編輯 .env，填入密鑰與其他設定
+# ENCRYPTION_KEY 與 JWT_SECRET 可用以下指令產生：
+openssl rand -hex 32
 
-# 编辑 .env 填入生成的密钥和其他配置
-nano .env
+# 啟動 Docker (PostgreSQL)
+make dev
 
-# 初始化数据库
-pnpm --filter api prisma migrate dev
-
-# 启动开发服务器
+# 或不使用 Docker，直接啟動開發伺服器
 pnpm dev
 ```
 
-访问 http://localhost:3000 查看前端界面。
+前端：http://localhost:3000
+後端：http://localhost:7071（Azure Functions 本機模擬）
 
-## 平台 API 申请指南
+## 平台 API 申請指南
 
 ### Facebook & Instagram & Threads
 
 1. 前往 [Facebook Developers](https://developers.facebook.com/)
-2. 创建新应用，选择「消费者」类型
-3. 添加「Facebook Login」产品
-4. 在「设置」中获取 App ID 和 App Secret
-5. 添加重定向 URI: `http://localhost:3000/api/auth/facebook/callback`
-6. 申请以下权限：
+2. 建立新應用，選擇「消費者」類型
+3. 新增「Facebook Login」產品
+4. 在「設定」中取得 App ID 和 App Secret
+5. 新增重新導向 URI：`https://YOUR_AZURE_FUNCTIONS_URL/api/auth/facebook/callback`
+6. 申請以下權限：
    - `pages_show_list`
    - `pages_manage_posts`
    - `pages_manage_engagement`
@@ -97,177 +109,112 @@ pnpm dev
 ### Twitter/X
 
 1. 前往 [Twitter Developer Portal](https://developer.twitter.com/)
-2. 创建新项目和应用
-3. 选择 API 层级（免费层或 Basic $200/月）
-4. 在「User authentication settings」中配置：
+2. 建立新專案和應用程式
+3. 選擇 API 層級（免費層或 Basic $200/月）
+4. 在「User authentication settings」中設定：
    - Type: Web App
-   - Callback URI: `http://localhost:3000/api/auth/twitter/callback`
-5. 获取 Client ID 和 Client Secret
+   - Callback URI: `https://YOUR_AZURE_FUNCTIONS_URL/api/auth/twitter/callback`
+5. 取得 Client ID 和 Client Secret
 
-**注意**：免费层每月仅 500 条推文，建议个人使用。
+> **注意**：免費層每月僅 500 則推文，建議個人使用。
 
-## 字数限制说明
+## 字數限制說明
 
-| 平台 | 单条贴文字数 | 留言字数 | 特殊规则 |
-|------|-------------|---------|---------|
-| Facebook | 63,206 字 | 8,000 字 | 无 |
-| Instagram | 2,200 字 | 2,200 字 | 最多 30 个 hashtag |
-| Twitter | 280 字 | 280 字 | 中文算 2 字元，URL 算 23 字 |
-| Threads | 500 字 | 500 字 | 建议只用 1 个 hashtag |
+| 平台 | 單則貼文字數 | 特殊規則 |
+|------|-------------|---------|
+| Facebook | 63,206 字 | 無 |
+| Instagram | 2,200 字 | 最多 30 個 hashtag |
+| Twitter | 280 字 | 中文算 2 字元，URL 固定算 23 字 |
+| Threads | 500 字 | 建議只用 1 個 hashtag |
 
-## 智能分割示例
+## 智慧分割範例
 
-**输入内容**（350 字）：
+**輸入內容**（350 字）：
 ```
-今天学习了 React Server Components 的工作原理，真的太强大了！
-传统的 SSR 需要在服务器渲染整个页面，然后发送到客户端。
-而 RSC 可以让某些组件完全在服务器运行，减少 JavaScript 包大小...
-```
-
-**Twitter 分割结果**（280 字限制）：
-```
-[1/2] 今天学习了 React Server Components 的工作原理，真的太强大了！
-传统的 SSR 需要在服务器渲染整个页面，然后发送到客户端。
-
-[2/2] 而 RSC 可以让某些组件完全在服务器运行，减少 JavaScript 包大小...
+今天學習了 React Server Components 的工作原理，真的太強大了！
+傳統的 SSR 需要在伺服器渲染整個頁面，然後傳送到客戶端。
+而 RSC 可以讓某些元件完全在伺服器執行，減少 JavaScript 包大小...
 ```
 
-**Threads/Facebook**：
+**Twitter 分割結果**（280 字限制）：
 ```
-[不分割] 今天学习了 React Server Components 的工作原理...
+[1/2] 今天學習了 React Server Components 的工作原理，真的太強大了！
+傳統的 SSR 需要在伺服器渲染整個頁面，然後傳送到客戶端。
+
+[2/2] 而 RSC 可以讓某些元件完全在伺服器執行，減少 JavaScript 包大小...
 ```
 
-## 开发进度
-
-查看 [PLAN.md](./PLAN.md) 了解详细的技术实现计划。
-
-- [x] 项目架构设计
-- [x] 各平台 API 研究
-- [x] 智能字数分割算法设计
-- [ ] Monorepo 基础架构
-- [ ] Next.js 前端
-- [ ] NestJS 后端
-- [ ] OAuth 认证
-- [ ] 平台 API 集成
-- [ ] 定时发布
-- [ ] 媒体处理
-- [ ] UI 界面
-
-## 安全性
-
-- ✅ OAuth 2.0 + PKCE 认证流程
-- ✅ AES-256-GCM 加密存储访问令牌
-- ✅ JWT 会话管理
-- ✅ CSRF 防护
-- ✅ 速率限制
-
-## 成本估算
-
-**开发成本**：12 周（个人兼职约 3 个月）
-
-**运行成本**（每月）：
-- VPS 托管: $5-20
-- Twitter API: $0-200（免费层 vs Basic 层）
-- 其他平台 API: $0（完全免费）
-- **总计**: $5-220/月
+**Threads / Facebook**：
+```
+[不分割] 今天學習了 React Server Components 的工作原理...
+```
 
 ## 部署指南
 
-### Zeabur 部署
+### GitHub Pages（前端）
 
-1. **准备环境变量**
+1. 至 GitHub repo → **Settings → Pages** → Source 設為 **GitHub Actions**
+2. 設定以下 Repository Secrets（Settings → Secrets and variables → Actions）：
 
-   首先生成安全密钥：
-   ```bash
-   node scripts/generate-env-keys.js
-   ```
+   | Secret | 說明 |
+   |--------|------|
+   | `AZURE_FUNCTIONS_URL` | Azure Functions 完整 URL（如 `https://your-app.azurewebsites.net`） |
+   | `AZURE_CREDENTIALS` | Azure 服務主體 JSON |
+   | `AZURE_FUNCTION_APP_NAME` | Azure Function App 名稱 |
+   | `AZURE_RESOURCE_GROUP` | Azure 資源群組名稱 |
+   | `POSTGRES_CONNECTION_STRING` | 生產環境 PostgreSQL 連線字串 |
 
-2. **在 Zeabur 配置环境变量**
+3. 推送至 `main` branch 即自動觸發部署
 
-   在你的 Zeabur 服务设置中添加以下环境变量：
-   
-   **必需的环境变量**：
-   ```
-   ENCRYPTION_KEY=<生成的64位hex密钥>
-   JWT_SECRET=<生成的64位hex密钥>
-   DATABASE_URL=<Zeabur提供的PostgreSQL连接字符串>
-   REDIS_HOST=<Zeabur提供的Redis主机>
-   REDIS_PORT=<Zeabur提供的Redis端口>
-   ```
+### Azure Functions（後端）
 
-   **平台 API 密钥**（按需配置）：
-   ```
-   FACEBOOK_APP_ID=<你的Facebook App ID>
-   FACEBOOK_APP_SECRET=<你的Facebook App Secret>
-   TWITTER_CLIENT_ID=<你的Twitter Client ID>
-   TWITTER_CLIENT_SECRET=<你的Twitter Client Secret>
-   TWITTER_API_KEY=<你的Twitter API Key>
-   TWITTER_API_SECRET=<你的Twitter API Secret>
-   ```
+推送至 `main` branch 時自動觸發，workflow 會：
+1. 建置 NestJS + Azure Functions
+2. 執行 Prisma 資料庫遷移
+3. 設定 CORS 環境變數
+4. 部署至 Azure
 
-   **应用 URL**：
-   ```
-   NEXT_PUBLIC_APP_URL=<你的前端URL>
-   API_URL=<你的后端URL>
-   ```
+### 本機開發環境變數
 
-3. **部署应用**
+複製 `.env.example` 為 `.env`，主要設定項目：
 
-   推送代码到 GitHub，Zeabur 将自动构建和部署。
+```bash
+DATABASE_URL="postgresql://..."     # PostgreSQL 連線字串
+ENCRYPTION_KEY="64位hex字串"         # openssl rand -hex 32
+JWT_SECRET="隨機字串"                # openssl rand -hex 32
+NEXT_PUBLIC_API_URL="http://localhost:7071"  # 後端 URL
+CORS_ORIGIN="http://localhost:3000"  # 前端 origin（僅 scheme+host）
+```
 
-### 其他平台部署
+## 安全性
 
-对于其他托管平台（如 Vercel、Railway、Render 等），请确保：
+- ✅ OAuth 2.0 認證流程
+- ✅ AES-256-GCM 加密儲存存取令牌
+- ✅ JWT 工作階段管理
+- ✅ CORS 保護（嚴格 origin 驗證）
+- ✅ 輸入驗證（class-validator）
 
-1. 设置所有必需的环境变量（特别是 `ENCRYPTION_KEY` 和 `JWT_SECRET`）
-2. 配置 PostgreSQL 数据库连接
-3. 配置 Redis 连接（用于任务队列）
-4. 运行数据库迁移：`pnpm --filter api prisma migrate deploy`
+## 常見問題
 
-### 环境变量故障排除
+### Q：為什麼不用 Buffer 或 Hootsuite？
+A：第三方服務每月收費 $20-100，且不提供完整的智慧字數分割功能。自建系統可完全掌控，且僅需 Azure Functions 的低成本運行費用。
 
-如果遇到 `ENCRYPTION_KEY must be a 64-character hex string` 错误：
+### Q：Twitter API 太貴怎麼辦？
+A：免費層每月 500 則推文，對個人用戶通常足夠。
 
-1. 确保已在部署平台设置 `ENCRYPTION_KEY` 环境变量
-2. 密钥必须是 64 个字符的十六进制字符串（32 字节）
-3. 使用 `node scripts/generate-env-keys.js` 生成有效的密钥
-4. 不要在密钥前后添加引号或空格
+### Q：支援其他平台嗎？
+A：目前支援 Facebook / Instagram / Twitter / Threads。未來可擴展 LinkedIn、Discord、Mastodon 等平台。
 
-## 贡献
+### Q：資料存放在哪裡？
+A：所有資料（包含 OAuth 令牌）存放在你自己的 PostgreSQL 資料庫，完全私有。OAuth 令牌以 AES-256-GCM 加密後才寫入資料庫。
 
-欢迎提交 Issue 和 Pull Request！
+## 參考資源
 
-## 授权
+- [Facebook Graph API 文件](https://developers.facebook.com/docs/graph-api/)
+- [Instagram API 文件](https://developers.facebook.com/docs/instagram-api/)
+- [Twitter API v2 文件](https://developer.twitter.com/en/docs/twitter-api)
+- [Threads API 文件](https://developers.facebook.com/docs/threads)
+
+## 授權
 
 MIT License
-
----
-
-## 参考资源
-
-- [Facebook Graph API 文档](https://developers.facebook.com/docs/graph-api/)
-- [Instagram API 文档](https://developers.facebook.com/docs/instagram-api/)
-- [Twitter API v2 文档](https://developer.twitter.com/en/docs/twitter-api)
-- [Threads API 文档](https://developers.facebook.com/docs/threads)
-- [Postiz 开源项目](https://github.com/gitroomhq/postiz-app)
-
-## 常见问题
-
-### Q: 为什么不用 Buffer 或 Hootsuite？
-A: 第三方服务每月收费 $20-100，且不提供完整的智能字数分割功能。自建系统可完全掌控，且仅需 $5-20/月的 VPS 费用。
-
-### Q: Twitter API 太贵怎么办？
-A: 免费层每月 500 条推文，对个人用户通常足够。系统会显示剩余额度，接近限制时提醒。
-
-### Q: 支持其他平台吗？
-A: 目前支持 Facebook/Instagram/Twitter/Threads。未来可扩展 LinkedIn、Discord、Mastodon 等平台。
-
-### Q: 数据存储在哪里？
-A: 所有数据（包括 OAuth 令牌）存储在你自己的 PostgreSQL 数据库，完全私有。
-
-### Q: 部署时遇到 ENCRYPTION_KEY 错误怎么办？
-A: 这个错误表示环境变量未设置或格式不正确。解决方法：
-1. 运行 `node scripts/generate-env-keys.js` 生成密钥
-2. 在部署平台的环境变量设置中添加 `ENCRYPTION_KEY`
-3. 确保密钥是 64 个字符的十六进制字符串
-4. 重新部署应用

@@ -17,7 +17,9 @@ async function getNestApp() {
   nestApp = await NestFactory.create(AppModule, adapter, { logger: ['error', 'warn'] });
 
   nestApp.enableCors({
-    origin: process.env.NEXT_PUBLIC_APP_URL || 'https://Ray05202006.github.io',
+    // CORS_ORIGIN should be set to the exact GitHub Pages origin (scheme + host only, no path)
+    // e.g. https://Ray05202006.github.io
+    origin: process.env.CORS_ORIGIN || 'https://Ray05202006.github.io',
     credentials: true,
   });
 

@@ -41,13 +41,20 @@ jobs:
 
       - name: Run Prisma migrations
         env:
-          POSTGRES_CONNECTION_STRING: ${{ secrets.POSTGRES_CONNECTION_STRING }}
+          DATABASE_URL: ${{ secrets.POSTGRES_CONNECTION_STRING }}
         run: pnpm --filter api prisma migrate deploy
 
       - name: Login to Azure
         uses: azure/login@v2
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Set Azure Functions app settings
+        run: |
+          az functionapp config appsettings set \
+            --name ${{ secrets.AZURE_FUNCTION_APP_NAME }} \
+            --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} \
+            --settings CORS_ORIGIN=https://${{ github.repository_owner }}.github.io
 
       - name: Deploy to Azure Functions
         uses: Azure/functions-action@v1

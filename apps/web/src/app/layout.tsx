@@ -18,6 +18,25 @@ export default function RootLayout({
 }) {
   return (
     <html lang="zh-CN">
+      <head>
+        {/* GitHub Pages SPA routing: restore path encoded by 404.html */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){
+  var p = window.location.search.match(/[?&]p=([^&]*)/);
+  if (p) {
+    var path = decodeURIComponent(p[1].replace(/~and~/g, '&'));
+    var q = window.location.search.match(/[?&]q=([^&]*)/);
+    var query = q ? '?' + decodeURIComponent(q[1].replace(/~and~/g, '&')) : '';
+    window.history.replaceState(null, null,
+      window.location.pathname.slice(0, window.location.pathname.indexOf('/', 1) + 1) +
+      path + query + window.location.hash
+    );
+  }
+})();`,
+          }}
+        />
+      </head>
       <body className={inter.className}>
         <Providers>{children}</Providers>
       </body>
