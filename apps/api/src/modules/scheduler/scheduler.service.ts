@@ -170,11 +170,6 @@ export class SchedulerService {
     }
   }
 
-  /** No-op: kept for API compatibility (no jobs to restore with DB-based approach) */
-  async restoreScheduledPosts(): Promise<void> {
-    this.logger.log('DB-based scheduler: no restoration needed');
-  }
-
   /** Cleanup old failed posts (optional maintenance) */
   async cleanupFailedJobs(olderThanMs: number = 24 * 60 * 60 * 1000): Promise<number> {
     const cutoff = new Date(Date.now() - olderThanMs);
