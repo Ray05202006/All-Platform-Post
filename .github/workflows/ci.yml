@@ -33,10 +33,13 @@ jobs:
           pnpm --filter @all-platform-post/text-splitter build
 
       - name: Lint
-        run: pnpm --filter web lint || true
+        run: pnpm --filter web lint
 
       - name: Type check (API)
-        run: pnpm --filter api tsc --noEmit || true
+        run: pnpm --filter api tsc --noEmit
 
       - name: Type check (Web)
-        run: pnpm --filter web tsc --noEmit || true
+        run: pnpm --filter web tsc --noEmit
+
+      - name: Test
+        run: pnpm --filter api test --passWithNoTests

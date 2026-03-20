@@ -44,6 +44,13 @@ jobs:
           pnpm --filter @all-platform-post/shared build
           pnpm --filter @all-platform-post/text-splitter build
 
+      - name: Verify required secrets
+        run: |
+          if [ -z "${{ secrets.AZURE_FUNCTIONS_URL }}" ]; then
+            echo "::error::Secret AZURE_FUNCTIONS_URL is not set. Frontend will have no API URL."
+            exit 1
+          fi
+
       - name: Build Next.js static export
         env:
           NEXT_PUBLIC_BASE_PATH: /All-Platform-Post
