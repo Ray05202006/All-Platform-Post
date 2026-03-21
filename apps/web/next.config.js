@@ -1,8 +1,11 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  output: 'standalone',
+  output: 'export',
   reactStrictMode: true,
   transpilePackages: ['@all-platform-post/shared', '@all-platform-post/text-splitter'],
+
+  // Base path for GitHub Pages (repo name as subdirectory)
+  basePath: process.env.NEXT_PUBLIC_BASE_PATH || '',
 
   // Environment variables
   env: {
@@ -10,23 +13,9 @@ const nextConfig = {
     NEXT_PUBLIC_API_URL: process.env.API_URL || 'http://localhost:3001',
   },
 
-  // Image optimization
+  // Static export requires unoptimized images
   images: {
-    remotePatterns: [
-      { protocol: 'https', hostname: '*.zeabur.app' },
-      { protocol: 'http', hostname: 'localhost' },
-    ],
-  },
-
-  // Redirects
-  async redirects() {
-    return [
-      {
-        source: '/',
-        destination: '/dashboard',
-        permanent: false,
-      },
-    ];
+    unoptimized: true,
   },
 };
 

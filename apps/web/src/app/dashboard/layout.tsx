@@ -1,3 +1,5 @@
+import Link from 'next/link';
+
 export default function DashboardLayout({
   children,
 }: {
@@ -14,30 +16,30 @@ export default function DashboardLayout({
               </h1>
             </div>
             <div className="flex items-center space-x-4">
-              <a
+              <Link
                 href="/dashboard"
                 className="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
               >
                 发文
-              </a>
-              <a
+              </Link>
+              <Link
                 href="/dashboard/scheduled"
                 className="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
               >
                 排程
-              </a>
-              <a
+              </Link>
+              <Link
                 href="/dashboard/history"
                 className="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
               >
                 历史
-              </a>
-              <a
+              </Link>
+              <Link
                 href="/dashboard/settings"
                 className="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
               >
                 设置
-              </a>
+              </Link>
             </div>
           </div>
         </div>

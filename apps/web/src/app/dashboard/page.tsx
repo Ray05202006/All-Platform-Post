@@ -348,9 +348,9 @@ export default function DashboardPage() {
               ) : (
                 <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-md text-sm text-yellow-700">
                   尚未连接任何平台。
-                  <a href="/dashboard/settings" className="text-yellow-800 underline ml-1">
+                  <Link href="/dashboard/settings" className="text-yellow-800 underline ml-1">
                     前往设置连接
-                  </a>
+                  </Link>
                 </div>
               )}
 
@@ -362,9 +362,9 @@ export default function DashboardPage() {
                       {p.icon} {p.name}
                     </span>
                   ))}
-                  <a href="/dashboard/settings" className="text-blue-600 ml-2">
+                  <Link href="/dashboard/settings" className="text-blue-600 ml-2">
                     连接更多
-                  </a>
+                  </Link>
                 </div>
               )}
             </div>
