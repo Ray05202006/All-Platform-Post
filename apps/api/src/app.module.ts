@@ -1,7 +1,5 @@
-import { Module, OnApplicationBootstrap } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { ScheduleModule } from '@nestjs/schedule';
-import { BullModule } from '@nestjs/bullmq';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 import { AppController } from './app.controller';
@@ -11,7 +9,6 @@ import { AuthModule } from './modules/auth/auth.module';
 import { PostModule } from './modules/post/post.module';
 import { PlatformModule } from './modules/platform/platform.module';
 import { SchedulerModule } from './modules/scheduler/scheduler.module';
-import { SchedulerService } from './modules/scheduler/scheduler.service';
 import { MediaModule } from './modules/media/media.module';
 
 @Module({
@@ -20,18 +17,6 @@ import { MediaModule } from './modules/media/media.module';
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: '../../.env',
-    }),
-
-    // Scheduling
-    ScheduleModule.forRoot(),
-
-    // BullMQ (Task Queue)
-    BullModule.forRoot({
-      connection: {
-        host: process.env.REDIS_HOST || 'localhost',
-        port: parseInt(process.env.REDIS_PORT || '6379'),
-        password: process.env.REDIS_PASSWORD || undefined,
-      },
     }),
 
     // Static files (uploads)
@@ -52,7 +37,7 @@ import { MediaModule } from './modules/media/media.module';
     // Platform API integrations
     PlatformModule,
 
-    // Scheduler (BullMQ job queue)
+    // Scheduler (DB-based, polled by Azure Timer Trigger)
     SchedulerModule,
 
     // Media upload and processing
@@ -61,11 +46,4 @@ import { MediaModule } from './modules/media/media.module';
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule implements OnApplicationBootstrap {
-  constructor(private schedulerService: SchedulerService) {}
-
-  async onApplicationBootstrap() {
-    // 系统启动时恢复未执行的排程任务（在所有模块初始化后）
-    await this.schedulerService.restoreScheduledPosts();
-  }
-}
+export class AppModule {}

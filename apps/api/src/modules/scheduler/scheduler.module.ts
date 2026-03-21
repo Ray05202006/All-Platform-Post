@@ -1,40 +1,23 @@
-import { Module, OnModuleInit } from '@nestjs/common';
-import { BullModule } from '@nestjs/bullmq';
+import { Module } from '@nestjs/common';
 import { SchedulerService } from './scheduler.service';
 import { SchedulerController } from './scheduler.controller';
-import { PostProcessor } from './processors/post.processor';
-import { CleanupService } from './cleanup.service';
 import { PostModule } from '../post/post.module';
 import { PostService } from '../post/post.service';
 
 @Module({
-  imports: [
-    BullModule.registerQueue({
-      name: 'scheduled-posts',
-      defaultJobOptions: {
-        attempts: 3,
-        backoff: {
-          type: 'exponential',
-          delay: 5000,
-        },
-        removeOnComplete: true,
-        removeOnFail: false,
-      },
-    }),
-    PostModule,
-  ],
+  imports: [PostModule],
   controllers: [SchedulerController],
-  providers: [SchedulerService, PostProcessor, CleanupService],
+  providers: [SchedulerService],
   exports: [SchedulerService],
 })
-export class SchedulerModule implements OnModuleInit {
+export class SchedulerModule {
   constructor(
     private schedulerService: SchedulerService,
     private postService: PostService,
   ) {}
 
   onModuleInit() {
-    // 将 SchedulerService 注入到 PostService（避免循环依赖）
+    // Inject SchedulerService into PostService (avoid circular dependency)
     this.postService.setSchedulerService(this.schedulerService);
   }
 }

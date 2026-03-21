@@ -1,0 +1,17 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "provider": {
+    "copilot": {}
+  },
+  "model": "copilot/claude-sonnet-4",
+  "instructions": [
+    "Read AGENTS.md first for all conventions and constraints",
+    "Follow TDD: write tests before implementation",
+    "Run `pnpm lint && pnpm format && pnpm typecheck && pnpm test` before finishing",
+    "Never commit secrets or .env files",
+    "Never modify existing Prisma migrations",
+    "Use packages/text-splitter/ for platform character-limit logic",
+    "PR title format: <type>: <description>",
+    "Branch format: <type>/<issue-number>-<short-slug>"
+  ]
+}

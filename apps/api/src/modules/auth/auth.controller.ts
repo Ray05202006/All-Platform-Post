@@ -106,7 +106,7 @@ export class AuthController {
   @Get('threads')
   async threadsAuth(@Res() res: Response) {
     const state = this.encryptionService.generateState();
-    // TODO: 将 state 存储在 session 或 Redis 中用于验证
+    // TODO: store state in DB or signed cookie for CSRF validation
     const authUrl = this.threadsStrategy.getAuthorizationUrl(state);
     res.redirect(authUrl);
   }

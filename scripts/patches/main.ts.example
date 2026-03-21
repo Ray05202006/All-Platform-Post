@@ -1,0 +1,74 @@
+import { NestFactory } from '@nestjs/core';
+import { ValidationPipe } from '@nestjs/common';
+import helmet from 'helmet';
+import { AppModule } from './app.module';
+
+async function bootstrap() {
+  const app = await NestFactory.create(AppModule);
+
+  // ============================================
+  // 🔒 Security Enhancement: Helmet
+  // ============================================
+  // 添加安全 HTTP headers
+  app.use(
+    helmet({
+      contentSecurityPolicy: {
+        directives: {
+          defaultSrc: ["'self'"],
+          styleSrc: ["'self'", "'unsafe-inline'"],
+          imgSrc: ["'self'", 'data:', 'https:'],
+          scriptSrc: ["'self'"],
+          connectSrc: ["'self'"],
+        },
+      },
+      crossOriginEmbedderPolicy: false, // 允許跨域請求
+      crossOriginResourcePolicy: { policy: 'cross-origin' },
+    }),
+  );
+
+  // ============================================
+  // 🔒 Security Enhancement: CORS Configuration
+  // ============================================
+  // 改進的 CORS 配置
+  app.enableCors({
+    origin: (origin, callback) => {
+      const allowedOrigins = [
+        process.env.NEXT_PUBLIC_APP_URL,
+        'http://localhost:3000',
+        'http://localhost:3001',
+        // 添加生產環境域名
+      ].filter(Boolean);
+
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    exposedHeaders: ['X-Total-Count'],
+    maxAge: 86400, // 預檢緩存 24 小時
+  });
+
+  // Global validation pipe
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      forbidNonWhitelisted: true,
+      transform: true,
+    }),
+  );
+
+  // API prefix
+  app.setGlobalPrefix('api');
+
+  const port = process.env.PORT || 3001;
+  await app.listen(port);
+
+  console.log(`🚀 API server is running on: http://localhost:${port}/api`);
+  console.log(`🔒 Security features enabled: Helmet, CORS, Rate Limiting`);
+}
+
+bootstrap();
