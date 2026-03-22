@@ -7,6 +7,9 @@ const nextConfig = {
   // Base path for GitHub Pages (repo name as subdirectory)
   basePath: process.env.NEXT_PUBLIC_BASE_PATH || '',
 
+  // Asset prefix must match basePath so JS/CSS chunks load from the correct path
+  assetPrefix: process.env.NEXT_PUBLIC_BASE_PATH || '',
+
   // Environment variables
   env: {
     NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000',

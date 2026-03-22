@@ -4,7 +4,6 @@ import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { api } from '@/lib/api';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 const isDev = process.env.NODE_ENV === 'development';
 
 export default function LoginPage() {
@@ -23,7 +22,7 @@ export default function LoginPage() {
   }, [router]);
 
   const handleGoogleLogin = () => {
-    window.location.href = `${API_URL}/api/auth/google`;
+    window.location.href = api.getOAuthUrl('google');
   };
 
   const handleDevLogin = async () => {
