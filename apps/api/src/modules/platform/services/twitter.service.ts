@@ -1,6 +1,17 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import axios from 'axios';
 import * as crypto from 'crypto';
+
+function isCJKChar(code: number): boolean {
+  return (
+    (code >= 0x1100 && code <= 0x11FF) ||
+    (code >= 0x2E80 && code <= 0x9FFF) ||
+    (code >= 0xAC00 && code <= 0xD7AF) ||
+    (code >= 0xF900 && code <= 0xFAFF) ||
+    (code >= 0xFF00 && code <= 0xFFEF) ||
+    (code >= 0x20000 && code <= 0x2FA1F)
+  );
+}
 
 export interface TwitterPublishResult {
   tweetId?: string;
@@ -14,6 +25,7 @@ export interface TwitterPublishResult {
  */
 @Injectable()
 export class TwitterService {
+  private readonly logger = new Logger(TwitterService.name);
   private readonly apiUrl = 'https://api.twitter.com/2';
 
   /**
@@ -120,7 +132,7 @@ export class TwitterService {
         url: `https://twitter.com/i/web/status/${tweetId}`,
       };
     } catch (error) {
-      console.error('Twitter publish error:', error.response?.data);
+      this.logger.error('Twitter publish error:', error.response?.data);
       return {
         error:
           error.response?.data?.detail ||
@@ -186,7 +198,7 @@ export class TwitterService {
     // 计算字符权重
     for (const char of textWithoutUrls) {
       const code = char.codePointAt(0)!;
-      length += code <= 0x10ff ? 1 : 2;
+      length += isCJKChar(code) ? 2 : 1;
     }
 
     // URL 固定 23 字符

@@ -10,6 +10,7 @@ const STATUS_LABELS: Record<string, { label: string; color: string }> = {
   scheduled: { label: '已排程', color: 'bg-blue-500' },
   publishing: { label: '发布中', color: 'bg-yellow-500' },
   published: { label: '已发布', color: 'bg-green-500' },
+  partial: { label: '部分成功', color: 'bg-orange-500' },
   failed: { label: '失败', color: 'bg-red-500' },
 };
 
@@ -95,7 +96,7 @@ export default function HistoryPage() {
 
         {/* 过滤器 */}
         <div className="flex gap-2 mb-6">
-          {['all', 'draft', 'scheduled', 'published', 'failed'].map((status) => (
+          {['all', 'draft', 'scheduled', 'published', 'partial', 'failed'].map((status) => (
             <button
               key={status}
               onClick={() => setFilter(status)}
@@ -241,7 +242,7 @@ export default function HistoryPage() {
                       </button>
                     </>
                   )}
-                  {post.status === 'failed' && (
+                  {(post.status === 'failed' || post.status === 'partial') && (
                     <button
                       onClick={() => handlePublish(post.id)}
                       className="px-3 py-1 bg-yellow-600 rounded hover:bg-yellow-700 text-sm"

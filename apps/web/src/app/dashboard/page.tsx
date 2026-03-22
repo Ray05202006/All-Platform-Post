@@ -227,10 +227,23 @@ export default function DashboardPage() {
   // 计算字符数（简化版）
   const getCharCount = (text: string, platform: Platform): number => {
     if (platform === 'twitter') {
-      // Twitter 特殊计算
-      let length = 0;
-      for (const char of text) {
-        length += char.codePointAt(0)! <= 0x10ff ? 1 : 2;
+      const isCJKChar = (code: number) =>
+        (code >= 0x1100 && code <= 0x11FF) ||
+        (code >= 0x2E80 && code <= 0x9FFF) ||
+        (code >= 0xAC00 && code <= 0xD7AF) ||
+        (code >= 0xF900 && code <= 0xFAFF) ||
+        (code >= 0xFF00 && code <= 0xFFEF) ||
+        (code >= 0x20000 && code <= 0x2FA1F);
+
+      const urls = text.match(/https?:\/\/\S+/g) || [];
+      let textWithoutUrls = text;
+      urls.forEach((url) => {
+        textWithoutUrls = textWithoutUrls.replace(url, '');
+      });
+
+      let length = urls.length * 23;
+      for (const char of textWithoutUrls) {
+        length += isCJKChar(char.codePointAt(0)!) ? 2 : 1;
       }
       return length;
     }
