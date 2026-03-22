@@ -31,6 +31,13 @@ export class AuthController {
     private configService: ConfigService,
   ) {}
 
+  // ==================== Current User ====================
+
+  @Get('me')
+  async getMe(@CurrentUser() user: any) {
+    return this.authService.getCurrentUser(user.id);
+  }
+
   /**
    * 开发用：获取临时 JWT token
    */
@@ -44,6 +51,47 @@ export class AuthController {
     const user = await this.authService.getOrCreateDevUser();
     const token = this.authService.generateJwtToken(user.id, user.email);
     return { token, user };
+  }
+
+  // ==================== Google OAuth ====================
+
+  @Public()
+  @Get('google')
+  @UseGuards(AuthGuard('google'))
+  async googleAuth() {
+    // Passport 会自动重定向到 Google
+  }
+
+  @Public()
+  @Get('google/callback')
+  @UseGuards(AuthGuard('google'))
+  async googleCallback(@Req() req: Request, @Res() res: Response) {
+    try {
+      const profile = req.user as {
+        provider: string;
+        providerId: string;
+        email: string;
+        name: string;
+        avatarUrl: string;
+        accessToken: string;
+      };
+
+      const user = await this.authService.findOrCreateUserByOAuth(
+        profile.provider,
+        profile.providerId,
+        profile.email,
+        profile.name,
+        profile.avatarUrl,
+      );
+
+      const token = this.authService.generateJwtToken(user.id, user.email);
+      const frontendUrl = this.configService.get<string>('NEXT_PUBLIC_APP_URL');
+      res.redirect(`${frontendUrl}/auth/callback?token=${token}`);
+    } catch (error) {
+      console.error('Google OAuth error:', error);
+      const frontendUrl = this.configService.get<string>('NEXT_PUBLIC_APP_URL');
+      res.redirect(`${frontendUrl}/auth/callback?error=google_failed`);
+    }
   }
 
   // ==================== Facebook OAuth ====================
