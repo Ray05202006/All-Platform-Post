@@ -11,8 +11,10 @@ env:
   JWT_SECRET: test-jwt-secret-for-ci-only
   ENCRYPTION_KEY: 0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
   NEXT_PUBLIC_API_URL: http://localhost:3001
-  FACEBOOK_CLIENT_ID: ${{ secrets.FACEBOOK_APP_ID }}
-  FACEBOOK_CLIENT_SECRET: ${{ secrets.FACEBOOK_APP_SECRET }}
+  FACEBOOK_APP_ID: ${{ secrets.FACEBOOK_APP_ID || 'ci-placeholder' }}
+  FACEBOOK_APP_SECRET: ${{ secrets.FACEBOOK_APP_SECRET || 'ci-placeholder' }}
+  TWITTER_CLIENT_ID: ${{ secrets.TWITTER_CLIENT_ID || 'ci-placeholder' }}
+  TWITTER_CLIENT_SECRET: ${{ secrets.TWITTER_CLIENT_SECRET || 'ci-placeholder' }}
 
 jobs:
   e2e-tests:
