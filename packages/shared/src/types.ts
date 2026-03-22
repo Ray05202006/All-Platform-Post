@@ -6,7 +6,7 @@ export type Platform = 'facebook' | 'instagram' | 'twitter' | 'threads';
 /**
  * 贴文状态
  */
-export type PostStatus = 'draft' | 'scheduled' | 'publishing' | 'published' | 'failed';
+export type PostStatus = 'draft' | 'scheduled' | 'publishing' | 'published' | 'failed' | 'partial';
 
 /**
  * 媒体类型
