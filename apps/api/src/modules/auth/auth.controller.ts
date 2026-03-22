@@ -10,8 +10,10 @@ import {
   UseGuards,
   HttpException,
   HttpStatus,
+  NotFoundException,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
+import { Throttle } from '@nestjs/throttler';
 import { Response, Request } from 'express';
 import { ConfigService } from '@nestjs/config';
 import { AuthService, OAuthProfile } from './auth.service';
@@ -19,7 +21,6 @@ import { ThreadsStrategy } from './strategies/threads.strategy';
 import { EncryptionService } from '../../common/services/encryption.service';
 import { Public } from './decorators/public.decorator';
 import { CurrentUser } from './decorators/current-user.decorator';
-import { JwtAuthGuard } from './guards/jwt-auth.guard';
 
 @Controller('auth')
 export class AuthController {
@@ -34,8 +35,12 @@ export class AuthController {
    * 开发用：获取临时 JWT token
    */
   @Public()
+  @Throttle({ default: { ttl: 60000, limit: 5 } })
   @Get('dev-token')
   async getDevToken() {
+    if (process.env.NODE_ENV === 'production') {
+      throw new NotFoundException();
+    }
     const user = await this.authService.getOrCreateDevUser();
     const token = this.authService.generateJwtToken(user.id, user.email);
     return { token, user };
@@ -199,13 +204,11 @@ export class AuthController {
 
   // ==================== 连接管理 ====================
 
-  @UseGuards(JwtAuthGuard)
   @Get('connections')
   async getConnections(@CurrentUser() user: any) {
     return this.authService.getUserConnections(user.id);
   }
 
-  @UseGuards(JwtAuthGuard)
   @Delete('connections/:platform')
   async disconnectPlatform(
     @CurrentUser() user: any,

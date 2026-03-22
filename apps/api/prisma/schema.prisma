@@ -79,7 +79,7 @@ model Post {
   // Scheduling
   scheduledAt DateTime?
   publishedAt DateTime?
-  status      String    @default("draft") // 'draft', 'scheduled', 'publishing', 'published', 'failed'
+  status      String    @default("draft") // 'draft', 'scheduled', 'publishing', 'published', 'failed', 'partial'
 
   // Publish results per platform
   // {

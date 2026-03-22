@@ -1,12 +1,8 @@
 import { test, expect } from '../fixtures/auth.fixture';
 import { setupApiMocks, createScheduledPost, createMockConnection } from '../fixtures/api-mock.fixture';
-import { mockExternalPlatforms } from '../fixtures/platform-mock.fixture';
 import { SELECTORS, getFutureDate, formatDateTimeLocal } from '../fixtures/test-data';
 
 test.describe('Scheduled Posts Page', () => {
-  test.beforeEach(async ({ authenticatedPage }) => {
-    await mockExternalPlatforms(authenticatedPage);
-  });
 
   test.describe('Page Structure', () => {
     test('should display scheduled posts heading', async ({ authenticatedPage }) => {

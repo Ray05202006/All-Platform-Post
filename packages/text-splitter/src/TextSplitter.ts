@@ -222,7 +222,21 @@ export class TextSplitter {
               if (wordChunk) {
                 chunks.push(wordChunk);
               }
-              wordChunk = word;
+              // 단어 자체가 너무 길면 문자 단위로 분할 (CJK 연속 텍스트 대응)
+              if (this.calculateLength(this.restoreSpecialContent(word, special), platform) > effectiveMaxLength) {
+                for (const char of word) {
+                  const testChar = wordChunk + char;
+                  const restoredChar = this.restoreSpecialContent(testChar, special);
+                  if (this.calculateLength(restoredChar, platform) <= effectiveMaxLength) {
+                    wordChunk = testChar;
+                  } else {
+                    if (wordChunk) chunks.push(wordChunk);
+                    wordChunk = char;
+                  }
+                }
+              } else {
+                wordChunk = word;
+              }
             }
           }
 

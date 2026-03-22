@@ -41,5 +41,8 @@ jobs:
       - name: Type check (Web)
         run: pnpm --filter web tsc --noEmit
 
+      - name: Generate Prisma client
+        run: pnpm --filter @all-platform-post/api prisma:generate
+
       - name: Test
-        run: pnpm --filter api test --passWithNoTests
+        run: pnpm --filter api test -- --passWithNoTests

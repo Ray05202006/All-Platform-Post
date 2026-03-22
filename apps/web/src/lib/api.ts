@@ -226,7 +226,7 @@ export interface Post {
   mediaType?: string;
   scheduledAt?: string;
   publishedAt?: string;
-  status: 'draft' | 'scheduled' | 'publishing' | 'published' | 'failed';
+  status: 'draft' | 'scheduled' | 'publishing' | 'published' | 'failed' | 'partial';
   results?: Record<string, any>;
   createdAt: string;
   updatedAt: string;

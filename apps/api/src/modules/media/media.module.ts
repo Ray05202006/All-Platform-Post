@@ -3,6 +3,7 @@ import { MulterModule } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { extname, join } from 'path';
 import { existsSync, mkdirSync } from 'fs';
+import { randomBytes } from 'crypto';
 import { MediaController } from './media.controller';
 import { MediaService } from './media.service';
 
@@ -20,9 +21,8 @@ if (!existsSync(uploadDir)) {
           cb(null, uploadDir);
         },
         filename: (req, file, cb) => {
-          const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
           const ext = extname(file.originalname);
-          cb(null, `${uniqueSuffix}${ext}`);
+          cb(null, randomBytes(16).toString('hex') + ext);
         },
       }),
       fileFilter: (req, file, cb) => {
