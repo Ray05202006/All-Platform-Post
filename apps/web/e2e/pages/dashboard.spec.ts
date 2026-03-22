@@ -1,12 +1,8 @@
 import { test, expect } from '../fixtures/auth.fixture';
 import { setupApiMocks, createMockConnection } from '../fixtures/api-mock.fixture';
-import { mockExternalPlatforms } from '../fixtures/platform-mock.fixture';
 import { TEST_POSTS, SELECTORS, PLATFORM_LIMITS, formatDateTimeLocal, getMinScheduleDate } from '../fixtures/test-data';
 
 test.describe('Dashboard - Post Editor', () => {
-  test.beforeEach(async ({ authenticatedPage }) => {
-    await mockExternalPlatforms(authenticatedPage);
-  });
 
   test.describe('Basic UI', () => {
     test('should display post editor heading', async ({ authenticatedPage }) => {

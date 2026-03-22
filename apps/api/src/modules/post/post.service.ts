@@ -160,12 +160,14 @@ export class PostService {
       );
 
       // 更新发布结果
-      const hasError = Object.values(results).some((r: any) => r.error);
+      const successCount = Object.values(results).filter((r: any) => !r.error).length;
+      const failCount = Object.values(results).filter((r: any) => r.error).length;
+      const status = failCount === 0 ? 'published' : successCount === 0 ? 'failed' : 'partial';
       const updatedPost = await this.prisma.post.update({
         where: { id: postId },
         data: {
-          status: hasError ? 'failed' : 'published',
-          publishedAt: new Date(),
+          status,
+          publishedAt: failCount === 0 ? new Date() : undefined,
           results,
         },
       });

@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import axios from 'axios';
 
 export interface FacebookPublishResult {
@@ -13,6 +13,7 @@ export interface FacebookPublishResult {
  */
 @Injectable()
 export class FacebookService {
+  private readonly logger = new Logger(FacebookService.name);
   private readonly graphApiUrl = 'https://graph.facebook.com/v19.0';
 
   /**
@@ -28,7 +29,7 @@ export class FacebookService {
       });
       return response.data.data || [];
     } catch (error) {
-      console.error('Failed to get Facebook pages:', error.response?.data);
+      this.logger.error('Failed to get Facebook pages:', error.response?.data);
       throw error;
     }
   }
@@ -58,7 +59,7 @@ export class FacebookService {
         url: `https://www.facebook.com/${response.data.id}`,
       };
     } catch (error) {
-      console.error('Facebook publish error:', error.response?.data);
+      this.logger.error('Facebook publish error:', error.response?.data);
       return {
         error: error.response?.data?.error?.message || error.message,
       };
@@ -92,7 +93,7 @@ export class FacebookService {
         url: `https://www.facebook.com/${response.data.id}`,
       };
     } catch (error) {
-      console.error('Facebook photo publish error:', error.response?.data);
+      this.logger.error('Facebook photo publish error:', error.response?.data);
       return {
         error: error.response?.data?.error?.message || error.message,
       };
@@ -118,7 +119,7 @@ export class FacebookService {
 
       return { commentId: response.data.id };
     } catch (error) {
-      console.error('Facebook comment error:', error.response?.data);
+      this.logger.error('Facebook comment error:', error.response?.data);
       return {
         error: error.response?.data?.error?.message || error.message,
       };

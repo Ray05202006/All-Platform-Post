@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import axios from 'axios';
 
 export interface ThreadsPublishResult {
@@ -13,6 +13,7 @@ export interface ThreadsPublishResult {
  */
 @Injectable()
 export class ThreadsService {
+  private readonly logger = new Logger(ThreadsService.name);
   private readonly apiUrl = 'https://graph.threads.net/v1.0';
 
   /**
@@ -93,7 +94,7 @@ export class ThreadsService {
         url: `https://www.threads.net/t/${threadId}`,
       };
     } catch (error) {
-      console.error('Threads publish error:', error.response?.data);
+      this.logger.error('Threads publish error:', error.response?.data);
       return {
         error: error.response?.data?.error?.message || error.message,
       };
@@ -119,7 +120,7 @@ export class ThreadsService {
       // Step 2: 发布容器
       return await this.publishThread(userId, accessToken, containerId);
     } catch (error) {
-      console.error('Threads text post error:', error.response?.data);
+      this.logger.error('Threads text post error:', error.response?.data);
       return {
         error: error.response?.data?.error?.message || error.message,
       };

@@ -1,12 +1,8 @@
 import { test, expect } from '../fixtures/auth.fixture';
 import { setupApiMocks, createMockConnection } from '../fixtures/api-mock.fixture';
-import { mockExternalPlatforms } from '../fixtures/platform-mock.fixture';
 import { TEST_POSTS, SELECTORS, formatDateTimeLocal, getMinScheduleDate } from '../fixtures/test-data';
 
 test.describe('Post Creation Flow', () => {
-  test.beforeEach(async ({ authenticatedPage }) => {
-    await mockExternalPlatforms(authenticatedPage);
-  });
 
   test.describe('Create and Publish Post', () => {
     test('should create and publish a post to single platform', async ({ authenticatedPage }) => {

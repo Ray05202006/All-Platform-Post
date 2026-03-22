@@ -1,12 +1,8 @@
 import { test, expect } from '../fixtures/auth.fixture';
 import { setupApiMocks, createMockPost, createPublishedPost, createFailedPost } from '../fixtures/api-mock.fixture';
-import { mockExternalPlatforms } from '../fixtures/platform-mock.fixture';
 import { SELECTORS } from '../fixtures/test-data';
 
 test.describe('Post History Page', () => {
-  test.beforeEach(async ({ authenticatedPage }) => {
-    await mockExternalPlatforms(authenticatedPage);
-  });
 
   test.describe('Page Structure', () => {
     test('should display history heading', async ({ authenticatedPage }) => {

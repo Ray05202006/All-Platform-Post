@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import axios from 'axios';
 
 export interface InstagramPublishResult {
@@ -13,6 +13,7 @@ export interface InstagramPublishResult {
  */
 @Injectable()
 export class InstagramService {
+  private readonly logger = new Logger(InstagramService.name);
   private readonly graphApiUrl = 'https://graph.facebook.com/v19.0';
 
   /**
@@ -40,7 +41,7 @@ export class InstagramService {
 
       return { igUserId: igAccount.id };
     } catch (error) {
-      console.error('Failed to get Instagram account:', error.response?.data);
+      this.logger.error('Failed to get Instagram account:', error.response?.data);
       return null;
     }
   }
@@ -143,7 +144,7 @@ export class InstagramService {
         url: `https://www.instagram.com/p/${mediaId}/`,
       };
     } catch (error) {
-      console.error('Instagram publish error:', error.response?.data);
+      this.logger.error('Instagram publish error:', error.response?.data);
       return {
         error: error.response?.data?.error?.message || error.message,
       };
@@ -195,7 +196,7 @@ export class InstagramService {
       // Step 2: 发布容器
       return await this.publishMedia(igUserId, accessToken, containerId);
     } catch (error) {
-      console.error('Instagram image post error:', error.response?.data);
+      this.logger.error('Instagram image post error:', error.response?.data);
       return {
         error: error.response?.data?.error?.message || error.message,
       };
@@ -221,7 +222,7 @@ export class InstagramService {
 
       return { commentId: response.data.id };
     } catch (error) {
-      console.error('Instagram comment error:', error.response?.data);
+      this.logger.error('Instagram comment error:', error.response?.data);
       return {
         error: error.response?.data?.error?.message || error.message,
       };
