@@ -80,16 +80,14 @@ function SettingsContent() {
         message: `已成功连接 ${connected}！`,
       });
       refetch();
-      // 清除 URL 参数（保留 basePath 前缀）
-      const basePath = process.env.NEXT_PUBLIC_BASE_PATH || '';
-      window.history.replaceState({}, '', basePath + '/dashboard/settings');
+      // 清除 URL 参数
+      window.history.replaceState({}, '', `${process.env.NEXT_PUBLIC_BASE_PATH || ''}/dashboard/settings`);
     } else if (error) {
       setNotification({
         type: 'error',
         message: `连接失败：${error.replace(/_/g, ' ')}`,
       });
-      const basePath = process.env.NEXT_PUBLIC_BASE_PATH || '';
-      window.history.replaceState({}, '', basePath + '/dashboard/settings');
+      window.history.replaceState({}, '', `${process.env.NEXT_PUBLIC_BASE_PATH || ''}/dashboard/settings`);
     }
   }, [searchParams, refetch]);
 
@@ -238,9 +236,7 @@ function SettingsContent() {
               </ul>
               <p className="mt-2">
                 详细申请步骤请参考{' '}
-                <a href={`${process.env.NEXT_PUBLIC_BASE_PATH || ''}/README.md`} className="text-yellow-800 underline">
-                  README.md
-                </a>
+                <code className="text-yellow-800">README.md</code>
               </p>
             </div>
           </div>
