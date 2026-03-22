@@ -33,8 +33,9 @@ export function useConnections() {
     return connections.find((conn) => conn.platform === platform);
   };
 
-  const connectPlatform = (platform: string) => {
-    window.location.href = api.getOAuthUrl(platform);
+  const connectPlatform = async (platform: string) => {
+    const url = await api.getOAuthUrl(platform);
+    window.location.href = url;
   };
 
   return {

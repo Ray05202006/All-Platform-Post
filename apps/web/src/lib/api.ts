@@ -78,10 +78,11 @@ class ApiClient {
     return this.fetch(`/auth/connections/${platform}`, { method: 'DELETE' });
   }
 
-  getOAuthUrl(platform: string): string {
-    const token = this.getToken();
-    const tokenParam = token ? `?token=${token}` : '';
-    return `${this.baseUrl}/api/auth/${platform}${tokenParam}`;
+  async getOAuthUrl(platform: string): Promise<string> {
+    const result = await this.fetch<{ url: string }>(`/auth/${platform}/url`, {
+      method: 'POST',
+    });
+    return result.url;
   }
 
   // ==================== Post endpoints ====================

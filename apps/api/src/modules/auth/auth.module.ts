@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import Redis from 'ioredis';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { EncryptionService } from '../../common/services/encryption.service';
@@ -36,6 +37,17 @@ import { TokenRefreshService } from './token-refresh.service';
     GoogleStrategy,
     JwtStrategy,
     TokenRefreshService,
+    {
+      provide: 'REDIS_CLIENT',
+      useFactory: (configService: ConfigService) => {
+        return new Redis({
+          host: configService.get<string>('REDIS_HOST') || 'localhost',
+          port: parseInt(configService.get<string>('REDIS_PORT') || '6379'),
+          password: configService.get<string>('REDIS_PASSWORD') || undefined,
+        });
+      },
+      inject: [ConfigService],
+    },
   ],
   exports: [AuthService, EncryptionService],
 })
