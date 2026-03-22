@@ -1,4 +1,4 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
+import { Injectable, BadRequestException, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../prisma/prisma.service';
 import { AuthService } from '../auth/auth.service';
@@ -25,6 +25,8 @@ const PLATFORM_LIMITS: Record<string, number> = {
 
 @Injectable()
 export class PlatformService {
+  private readonly logger = new Logger(PlatformService.name);
+
   constructor(
     private prisma: PrismaService,
     private configService: ConfigService,
@@ -74,6 +76,10 @@ export class PlatformService {
             results[platform] = { error: `Unknown platform: ${platform}` };
         }
       } catch (error) {
+        this.logger.error(
+          `Unhandled error publishing to ${platform} for user ${userId}: ${error.message}`,
+          error.stack,
+        );
         results[platform] = { error: error.message };
       }
     }
@@ -137,6 +143,11 @@ export class PlatformService {
 
     const consumerKey = this.configService.get<string>('TWITTER_CLIENT_ID');
     const consumerSecret = this.configService.get<string>('TWITTER_CLIENT_SECRET');
+
+    if (!consumerKey || !consumerSecret) {
+      this.logger.error('Twitter API credentials (TWITTER_CLIENT_ID / TWITTER_CLIENT_SECRET) are not configured');
+      return { error: 'Twitter is not configured. Please contact the administrator.' };
+    }
 
     // 检查是否需要分割成串文
     const twitterLength = this.twitterService.calculateLength(content);
@@ -226,13 +237,11 @@ export class PlatformService {
   }
 
   /**
-   * 获取平台连接
+   * 获取平台连接（仅返回已激活的连接）
    */
   private async getConnection(userId: string, platform: string) {
-    return this.prisma.platformConnection.findUnique({
-      where: {
-        userId_platform: { userId, platform },
-      },
+    return this.prisma.platformConnection.findFirst({
+      where: { userId, platform, isActive: true },
     });
   }
 

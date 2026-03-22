@@ -8,7 +8,9 @@ import { EncryptionService } from '../../common/services/encryption.service';
 import { FacebookStrategy } from './strategies/facebook.strategy';
 import { TwitterStrategy } from './strategies/twitter.strategy';
 import { ThreadsStrategy } from './strategies/threads.strategy';
+import { GoogleStrategy } from './strategies/google.strategy';
 import { JwtStrategy } from './strategies/jwt.strategy';
+import { TokenRefreshService } from './token-refresh.service';
 
 @Module({
   imports: [
@@ -31,7 +33,9 @@ import { JwtStrategy } from './strategies/jwt.strategy';
     FacebookStrategy,
     TwitterStrategy,
     ThreadsStrategy,
+    GoogleStrategy,
     JwtStrategy,
+    TokenRefreshService,
   ],
   exports: [AuthService, EncryptionService],
 })

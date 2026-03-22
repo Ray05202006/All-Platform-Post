@@ -66,6 +66,10 @@ class ApiClient {
     return this.fetch('/auth/dev-token');
   }
 
+  async getCurrentUser(): Promise<{ id: string; email: string; name: string | null; avatarUrl: string | null }> {
+    return this.fetch('/auth/me');
+  }
+
   async getConnections(): Promise<PlatformConnection[]> {
     return this.fetch('/auth/connections');
   }
@@ -75,7 +79,9 @@ class ApiClient {
   }
 
   getOAuthUrl(platform: string): string {
-    return `${this.baseUrl}/api/auth/${platform}`;
+    const token = this.getToken();
+    const tokenParam = token ? `?token=${token}` : '';
+    return `${this.baseUrl}/api/auth/${platform}${tokenParam}`;
   }
 
   // ==================== Post endpoints ====================
