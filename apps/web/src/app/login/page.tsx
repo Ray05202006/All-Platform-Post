@@ -21,8 +21,8 @@ export default function LoginPage() {
     }
   }, [router]);
 
-  const handleGoogleLogin = () => {
-    window.location.href = api.getOAuthUrl('google');
+  const handleGoogleLogin = async () => {
+    window.location.href = await api.getOAuthUrl('google');
   };
 
   const handleDevLogin = async () => {
