@@ -4,7 +4,14 @@ module.exports = {
   testRegex: '.*\\.spec\\.ts$',
   transform: {
     '^.+\\.ts$': ['ts-jest', {
-      tsconfig: '../tsconfig.json',
+      tsconfig: {
+        target: 'ES2020',
+        module: 'commonjs',
+        strict: true,
+        esModuleInterop: true,
+        skipLibCheck: true,
+        types: ['jest'],
+      },
     }],
   },
   testEnvironment: 'node',

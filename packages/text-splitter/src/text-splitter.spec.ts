@@ -45,9 +45,9 @@ describe('TextSplitter', () => {
     it('should count a URL as 23 characters regardless of actual length', () => {
       // A short URL (< 23 chars real): https://t.co/abc = 19 chars
       // After weighting: counts as 23. With 257 normal chars it should stay under 280.
-      const textWithUrl = 'a'.repeat(257) + ' https://t.co/abc';
+      const textWithUrl = 'a'.repeat(256) + ' https://t.co/abc';
       const result = splitter.split(textWithUrl, 'twitter');
-      // 257 + 23 (url) = 280 — fits
+      // 256 + 1 (space) + 23 (url) = 280 — fits
       expect(result.needsSplitting).toBe(false);
     });
 
