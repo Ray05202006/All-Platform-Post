@@ -6,6 +6,7 @@ import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { EncryptionService } from '../../common/services/encryption.service';
 import { FacebookStrategy } from './strategies/facebook.strategy';
+import { GoogleStrategy } from './strategies/google.strategy';
 import { TwitterStrategy } from './strategies/twitter.strategy';
 import { ThreadsStrategy } from './strategies/threads.strategy';
 import { JwtStrategy } from './strategies/jwt.strategy';
@@ -29,6 +30,7 @@ import { JwtStrategy } from './strategies/jwt.strategy';
     AuthService,
     EncryptionService,
     FacebookStrategy,
+    GoogleStrategy,
     TwitterStrategy,
     ThreadsStrategy,
     JwtStrategy,

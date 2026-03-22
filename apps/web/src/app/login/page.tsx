@@ -1,13 +1,15 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { api } from '@/lib/api';
 
 const isDev = process.env.NODE_ENV === 'development';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
 export default function LoginPage() {
   const router = useRouter();
+  const [loginError, setLoginError] = useState<string | null>(null);
 
   useEffect(() => {
     // If already authenticated, redirect to dashboard
@@ -21,8 +23,13 @@ export default function LoginPage() {
     }
   }, [router]);
 
-  const handleGoogleLogin = async () => {
-    window.location.href = await api.getOAuthUrl('google');
+  const handleGoogleLogin = () => {
+    setLoginError(null);
+    try {
+      window.location.href = `${API_URL}/api/auth/google`;
+    } catch {
+      setLoginError('無法啟動 Google 登入，請稍後再試。');
+    }
   };
 
   const handleDevLogin = async () => {
@@ -46,6 +53,12 @@ export default function LoginPage() {
             多平台社交媒体发文系统
           </p>
         </div>
+
+        {loginError && (
+          <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+            {loginError}
+          </div>
+        )}
 
         <div className="space-y-4">
           <button
