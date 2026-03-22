@@ -49,7 +49,7 @@ export class TokenRefreshService {
         );
       } catch (error) {
         this.logger.error(
-          `Failed to refresh ${connection.platform} token for user ${connection.userId}: ${error.message}`,
+          `Failed to refresh ${connection.platform} token for user ${connection.userId}: ${error instanceof Error ? error.message : String(error)}`,
         );
         await this.handleRefreshFailure(connection);
       }
