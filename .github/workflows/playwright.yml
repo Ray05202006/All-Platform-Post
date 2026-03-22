@@ -11,8 +11,8 @@ env:
   JWT_SECRET: test-jwt-secret-for-ci-only
   ENCRYPTION_KEY: 0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
   NEXT_PUBLIC_API_URL: http://localhost:3001
-  FACEBOOK_CLIENT_ID: 1222951973082780
-  FACEBOOK_CLIENT_SECRET: 175ae4e4a0a805f098882630c6d257fc
+  FACEBOOK_CLIENT_ID: ${{ secrets.FACEBOOK_APP_ID }}
+  FACEBOOK_CLIENT_SECRET: ${{ secrets.FACEBOOK_APP_SECRET }}
 
 jobs:
   e2e-tests:
@@ -57,7 +57,7 @@ jobs:
           restore-keys: ${{ runner.os }}-pnpm-store-
 
       - name: Install dependencies
-        run: pnpm install
+        run: pnpm install --frozen-lockfile
 
       - name: Generate Prisma client
         run: pnpm --filter @all-platform-post/api prisma:generate

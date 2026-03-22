@@ -40,7 +40,7 @@ jobs:
           restore-keys: ${{ runner.os }}-pnpm-store-
 
       - name: Install dependencies
-        run: pnpm install
+        run: pnpm install --frozen-lockfile
 
       - name: Build shared packages
         run: |
@@ -50,6 +50,8 @@ jobs:
       - name: Build web app
         env:
           NEXT_PUBLIC_BASE_PATH: /All-Platform-Post
+          # Set NEXT_PUBLIC_API_URL secret in repo Settings → Secrets and variables → Actions
+          NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL }}
         run: pnpm --filter @all-platform-post/web build
 
       - name: Setup Pages

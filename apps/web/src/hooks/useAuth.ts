@@ -3,28 +3,36 @@
 import { useState, useEffect, useCallback } from 'react';
 import { api } from '@/lib/api';
 
+interface User {
+  id: string;
+  email: string;
+  name: string | null;
+  avatarUrl: string | null;
+}
+
 export function useAuth() {
   const [isLoading, setIsLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<User | null>(null);
 
   const initAuth = useCallback(async () => {
     try {
       const token = api.getToken();
 
       if (!token) {
-        // 开发环境：自动获取 dev token
-        const { token: devToken, user: devUser } = await api.getDevToken();
-        api.setToken(devToken);
-        setUser(devUser);
-        setIsAuthenticated(true);
-      } else {
-        setIsAuthenticated(true);
+        setIsAuthenticated(false);
+        return;
       }
+
+      // Validate token by fetching user profile
+      const userData = await api.getCurrentUser();
+      setUser(userData);
+      setIsAuthenticated(true);
     } catch (error) {
       console.error('Auth initialization failed:', error);
       api.clearToken();
       setIsAuthenticated(false);
+      setUser(null);
     } finally {
       setIsLoading(false);
     }

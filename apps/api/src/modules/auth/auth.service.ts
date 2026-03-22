@@ -1,6 +1,7 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable, UnauthorizedException, Logger } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
+import * as crypto from 'crypto';
 import { PrismaService } from '../prisma/prisma.service';
 import { EncryptionService } from '../../common/services/encryption.service';
 
@@ -21,6 +22,8 @@ export interface JwtPayload {
 
 @Injectable()
 export class AuthService {
+  private readonly logger = new Logger(AuthService.name);
+
   constructor(
     private prisma: PrismaService,
     private jwtService: JwtService,
@@ -151,6 +154,13 @@ export class AuthService {
   }
 
   /**
+   * 同步验证 JWT token 字符串，返回 payload
+   */
+  validateJwtTokenSync(token: string): JwtPayload {
+    return this.jwtService.verify<JwtPayload>(token);
+  }
+
+  /**
    * 验证 JWT token
    */
   async validateJwtToken(payload: JwtPayload) {
@@ -183,5 +193,80 @@ export class AuthService {
     }
 
     return user;
+  }
+
+  /**
+   * 通过 OAuth 信息查找或创建用户（用于登入）
+   */
+  async findOrCreateUserByOAuth(
+    provider: string,
+    providerId: string,
+    email: string,
+    name?: string,
+    avatarUrl?: string,
+  ) {
+    // 先按 provider + providerId 查找
+    let user = await this.prisma.user.findFirst({
+      where: { provider, providerId },
+    });
+
+    if (!user) {
+      // 按 email 查找（关联已有帐号）
+      user = await this.prisma.user.findUnique({ where: { email } });
+
+      if (user) {
+        user = await this.prisma.user.update({
+          where: { id: user.id },
+          data: { provider, providerId, avatarUrl },
+        });
+      } else {
+        user = await this.prisma.user.create({
+          data: { email, name, provider, providerId, avatarUrl },
+        });
+      }
+    }
+
+    return user;
+  }
+
+  /**
+   * 获取当前用户资料
+   */
+  async getCurrentUser(userId: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { id: true, email: true, name: true, avatarUrl: true },
+    });
+
+    if (!user) {
+      throw new UnauthorizedException('User not found');
+    }
+
+    return user;
+  }
+
+  /**
+   * 生成 OAuth state（用于平台连接时传递用户身份）
+   * 签发一个短期 JWT (5分钟)，包含 userId
+   */
+  generateOAuthState(userId: string): string {
+    return this.jwtService.sign(
+      { sub: userId, nonce: crypto.randomUUID(), purpose: 'oauth_state' },
+      { expiresIn: '5m' },
+    );
+  }
+
+  /**
+   * 从 OAuth state 中提取 userId
+   */
+  extractUserIdFromState(state: string): string | null {
+    try {
+      const payload = this.jwtService.verify(state);
+      if (payload.purpose !== 'oauth_state') return null;
+      return payload.sub;
+    } catch {
+      this.logger.warn('Failed to extract userId from OAuth state');
+      return null;
+    }
   }
 }

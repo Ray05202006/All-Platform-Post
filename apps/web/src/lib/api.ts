@@ -66,6 +66,10 @@ class ApiClient {
     return this.fetch('/auth/dev-token');
   }
 
+  async getCurrentUser(): Promise<{ id: string; email: string; name: string | null; avatarUrl: string | null }> {
+    return this.fetch('/auth/me');
+  }
+
   async getConnections(): Promise<PlatformConnection[]> {
     return this.fetch('/auth/connections');
   }
@@ -74,8 +78,11 @@ class ApiClient {
     return this.fetch(`/auth/connections/${platform}`, { method: 'DELETE' });
   }
 
-  getOAuthUrl(platform: string): string {
-    return `${this.baseUrl}/api/auth/${platform}`;
+  async getOAuthUrl(platform: string): Promise<string> {
+    const result = await this.fetch<{ url: string }>(`/auth/${platform}/url`, {
+      method: 'POST',
+    });
+    return result.url;
   }
 
   // ==================== Post endpoints ====================

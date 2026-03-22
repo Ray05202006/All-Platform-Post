@@ -1,5 +1,5 @@
 import { Injectable, Logger, BadRequestException } from '@nestjs/common';
-import { join, extname } from 'path';
+import { join, extname, basename, resolve } from 'path';
 import { existsSync, unlinkSync, statSync } from 'fs';
 import * as sharp from 'sharp';
 
@@ -236,8 +236,12 @@ export class MediaService {
    * 删除媒体文件
    */
   async deleteMedia(filename: string): Promise<void> {
-    const filePath = join(this.uploadDir, filename);
-    const thumbnailPath = join(this.uploadDir, this.getThumbnailFilename(filename));
+    const sanitized = basename(filename);
+    const filePath = join(this.uploadDir, sanitized);
+    if (!resolve(filePath).startsWith(resolve(this.uploadDir))) {
+      throw new BadRequestException('Invalid filename');
+    }
+    const thumbnailPath = join(this.uploadDir, this.getThumbnailFilename(sanitized));
 
     if (existsSync(filePath)) {
       unlinkSync(filePath);
@@ -253,25 +257,29 @@ export class MediaService {
    * 获取媒体文件信息
    */
   async getMediaInfo(filename: string): Promise<ProcessedMedia | null> {
-    const filePath = join(this.uploadDir, filename);
+    const sanitized = basename(filename);
+    const filePath = join(this.uploadDir, sanitized);
+    if (!resolve(filePath).startsWith(resolve(this.uploadDir))) {
+      throw new BadRequestException('Invalid filename');
+    }
 
     if (!existsSync(filePath)) {
       return null;
     }
 
     const stats = statSync(filePath);
-    const ext = extname(filename).toLowerCase();
+    const ext = extname(sanitized).toLowerCase();
 
     const isImage = ['.jpg', '.jpeg', '.png', '.gif', '.webp'].includes(ext);
     const isVideo = ['.mp4', '.mov'].includes(ext);
 
     const media: ProcessedMedia = {
-      filename,
-      originalname: filename,
+      filename: sanitized,
+      originalname: sanitized,
       mimetype: isImage ? `image/${ext.slice(1)}` : isVideo ? `video/${ext.slice(1)}` : 'application/octet-stream',
       size: stats.size,
       path: filePath,
-      url: `/uploads/media/${filename}`,
+      url: `/uploads/media/${sanitized}`,
     };
 
     if (isImage) {
