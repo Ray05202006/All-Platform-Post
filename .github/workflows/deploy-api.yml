@@ -28,6 +28,9 @@ jobs:
           pnpm --filter @all-platform-post/shared build
           pnpm --filter @all-platform-post/text-splitter build
 
+      - name: Generate Prisma client
+        run: pnpm --filter @all-platform-post/api prisma:generate
+
       - name: Build Azure Functions
         run: pnpm --filter @all-platform-post/azure-functions build
 
