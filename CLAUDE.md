@@ -117,7 +117,7 @@ The scheduler was migrated from BullMQ/Redis to a DB-based approach:
   - Unique constraint: `[userId, platform]`
 - **Post** — Content with multi-platform targeting, status tracking
   - `platforms: String[]` — target platforms
-  - `status: String` — draft | scheduled | publishing | published | failed
+  - `status: String` — draft | scheduled | publishing | published | failed | partial
   - `results: JSON` — per-platform publish results
   - Indexes on `[userId, status]` and `scheduledAt`
 - **PublishLog** — Publishing analytics and errors per platform
@@ -139,7 +139,7 @@ Copy `.env.example` to `.env` and configure:
 - `JWT_SECRET` — Session signing (`openssl rand -hex 32`)
 - `NEXT_PUBLIC_APP_URL` — Frontend URL (default `http://localhost:3000`)
 - `API_URL` — Backend URL (default `http://localhost:3001`)
-- Platform OAuth credentials: `FACEBOOK_APP_ID`, `FACEBOOK_APP_SECRET`, `TWITTER_CLIENT_ID`, `TWITTER_CLIENT_SECRET`, `TWITTER_API_KEY`, `TWITTER_API_SECRET`
+- Platform OAuth credentials: `FACEBOOK_APP_ID`, `FACEBOOK_APP_SECRET`, `TWITTER_CLIENT_ID`, `TWITTER_CLIENT_SECRET`, `TWITTER_API_KEY`, `TWITTER_API_SECRET`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`
 
 **Note**: `REDIS_HOST`/`REDIS_PORT` are no longer required. Docker Compose provides only PostgreSQL for local development.
 
@@ -153,7 +153,7 @@ Optional cleanup configuration:
 ### Backend (apps/api/)
 - **Prisma 5.8** (ORM) — requires `prisma generate` after schema changes
 - **Sharp 0.33** (image processing) — resizes/converts media uploads
-- **Passport.js** (OAuth) — Facebook, Twitter, Threads strategies + JWT
+- **Passport.js** (OAuth) — Facebook, Twitter, Threads, Google strategies + JWT
 - **class-validator 0.14** — DTO validation decorators
 
 ### Azure Functions (apps/azure-functions/)
@@ -187,6 +187,8 @@ Configure these in **Settings → Secrets and variables → Actions**:
 | `AZURE_FUNCTION_APP_NAME` | Azure Function App name |
 | `AZURE_RESOURCE_GROUP` | Azure resource group name (required for CORS env var deployment) |
 | `POSTGRES_CONNECTION_STRING` | Production PostgreSQL connection string for Prisma migrations |
+| `GOOGLE_CLIENT_ID` | Google OAuth client ID (also needed as placeholder in E2E CI to prevent build failure) |
+| `GOOGLE_CLIENT_SECRET` | Google OAuth client secret |
 
 ### GitHub Pages Setup
 
@@ -207,3 +209,4 @@ The Azure Functions backend reads `CORS_ORIGIN` env var (set automatically by `d
 - **Validation**: All API inputs use `class-validator` DTOs with `whitelist: true, forbidNonWhitelisted: true`
 - **Testing**: Unit tests in `apps/api/src/**/*.spec.ts` (Jest); E2E in `apps/web/e2e/` (Playwright)
 - **Shared types**: Import from `@all-platform-post/shared`; text splitting from `@all-platform-post/text-splitter`
+- **Google OAuth login**: Login page redirects directly to `/api/auth/google` (full browser redirect, not a fetch). Strategy in `apps/api/src/modules/auth/strategies/google.strategy.ts`. Callback issues JWT and redirects to frontend with token in URL param.
