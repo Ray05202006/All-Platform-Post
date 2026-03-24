@@ -41,7 +41,7 @@ async function apiFetch<T>(endpoint: string, options: RequestInit = {}): Promise
 }
 
 function SettingsContent() {
-  const { data: session } = useSession();
+  const { data: _session } = useSession();
   const searchParams = useSearchParams();
   const [connections, setConnections] = useState<Connection[]>([]);
   const [isLoading, setIsLoading] = useState(true);

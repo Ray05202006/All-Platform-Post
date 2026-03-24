@@ -45,7 +45,7 @@ async function apiFetch<T>(endpoint: string, options: RequestInit = {}): Promise
 }
 
 export default function DashboardPage() {
-  const { data: session } = useSession();
+  const { data: _session } = useSession();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [content, setContent] = useState('');

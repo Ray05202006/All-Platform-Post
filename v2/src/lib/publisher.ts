@@ -111,7 +111,7 @@ export async function publishToMultiplePlatforms(
   content: string,
   platforms: string[],
   mediaUrls?: string[],
-  mediaType?: string | null,
+  _mediaType?: string | null,
 ): Promise<Record<string, PlatformResult>> {
   const results: Record<string, PlatformResult> = {};
 

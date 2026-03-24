@@ -48,7 +48,7 @@ async function apiFetch<T>(endpoint: string, options: RequestInit = {}): Promise
 }
 
 export default function HistoryPage() {
-  const { data: session } = useSession();
+  const { data: _session } = useSession();
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

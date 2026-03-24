@@ -3,6 +3,8 @@ import { cookies } from "next/headers";
 import * as crypto from "crypto";
 import * as oauth from "oauth-1.0a";
 
+export const dynamic = "force-dynamic";
+
 export async function GET() {
   const apiKey = process.env.TWITTER_API_KEY!;
   const apiSecret = process.env.TWITTER_API_SECRET!;
