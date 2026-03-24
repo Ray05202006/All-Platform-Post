@@ -238,7 +238,7 @@ export default function DashboardPage() {
     try {
       await apiFetch(`/media/${file.filename}`, { method: 'DELETE' });
       setMediaFiles((prev) => prev.filter((_, i) => i !== index));
-    } catch (_error) {
+    } catch {
       alert('Failed to delete media file.');
     }
   };
