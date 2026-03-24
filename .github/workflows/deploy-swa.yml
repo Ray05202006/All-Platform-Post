@@ -40,3 +40,4 @@ jobs:
           app_location: v2
           api_location: ''
           output_location: .next
+          skip_app_build: true
