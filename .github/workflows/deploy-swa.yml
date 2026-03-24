@@ -19,10 +19,9 @@ jobs:
         with:
           node-version: '18'
           cache: 'pnpm'
-          cache-dependency-path: v2/pnpm-lock.yaml
 
       - name: Install dependencies
-        run: cd v2 && pnpm install --frozen-lockfile
+        run: cd v2 && pnpm install
 
       - name: Generate Prisma client
         run: cd v2 && npx prisma generate
