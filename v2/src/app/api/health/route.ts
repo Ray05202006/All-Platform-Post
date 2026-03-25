@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { PrismaClient } from '@prisma/client';
 
 export const dynamic = 'force-dynamic';
 
@@ -13,10 +14,8 @@ export async function GET() {
     NODE_ENV: process.env.NODE_ENV,
   };
 
-  // Test database connection
   let dbStatus = 'untested';
   try {
-    const { PrismaClient } = require('@prisma/client');
     const prisma = new PrismaClient();
     await prisma.$connect();
     await prisma.$disconnect();
