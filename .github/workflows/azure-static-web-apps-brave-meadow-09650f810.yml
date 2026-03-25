@@ -41,6 +41,9 @@ jobs:
           NEXT_PUBLIC_APP_URL: ${{ secrets.NEXT_PUBLIC_APP_URL }}
         run: cd v2 && pnpm build
 
+      - name: Prepare for Oryx post-processing
+        run: cp pnpm-lock.yaml v2/pnpm-lock.yaml
+
       - name: Deploy to Azure Static Web Apps
         id: builddeploy
         uses: Azure/static-web-apps-deploy@v1
@@ -51,7 +54,7 @@ jobs:
           app_location: "/v2"
           api_location: ""
           output_location: ".next"
-          skip_app_build: true
+          app_build_command: "echo 'already built'"
 
   close_pull_request_job:
     if: github.event_name == 'pull_request' && github.event.action == 'closed'
