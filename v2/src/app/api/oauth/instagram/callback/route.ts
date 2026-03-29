@@ -3,9 +3,10 @@ import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import prisma from "@/lib/db";
 import { encrypt } from "@/lib/encryption";
+import { getAppUrl } from "@/lib/url";
 
 export async function GET(request: NextRequest) {
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL!;
+  const appUrl = await getAppUrl();
 
   const session = await getServerSession(authOptions);
   if (!session?.user || !(session.user as any).id) {

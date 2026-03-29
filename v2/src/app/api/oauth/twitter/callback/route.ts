@@ -4,12 +4,14 @@ import { cookies } from "next/headers";
 import { authOptions } from "@/lib/auth";
 import prisma from "@/lib/db";
 import { encrypt } from "@/lib/encryption";
+import { getAppUrl } from "@/lib/url";
 
 export async function GET(request: NextRequest) {
+  const appUrl = await getAppUrl();
   const session = await getServerSession(authOptions);
   if (!session?.user || !(session.user as any).id) {
     return NextResponse.redirect(
-      `${process.env.NEXT_PUBLIC_APP_URL}/login?error=unauthenticated`
+      `${appUrl}/login?error=unauthenticated`
     );
   }
 
@@ -19,7 +21,7 @@ export async function GET(request: NextRequest) {
 
   if (!oauthToken || !oauthVerifier) {
     return NextResponse.redirect(
-      `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/settings?error=twitter_no_verifier`
+      `${appUrl}/dashboard/settings?error=twitter_no_verifier`
     );
   }
 
@@ -28,7 +30,7 @@ export async function GET(request: NextRequest) {
 
   if (!tokenSecret) {
     return NextResponse.redirect(
-      `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/settings?error=twitter_no_secret`
+      `${appUrl}/dashboard/settings?error=twitter_no_secret`
     );
   }
 
@@ -81,12 +83,12 @@ export async function GET(request: NextRequest) {
     });
 
     return NextResponse.redirect(
-      `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/settings?connected=twitter`
+      `${appUrl}/dashboard/settings?connected=twitter`
     );
   } catch (error) {
     console.error("Twitter OAuth error:", error);
     return NextResponse.redirect(
-      `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/settings?error=twitter_failed`
+      `${appUrl}/dashboard/settings?error=twitter_failed`
     );
   }
 }

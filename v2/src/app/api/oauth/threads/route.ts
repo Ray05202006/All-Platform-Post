@@ -1,10 +1,12 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { generateState } from "@/lib/encryption";
+import { getAppUrl } from "@/lib/url";
 
 export async function GET() {
   const clientId = process.env.FACEBOOK_APP_ID!;
-  const redirectUri = `${process.env.NEXT_PUBLIC_APP_URL}/api/oauth/threads/callback`;
+  const appUrl = await getAppUrl();
+  const redirectUri = `${appUrl}/api/oauth/threads/callback`;
   const scopes = "threads_basic,threads_content_publish,threads_manage_replies";
 
   const state = generateState();

@@ -3,12 +3,14 @@ import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import prisma from "@/lib/db";
 import { encrypt } from "@/lib/encryption";
+import { getAppUrl } from "@/lib/url";
 
 export async function GET(request: NextRequest) {
+  const appUrl = await getAppUrl();
   const session = await getServerSession(authOptions);
   if (!session?.user || !(session.user as any).id) {
     return NextResponse.redirect(
-      `${process.env.NEXT_PUBLIC_APP_URL}/login?error=unauthenticated`
+      `${appUrl}/login?error=unauthenticated`
     );
   }
 
@@ -17,12 +19,12 @@ export async function GET(request: NextRequest) {
 
   if (!code) {
     return NextResponse.redirect(
-      `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/settings?error=facebook_no_code`
+      `${appUrl}/dashboard/settings?error=facebook_no_code`
     );
   }
 
   try {
-    const redirectUri = `${process.env.NEXT_PUBLIC_APP_URL}/api/oauth/facebook/callback`;
+    const redirectUri = `${appUrl}/api/oauth/facebook/callback`;
 
     const tokenRes = await fetch(
       `https://graph.facebook.com/v19.0/oauth/access_token?${new URLSearchParams({
@@ -69,12 +71,12 @@ export async function GET(request: NextRequest) {
     });
 
     return NextResponse.redirect(
-      `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/settings?connected=facebook`
+      `${appUrl}/dashboard/settings?connected=facebook`
     );
   } catch (error) {
     console.error("Facebook OAuth error:", error);
     return NextResponse.redirect(
-      `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/settings?error=facebook_failed`
+      `${appUrl}/dashboard/settings?error=facebook_failed`
     );
   }
 }

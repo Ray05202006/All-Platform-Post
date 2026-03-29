@@ -1,8 +1,10 @@
 import { NextResponse } from "next/server";
+import { getAppUrl } from "@/lib/url";
 
 export async function GET() {
   const clientId = process.env.FACEBOOK_APP_ID!;
-  const redirectUri = `${process.env.NEXT_PUBLIC_APP_URL}/api/oauth/instagram/callback`;
+  const appUrl = await getAppUrl();
+  const redirectUri = `${appUrl}/api/oauth/instagram/callback`;
   const scopes =
     "pages_show_list,instagram_basic,instagram_content_publish";
 
