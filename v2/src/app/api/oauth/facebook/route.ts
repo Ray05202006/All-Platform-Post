@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { getAppUrl } from "@/lib/url";
 
+export const dynamic = "force-dynamic";
+
 export async function GET() {
   const clientId = process.env.FACEBOOK_APP_ID!;
   const appUrl = await getAppUrl();
