@@ -1,7 +1,7 @@
-import { Injectable, BadRequestException, Logger } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../prisma/prisma.service';
-import { AuthService } from '../auth/auth.service';
+
 import { FacebookService } from './services/facebook.service';
 import { TwitterService } from './services/twitter.service';
 import { ThreadsService } from './services/threads.service';
@@ -45,7 +45,7 @@ export class PlatformService {
     content: string,
     platforms: string[],
     mediaUrls?: string[],
-    mediaType?: string | null,
+    _mediaType?: string | null,
   ): Promise<Record<string, any>> {
     const results: Record<string, any> = {};
 

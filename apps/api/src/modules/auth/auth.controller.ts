@@ -1,7 +1,6 @@
 import {
   Controller,
   Get,
-  Post,
   Delete,
   Param,
   Query,
@@ -183,7 +182,7 @@ export class AuthController {
       // TODO: 验证 state 参数
 
       // 交换授权码
-      const { accessToken, userId } =
+      const { accessToken } =
         await this.threadsStrategy.exchangeCodeForToken(code);
 
       // 获取长期 token
