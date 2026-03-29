@@ -11,6 +11,11 @@ export async function GET() {
     GOOGLE_CLIENT_ID: !!process.env.GOOGLE_CLIENT_ID,
     GOOGLE_CLIENT_SECRET: !!process.env.GOOGLE_CLIENT_SECRET,
     ENCRYPTION_KEY: !!process.env.ENCRYPTION_KEY,
+    FACEBOOK_APP_ID: !!process.env.FACEBOOK_APP_ID,
+    FACEBOOK_APP_SECRET: !!process.env.FACEBOOK_APP_SECRET,
+    TWITTER_API_KEY: !!process.env.TWITTER_API_KEY,
+    TWITTER_API_SECRET: !!process.env.TWITTER_API_SECRET,
+    NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL || 'NOT SET',
     NODE_ENV: process.env.NODE_ENV,
   };
 
