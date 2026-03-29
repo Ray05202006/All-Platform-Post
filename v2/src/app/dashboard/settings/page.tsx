@@ -4,7 +4,7 @@ import { Suspense, useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { useSearchParams } from 'next/navigation';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || '';
 
 interface PlatformInfo {
   id: string;
@@ -75,7 +75,7 @@ function SettingsContent() {
   const fetchConnections = async () => {
     setIsLoading(true);
     try {
-      const data = await apiFetch<Connection[]>('/auth/connections');
+      const data = await apiFetch<Connection[]>('/connections');
       setConnections(data);
     } catch (err) {
       console.error('Failed to fetch connections:', err);
@@ -90,20 +90,15 @@ function SettingsContent() {
   const getConnection = (platformId: string) =>
     connections.find((c) => c.platform === platformId);
 
-  const handleConnect = async (platformId: string) => {
-    try {
-      const result = await apiFetch<{ url: string }>(`/auth/${platformId}/url`, { method: 'POST' });
-      window.location.href = result.url;
-    } catch (err) {
-      alert(err instanceof Error ? err.message : 'Failed to start connection');
-    }
+  const handleConnect = (platformId: string) => {
+    window.location.href = `/api/oauth/${platformId}`;
   };
 
   const handleDisconnect = async (platformId: string) => {
     if (!confirm(`Disconnect ${platformId}?`)) return;
     setIsDisconnecting(true);
     try {
-      await apiFetch(`/auth/connections/${platformId}`, { method: 'DELETE' });
+      await apiFetch(`/connections/${platformId}`, { method: 'DELETE' });
       await fetchConnections();
     } catch (err) {
       alert(err instanceof Error ? err.message : 'Failed to disconnect');

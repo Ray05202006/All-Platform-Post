@@ -5,7 +5,7 @@ import { useSession } from 'next-auth/react';
 import Link from 'next/link';
 import { Platform, PLATFORM_LIMITS, SplitResult } from '@/lib/types';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || '';
 
 const PLATFORMS: { id: Platform; name: string; icon: string; maxLength: number }[] = [
   { id: 'facebook', name: 'Facebook', icon: 'FB', maxLength: PLATFORM_LIMITS.facebook },
@@ -62,7 +62,7 @@ export default function DashboardPage() {
   const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
-    apiFetch<Connection[]>('/auth/connections').then(setConnections).catch(console.error);
+    apiFetch<Connection[]>('/connections').then(setConnections).catch(console.error);
   }, []);
 
   const isConnected = (platform: string) =>
