@@ -7,7 +7,7 @@ export async function GET() {
   const clientId = process.env.FACEBOOK_APP_ID!;
   const appUrl = await getAppUrl();
   const redirectUri = `${appUrl}/api/oauth/facebook/callback`;
-  const scopes = "public_profile,pages_show_list,pages_manage_posts,pages_read_user_content";
+  const scopes = "public_profile,pages_show_list,pages_manage_posts";
 
   const params = new URLSearchParams({
     client_id: clientId,
