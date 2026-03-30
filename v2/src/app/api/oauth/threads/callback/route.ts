@@ -43,8 +43,8 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const clientId = process.env.FACEBOOK_APP_ID!;
-    const clientSecret = process.env.FACEBOOK_APP_SECRET!;
+    const clientId = process.env.THREADS_APP_ID!;
+    const clientSecret = process.env.THREADS_APP_SECRET ?? process.env.FACEBOOK_APP_SECRET!;
     const redirectUri = `${appUrl}/api/oauth/threads/callback`;
 
     // Exchange code for short-lived token

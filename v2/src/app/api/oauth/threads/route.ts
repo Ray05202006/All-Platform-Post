@@ -6,10 +6,10 @@ import { getAppUrl } from "@/lib/url";
 export const dynamic = "force-dynamic";
 
 export async function GET() {
-  const clientId = process.env.FACEBOOK_APP_ID!;
+  const clientId = process.env.THREADS_APP_ID!;
   const appUrl = await getAppUrl();
   const redirectUri = `${appUrl}/api/oauth/threads/callback`;
-  const scopes = "threads_basic,threads_content_publish,threads_manage_replies";
+  const scopes = "threads_basic,threads_content_publish";
 
   const state = generateState();
 
