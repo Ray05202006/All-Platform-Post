@@ -1,8 +1,7 @@
-import * as crypto from 'crypto';
 import axios from 'axios';
 import type { PlatformResult } from '@/lib/types';
 
-const API_URL = 'https://api.twitter.com/2';
+const API_URL = 'https://api.x.com/2';
 
 function isCJKChar(code: number): boolean {
   return (
@@ -33,58 +32,9 @@ export function calculateLength(text: string): number {
   return length;
 }
 
-function generateOAuthSignature(
-  method: string,
-  url: string,
-  params: Record<string, string>,
-  consumerSecret: string,
-  tokenSecret: string,
-): string {
-  const paramString = Object.keys(params)
-    .sort()
-    .map((key) => `${encodeURIComponent(key)}=${encodeURIComponent(params[key])}`)
-    .join('&');
-
-  const signatureBase = `${method}&${encodeURIComponent(url)}&${encodeURIComponent(paramString)}`;
-  const signingKey = `${encodeURIComponent(consumerSecret)}&${encodeURIComponent(tokenSecret)}`;
-
-  return crypto.createHmac('sha1', signingKey).update(signatureBase).digest('base64');
-}
-
-function generateOAuthHeader(
-  method: string,
-  url: string,
-  consumerKey: string,
-  consumerSecret: string,
-  accessToken: string,
-  tokenSecret: string,
-): string {
-  const oauthParams: Record<string, string> = {
-    oauth_consumer_key: consumerKey,
-    oauth_nonce: crypto.randomBytes(16).toString('hex'),
-    oauth_signature_method: 'HMAC-SHA1',
-    oauth_timestamp: Math.floor(Date.now() / 1000).toString(),
-    oauth_token: accessToken,
-    oauth_version: '1.0',
-  };
-
-  const signature = generateOAuthSignature(method, url, oauthParams, consumerSecret, tokenSecret);
-  oauthParams.oauth_signature = signature;
-
-  const headerParts = Object.keys(oauthParams)
-    .sort()
-    .map((key) => `${encodeURIComponent(key)}="${encodeURIComponent(oauthParams[key])}"`)
-    .join(', ');
-
-  return `OAuth ${headerParts}`;
-}
-
 export async function publishTweet(
   content: string,
   accessToken: string,
-  tokenSecret: string,
-  consumerKey: string,
-  consumerSecret: string,
   replyToTweetId?: string,
 ): Promise<PlatformResult> {
   try {
@@ -94,11 +44,9 @@ export async function publishTweet(
       body.reply = { in_reply_to_tweet_id: replyToTweetId };
     }
 
-    const authHeader = generateOAuthHeader('POST', url, consumerKey, consumerSecret, accessToken, tokenSecret);
-
     const response = await axios.post(url, body, {
       headers: {
-        Authorization: authHeader,
+        Authorization: `Bearer ${accessToken}`,
         'Content-Type': 'application/json',
       },
     });
@@ -106,7 +54,7 @@ export async function publishTweet(
     const tweetId = response.data.data.id;
     return {
       postId: tweetId,
-      url: `https://twitter.com/i/web/status/${tweetId}`,
+      url: `https://x.com/i/web/status/${tweetId}`,
     };
   } catch (error: any) {
     return {
@@ -121,15 +69,12 @@ export async function publishTweet(
 export async function publishThread(
   chunks: string[],
   accessToken: string,
-  tokenSecret: string,
-  consumerKey: string,
-  consumerSecret: string,
 ): Promise<PlatformResult[]> {
   const results: PlatformResult[] = [];
   let previousTweetId: string | undefined;
 
   for (const text of chunks) {
-    const result = await publishTweet(text, accessToken, tokenSecret, consumerKey, consumerSecret, previousTweetId);
+    const result = await publishTweet(text, accessToken, previousTweetId);
     results.push(result);
 
     if (result.error) break;
