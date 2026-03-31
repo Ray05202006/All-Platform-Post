@@ -1,51 +1,36 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import * as crypto from "crypto";
-import * as oauth from "oauth-1.0a";
 import { getAppUrl } from "@/lib/url";
 
 export const dynamic = "force-dynamic";
 
+function base64urlEncode(buffer: Buffer): string {
+  return buffer.toString("base64").replace(/\+/g, "-").replace(/\//g, "_").replace(/=/g, "");
+}
+
 export async function GET() {
-  const apiKey = process.env.TWITTER_API_KEY!;
-  const apiSecret = process.env.TWITTER_API_SECRET!;
+  const clientId = process.env.TWITTER_CLIENT_ID!;
   const appUrl = await getAppUrl();
-  const callbackUrl = `${appUrl}/api/oauth/twitter/callback`;
+  const redirectUri = `${appUrl}/api/oauth/twitter/callback`;
 
-  const oauthClient = new (oauth as any).default({
-    consumer: { key: apiKey, secret: apiSecret },
-    signature_method: "HMAC-SHA1",
-    hash_function(baseString: string, key: string) {
-      return crypto.createHmac("sha1", key).update(baseString).digest("base64");
-    },
-  });
+  // PKCE: generate code_verifier and code_challenge
+  const codeVerifier = base64urlEncode(crypto.randomBytes(32));
+  const codeChallenge = base64urlEncode(
+    crypto.createHash("sha256").update(codeVerifier).digest()
+  );
 
-  const requestData = {
-    url: "https://api.twitter.com/oauth/request_token",
-    method: "POST",
-    data: { oauth_callback: callbackUrl },
-  };
-
-  const headers = oauthClient.toHeader(oauthClient.authorize(requestData));
-
-  const res = await fetch(requestData.url, {
-    method: "POST",
-    headers: { Authorization: headers.Authorization },
-  });
-
-  const body = await res.text();
-  const params = new URLSearchParams(body);
-  const oauthToken = params.get("oauth_token");
-  const oauthTokenSecret = params.get("oauth_token_secret");
-
-  if (!oauthToken || !oauthTokenSecret) {
-    return NextResponse.redirect(
-      `${appUrl}/dashboard/settings?error=twitter_request_token_failed`
-    );
-  }
+  const state = base64urlEncode(crypto.randomBytes(16));
 
   const cookieStore = await cookies();
-  cookieStore.set("twitter_oauth_token_secret", oauthTokenSecret, {
+  cookieStore.set("twitter_code_verifier", codeVerifier, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    maxAge: 600,
+    path: "/",
+  });
+  cookieStore.set("twitter_oauth_state", state, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
@@ -53,7 +38,17 @@ export async function GET() {
     path: "/",
   });
 
+  const params = new URLSearchParams({
+    response_type: "code",
+    client_id: clientId,
+    redirect_uri: redirectUri,
+    scope: "tweet.write tweet.read users.read offline.access",
+    state,
+    code_challenge: codeChallenge,
+    code_challenge_method: "S256",
+  });
+
   return NextResponse.redirect(
-    `https://api.twitter.com/oauth/authorize?oauth_token=${oauthToken}`
+    `https://twitter.com/i/oauth2/authorize?${params.toString()}`
   );
 }

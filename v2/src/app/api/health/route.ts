@@ -13,8 +13,8 @@ export async function GET() {
     ENCRYPTION_KEY: !!process.env.ENCRYPTION_KEY,
     FACEBOOK_APP_ID: !!process.env.FACEBOOK_APP_ID,
     FACEBOOK_APP_SECRET: !!process.env.FACEBOOK_APP_SECRET,
-    TWITTER_API_KEY: !!process.env.TWITTER_API_KEY,
-    TWITTER_API_SECRET: !!process.env.TWITTER_API_SECRET,
+    TWITTER_CLIENT_ID: !!process.env.TWITTER_CLIENT_ID,
+    TWITTER_CLIENT_SECRET: !!process.env.TWITTER_CLIENT_SECRET,
     NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL || 'NOT SET',
     NODE_ENV: process.env.NODE_ENV,
   };

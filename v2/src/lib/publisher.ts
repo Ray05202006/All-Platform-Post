@@ -59,21 +59,14 @@ async function publishToTwitter(userId: string, content: string): Promise<Platfo
   if (!connection) return { error: 'Twitter not connected' };
 
   const accessToken = decrypt(connection.accessToken);
-  const tokenSecret = connection.refreshToken ? decrypt(connection.refreshToken) : '';
-  const consumerKey = process.env.TWITTER_CLIENT_ID;
-  const consumerSecret = process.env.TWITTER_CLIENT_SECRET;
-
-  if (!consumerKey || !consumerSecret) {
-    return { error: 'Twitter is not configured. Please contact the administrator.' };
-  }
 
   const twitterLength = twitter.calculateLength(content);
   if (twitterLength <= 280) {
-    return twitter.publishTweet(content, accessToken, tokenSecret, consumerKey, consumerSecret);
+    return twitter.publishTweet(content, accessToken);
   }
 
   const chunks = splitForTwitter(content);
-  const results = await twitter.publishThread(chunks, accessToken, tokenSecret, consumerKey, consumerSecret);
+  const results = await twitter.publishThread(chunks, accessToken);
   return results[0];
 }
 
