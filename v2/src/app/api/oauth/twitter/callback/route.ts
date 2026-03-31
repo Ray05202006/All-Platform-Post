@@ -115,11 +115,10 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(
       `${appUrl}/dashboard/settings?connected=twitter`
     );
-  } catch (err: any) {
+  } catch (err) {
     console.error("Twitter OAuth error:", err);
-    const msg = encodeURIComponent(err?.message || "unknown");
     return NextResponse.redirect(
-      `${appUrl}/dashboard/settings?error=twitter_failed&detail=${msg}`
+      `${appUrl}/dashboard/settings?error=twitter_failed`
     );
   }
 }
