@@ -60,7 +60,9 @@ function SettingsContent() {
       fetchConnections();
       window.history.replaceState({}, '', '/dashboard/settings');
     } else if (error) {
-      setNotification({ type: 'error', message: `Connection failed: ${error.replace(/_/g, ' ')}` });
+      const detail = searchParams.get('detail');
+      const msg = detail ? `Connection failed: ${error.replace(/_/g, ' ')} — ${decodeURIComponent(detail)}` : `Connection failed: ${error.replace(/_/g, ' ')}`;
+      setNotification({ type: 'error', message: msg });
       window.history.replaceState({}, '', '/dashboard/settings');
     }
   }, [searchParams]);
