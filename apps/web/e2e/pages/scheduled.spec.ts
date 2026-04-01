@@ -15,13 +15,13 @@ test.describe('Scheduled Posts Page', () => {
     test('should show empty state message when no scheduled posts', async ({ authenticatedPage }) => {
       await setupApiMocks(authenticatedPage, { posts: [] });
       await authenticatedPage.goto('/dashboard/scheduled');
-      await expect(authenticatedPage.getByText('暂无排程贴文')).toBeVisible();
+      await expect(authenticatedPage.getByText('暫無排程貼文')).toBeVisible();
     });
 
     test('should have link to create new post', async ({ authenticatedPage }) => {
       await setupApiMocks(authenticatedPage, { posts: [] });
       await authenticatedPage.goto('/dashboard/scheduled');
-      await expect(authenticatedPage.getByRole('link', { name: /创建|新增/ })).toBeVisible();
+      await expect(authenticatedPage.getByRole('link', { name: /建立|新增/ })).toBeVisible();
     });
   });
 
@@ -53,7 +53,7 @@ test.describe('Scheduled Posts Page', () => {
       });
       await authenticatedPage.goto('/dashboard/scheduled');
       // Should show some time indicator
-      await expect(authenticatedPage.locator('text=/小时|分钟|后/')).toBeVisible();
+      await expect(authenticatedPage.locator('text=/小時|分鐘|後/')).toBeVisible();
     });
 
     test('should show platform icons for scheduled posts', async ({ authenticatedPage }) => {

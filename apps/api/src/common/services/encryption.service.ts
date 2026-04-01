@@ -3,8 +3,8 @@ import { ConfigService } from '@nestjs/config';
 import * as crypto from 'crypto';
 
 /**
- * Token 加密服务
- * 使用 AES-256-GCM 加密存储 OAuth tokens
+ * Token 加密服務
+ * 使用 AES-256-GCM 加密儲存 OAuth tokens
  */
 @Injectable()
 export class EncryptionService {
@@ -42,9 +42,9 @@ export class EncryptionService {
   }
 
   /**
-   * 加密文本
-   * @param text 要加密的文本
-   * @returns 加密后的字符串（格式：iv:authTag:encrypted）
+   * 加密文字
+   * @param text 要加密的文字
+   * @returns 加密後的字串（格式：iv:authTag:encrypted）
    */
   encrypt(text: string): string {
     const iv = crypto.randomBytes(16);
@@ -60,9 +60,9 @@ export class EncryptionService {
   }
 
   /**
-   * 解密文本
-   * @param encryptedData 加密的字符串
-   * @returns 解密后的原始文本
+   * 解密文字
+   * @param encryptedData 加密的字串
+   * @returns 解密後的原始文字
    */
   decrypt(encryptedData: string): string {
     const parts = encryptedData.split(':');
@@ -84,7 +84,7 @@ export class EncryptionService {
   }
 
   /**
-   * 生成随机 state 参数（用于 CSRF 防护）
+   * 生成隨機 state 引數（用於 CSRF 防護）
    */
   generateState(): string {
     return crypto.randomBytes(32).toString('hex');

@@ -14,14 +14,14 @@ export class PostService {
   ) {}
 
   /**
-   * 设置 SchedulerService（避免循环依赖）
+   * 設定 SchedulerService（避免迴圈依賴）
    */
   setSchedulerService(schedulerService: SchedulerService) {
     this.schedulerService = schedulerService;
   }
 
   /**
-   * 创建新贴文
+   * 建立新貼文
    */
   async createPost(userId: string, dto: CreatePostDto) {
     const scheduledAt = dto.scheduledAt ? new Date(dto.scheduledAt) : null;
@@ -38,7 +38,7 @@ export class PostService {
       },
     });
 
-    // 如果是排程贴文，添加到任务队列
+    // 如果是排程貼文，新增到任務佇列
     if (scheduledAt) {
       if (!this.schedulerService) {
         throw new BadRequestException('Scheduler service is not available');
@@ -50,7 +50,7 @@ export class PostService {
   }
 
   /**
-   * 更新排程时间
+   * 更新排程時間
    */
   async updateSchedule(userId: string, postId: string, newScheduledAt: Date) {
     const post = await this.prisma.post.findFirst({
@@ -65,7 +65,7 @@ export class PostService {
       throw new BadRequestException('Cannot reschedule a post that is already published or publishing');
     }
 
-    // 更新数据库
+    // 更新資料庫
     const updatedPost = await this.prisma.post.update({
       where: { id: postId },
       data: {
@@ -74,7 +74,7 @@ export class PostService {
       },
     });
 
-    // 更新任务队列
+    // 更新任務佇列
     if (!this.schedulerService) {
       throw new BadRequestException('Scheduler service is not available');
     }
@@ -99,7 +99,7 @@ export class PostService {
       throw new BadRequestException('Post is not scheduled');
     }
 
-    // 更新数据库
+    // 更新資料庫
     const updatedPost = await this.prisma.post.update({
       where: { id: postId },
       data: {
@@ -108,7 +108,7 @@ export class PostService {
       },
     });
 
-    // 从任务队列移除
+    // 從任務佇列移除
     if (!this.schedulerService) {
       throw new BadRequestException('Scheduler service is not available');
     }
@@ -118,7 +118,7 @@ export class PostService {
   }
 
   /**
-   * 获取排程状态
+   * 獲取排程狀態
    */
   async getScheduleStatus(postId: string) {
     if (!this.schedulerService) {
@@ -128,7 +128,7 @@ export class PostService {
   }
 
   /**
-   * 立即发布贴文
+   * 立即釋出貼文
    */
   async publishPost(userId: string, postId: string) {
     const post = await this.prisma.post.findFirst({
@@ -143,14 +143,14 @@ export class PostService {
       throw new BadRequestException('Post already published');
     }
 
-    // 更新状态为发布中
+    // 更新狀態為釋出中
     await this.prisma.post.update({
       where: { id: postId },
       data: { status: 'publishing' },
     });
 
     try {
-      // 发布到各平台
+      // 釋出到各平臺
       const results = await this.platformService.publishToMultiplePlatforms(
         userId,
         post.content,
@@ -159,7 +159,7 @@ export class PostService {
         post.mediaType,
       );
 
-      // 更新发布结果
+      // 更新發布結果
       const successCount = Object.values(results).filter((r: any) => !r.error).length;
       const failCount = Object.values(results).filter((r: any) => r.error).length;
       const status = failCount === 0 ? 'published' : successCount === 0 ? 'failed' : 'partial';
@@ -172,7 +172,7 @@ export class PostService {
         },
       });
 
-      // 记录发布日志
+      // 記錄釋出日誌
       for (const [platform, result] of Object.entries(results)) {
         await this.prisma.publishLog.create({
           data: {
@@ -187,7 +187,7 @@ export class PostService {
 
       return updatedPost;
     } catch (error) {
-      // 发布失败，更新状态
+      // 釋出失敗，更新狀態
       await this.prisma.post.update({
         where: { id: postId },
         data: {
@@ -200,7 +200,7 @@ export class PostService {
   }
 
   /**
-   * 获取用户的所有贴文
+   * 獲取使用者的所有貼文
    */
   async getUserPosts(userId: string, status?: string) {
     const where: any = { userId };
@@ -215,7 +215,7 @@ export class PostService {
   }
 
   /**
-   * 获取单个贴文
+   * 獲取單個貼文
    */
   async getPost(userId: string, postId: string) {
     return this.prisma.post.findFirst({
@@ -224,7 +224,7 @@ export class PostService {
   }
 
   /**
-   * 删除贴文
+   * 刪除貼文
    */
   async deletePost(userId: string, postId: string) {
     const post = await this.prisma.post.findFirst({
@@ -245,7 +245,7 @@ export class PostService {
   }
 
   /**
-   * 预览分割结果
+   * 預覽分割結果
    */
   async previewSplit(content: string, platforms: string[]): Promise<SplitResult[]> {
     return this.platformService.previewSplit(content, platforms);

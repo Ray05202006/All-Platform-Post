@@ -1,25 +1,25 @@
 /**
- * 支持的社交媒体平台
+ * 支援的社交媒體平臺
  */
 export type Platform = 'facebook' | 'instagram' | 'twitter' | 'threads';
 
 /**
- * 贴文状态
+ * 貼文狀態
  */
 export type PostStatus = 'draft' | 'scheduled' | 'publishing' | 'published' | 'failed' | 'partial';
 
 /**
- * 媒体类型
+ * 媒體型別
  */
 export type MediaType = 'image' | 'video';
 
 /**
- * 平台配置
+ * 平臺配置
  */
 export interface PlatformConfig {
   platform: Platform;
-  maxLength: number; // 最大字符数
-  maxCommentLength: number; // 最大评论字符数
+  maxLength: number; // 最大字元數
+  maxCommentLength: number; // 最大評論字元數
   supportsImages: boolean;
   supportsVideos: boolean;
   maxImages: number;
@@ -27,7 +27,7 @@ export interface PlatformConfig {
 }
 
 /**
- * 平台限制配置
+ * 平臺限制配置
  */
 export const PLATFORM_LIMITS: Record<Platform, PlatformConfig> = {
   facebook: {
@@ -69,7 +69,7 @@ export const PLATFORM_LIMITS: Record<Platform, PlatformConfig> = {
 };
 
 /**
- * OAuth 连接信息
+ * OAuth 連線資訊
  */
 export interface PlatformConnection {
   id: string;
@@ -83,7 +83,7 @@ export interface PlatformConnection {
 }
 
 /**
- * 贴文
+ * 貼文
  */
 export interface Post {
   id: string;
@@ -101,7 +101,7 @@ export interface Post {
 }
 
 /**
- * 平台发布结果
+ * 平臺釋出結果
  */
 export interface PlatformPublishResult {
   [platform: string]: {
@@ -112,7 +112,7 @@ export interface PlatformPublishResult {
 }
 
 /**
- * 创建贴文请求
+ * 建立貼文請求
  */
 export interface CreatePostDto {
   content: string;
@@ -123,7 +123,7 @@ export interface CreatePostDto {
 }
 
 /**
- * 文本分割结果
+ * 文字分割結果
  */
 export interface SplitResult {
   platform: Platform;

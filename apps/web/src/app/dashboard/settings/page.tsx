@@ -16,28 +16,28 @@ const PLATFORMS: PlatformInfo[] = [
   {
     id: 'facebook',
     name: 'Facebook',
-    description: '发布到 Facebook 粉丝专页',
+    description: '釋出到 Facebook 粉絲專頁',
     icon: '📘',
     color: 'bg-blue-600',
   },
   {
     id: 'instagram',
     name: 'Instagram',
-    description: '发布到 Instagram 商业帐号',
+    description: '釋出到 Instagram 商業帳號',
     icon: '📷',
     color: 'bg-gradient-to-r from-purple-500 to-pink-500',
   },
   {
     id: 'twitter',
     name: 'Twitter / X',
-    description: '发布推文和串文',
+    description: '釋出推文和串文',
     icon: '🐦',
     color: 'bg-black',
   },
   {
     id: 'threads',
     name: 'Threads',
-    description: '发布到 Threads',
+    description: '釋出到 Threads',
     icon: '🧵',
     color: 'bg-gray-900',
   },
@@ -45,7 +45,7 @@ const PLATFORMS: PlatformInfo[] = [
 
 export default function SettingsPage() {
   return (
-    <Suspense fallback={<div className="p-6 text-center text-gray-500">加载中...</div>}>
+    <Suspense fallback={<div className="p-6 text-center text-gray-500">載入中...</div>}>
       <SettingsContent />
     </Suspense>
   );
@@ -69,7 +69,7 @@ function SettingsContent() {
     refetch,
   } = useConnections();
 
-  // 处理 OAuth 回调通知
+  // 處理 OAuth 回撥通知
   useEffect(() => {
     const connected = searchParams.get('connected');
     const error = searchParams.get('error');
@@ -77,21 +77,21 @@ function SettingsContent() {
     if (connected) {
       setNotification({
         type: 'success',
-        message: `已成功连接 ${connected}！`,
+        message: `已成功連線 ${connected}！`,
       });
       refetch();
-      // 清除 URL 参数
+      // 清除 URL 引數
       window.history.replaceState({}, '', `${process.env.NEXT_PUBLIC_BASE_PATH || ''}/dashboard/settings`);
     } else if (error) {
       setNotification({
         type: 'error',
-        message: `连接失败：${error.replace(/_/g, ' ')}`,
+        message: `連線失敗：${error.replace(/_/g, ' ')}`,
       });
       window.history.replaceState({}, '', `${process.env.NEXT_PUBLIC_BASE_PATH || ''}/dashboard/settings`);
     }
   }, [searchParams, refetch]);
 
-  // 自动隐藏通知
+  // 自動隱藏通知
   useEffect(() => {
     if (notification) {
       const timer = setTimeout(() => setNotification(null), 5000);
@@ -104,7 +104,7 @@ function SettingsContent() {
   };
 
   const handleDisconnect = (platformId: string) => {
-    if (confirm(`确定要断开 ${platformId} 的连接吗？`)) {
+    if (confirm(`確定要斷開 ${platformId} 的連線嗎？`)) {
       disconnectPlatform(platformId);
     }
   };
@@ -112,13 +112,13 @@ function SettingsContent() {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-bold text-gray-900">设置</h2>
+        <h2 className="text-2xl font-bold text-gray-900">設定</h2>
         <p className="mt-1 text-sm text-gray-500">
-          管理你的平台连接和账号设置
+          管理你的平臺連線和賬號設定
         </p>
       </div>
 
-      {/* 通知横幅 */}
+      {/* 通知橫幅 */}
       {notification && (
         <div
           className={`p-4 rounded-lg ${
@@ -136,17 +136,17 @@ function SettingsContent() {
         </div>
       )}
 
-      {/* 平台连接卡片 */}
+      {/* 平臺連線卡片 */}
       <div className="bg-white shadow rounded-lg divide-y">
         <div className="p-6">
-          <h3 className="text-lg font-medium text-gray-900">平台连接</h3>
+          <h3 className="text-lg font-medium text-gray-900">平臺連線</h3>
           <p className="mt-1 text-sm text-gray-500">
-            连接你的社交媒体账号以启用自动发文功能
+            連線你的社交媒體賬號以啟用自動發文功能
           </p>
         </div>
 
         {isLoading ? (
-          <div className="p-6 text-center text-gray-500">加载中...</div>
+          <div className="p-6 text-center text-gray-500">載入中...</div>
         ) : (
           <div className="divide-y">
             {PLATFORMS.map((platform) => {
@@ -173,7 +173,7 @@ function SettingsContent() {
                       </p>
                       {connected && connection?.platformUsername && (
                         <p className="text-sm text-green-600 mt-1">
-                          已连接：@{connection.platformUsername}
+                          已連線：@{connection.platformUsername}
                         </p>
                       )}
                     </div>
@@ -186,14 +186,14 @@ function SettingsContent() {
                         disabled={isDisconnecting}
                         className="px-4 py-2 text-sm font-medium text-red-600 bg-red-50 rounded-md hover:bg-red-100 disabled:opacity-50"
                       >
-                        {isDisconnecting ? '断开中...' : '断开连接'}
+                        {isDisconnecting ? '斷開中...' : '斷開連線'}
                       </button>
                     ) : (
                       <button
                         onClick={() => handleConnect(platform.id)}
                         className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700"
                       >
-                        连接
+                        連線
                       </button>
                     )}
                   </div>
@@ -222,10 +222,10 @@ function SettingsContent() {
           </div>
           <div className="ml-3">
             <h3 className="text-sm font-medium text-yellow-800">
-              需要配置 API 密钥
+              需要配置 API 金鑰
             </h3>
             <div className="mt-2 text-sm text-yellow-700">
-              <p>在连接平台之前，请确保已在 <code>.env</code> 文件中配置以下内容：</p>
+              <p>在連線平臺之前，請確保已在 <code>.env</code> 檔案中配置以下內容：</p>
               <ul className="list-disc pl-5 mt-2 space-y-1">
                 <li>
                   <strong>Facebook/Instagram/Threads</strong>：FACEBOOK_APP_ID 和 FACEBOOK_APP_SECRET
@@ -235,7 +235,7 @@ function SettingsContent() {
                 </li>
               </ul>
               <p className="mt-2">
-                详细申请步骤请参考{' '}
+                詳細申請步驟請參考{' '}
                 <code className="text-yellow-800">README.md</code>
               </p>
             </div>
@@ -243,12 +243,12 @@ function SettingsContent() {
         </div>
       </div>
 
-      {/* 开发者信息 */}
+      {/* 開發者資訊 */}
       <div className="bg-gray-50 rounded-lg p-4">
-        <h4 className="text-sm font-medium text-gray-700">开发者信息</h4>
+        <h4 className="text-sm font-medium text-gray-700">開發者資訊</h4>
         <div className="mt-2 text-sm text-gray-500 space-y-1">
           <p>API 地址：{process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}</p>
-          <p>已连接平台：{connections.filter((c) => c.isActive).length} / 4</p>
+          <p>已連線平臺：{connections.filter((c) => c.isActive).length} / 4</p>
         </div>
       </div>
     </div>

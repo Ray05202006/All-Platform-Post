@@ -5,8 +5,8 @@ import { Strategy } from 'passport-twitter';
 
 /**
  * Twitter OAuth 1.0a Strategy
- * 注意：Twitter API v2 推荐使用 OAuth 2.0 + PKCE
- * 这里使用 OAuth 1.0a 是因为 passport-twitter 更稳定
+ * 注意：Twitter API v2 推薦使用 OAuth 2.0 + PKCE
+ * 這裡使用 OAuth 1.0a 是因為 passport-twitter 更穩定
  */
 @Injectable()
 export class TwitterStrategy extends PassportStrategy(Strategy, 'twitter') {

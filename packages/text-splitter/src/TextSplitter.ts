@@ -1,7 +1,7 @@
 import { Platform, PLATFORM_LIMITS, SplitResult } from '@all-platform-post/shared';
 
 /**
- * 特殊内容占位符
+ * 特殊內容佔位符
  */
 interface SpecialContent {
   urls: string[];
@@ -11,48 +11,48 @@ interface SpecialContent {
 }
 
 /**
- * 智能文本分割器
+ * 智慧文字分割器
  */
 export class TextSplitter {
   /**
-   * 计算 Twitter 字符长度（特殊计算规则）
-   * - 拉丁字母、数字、标点：1 字符
-   * - 中日韩文字、表情符号：2 字符
-   * - URL：固定 23 字符
+   * 計算 Twitter 字元長度（特殊計算規則）
+   * - 拉丁字母、數字、標點：1 字元
+   * - 中日韓文字、表情符號：2 字元
+   * - URL：固定 23 字元
    */
   private calculateTwitterLength(text: string): number {
     let length = 0;
 
-    // 移除 URL（后面单独计算）
+    // 移除 URL（後面單獨計算）
     const urls = text.match(/https?:\/\/\S+/g) || [];
     let textWithoutUrls = text;
     urls.forEach(url => {
       textWithoutUrls = textWithoutUrls.replace(url, '');
     });
 
-    // 计算字符权重
+    // 計算字元權重
     for (const char of textWithoutUrls) {
       const code = char.codePointAt(0)!;
 
-      // 拉丁字符范围（1 字符）
+      // 拉丁字元範圍（1 字元）
       const isSingleWeight = (
         (code >= 0x0000 && code <= 0x10FF) || // 基本拉丁字母
-        (code >= 0x2000 && code <= 0x200D) || // 标点符号
-        (code >= 0x2010 && code <= 0x201F) || // 标点符号
-        (code >= 0x2032 && code <= 0x2037)    // 引号等
+        (code >= 0x2000 && code <= 0x200D) || // 標點符號
+        (code >= 0x2010 && code <= 0x201F) || // 標點符號
+        (code >= 0x2032 && code <= 0x2037)    // 引號等
       );
 
       length += isSingleWeight ? 1 : 2;
     }
 
-    // URL 固定 23 字符
+    // URL 固定 23 字元
     length += urls.length * 23;
 
     return length;
   }
 
   /**
-   * 计算通用字符长度
+   * 計算通用字元長度
    */
   private calculateLength(text: string, platform: Platform): number {
     if (platform === 'twitter') {
@@ -62,7 +62,7 @@ export class TextSplitter {
   }
 
   /**
-   * 提取特殊内容（URL、Hashtag、Mention）
+   * 提取特殊內容（URL、Hashtag、Mention）
    */
   private extractSpecialContent(text: string): SpecialContent {
     const urls: string[] = [];
@@ -88,7 +88,7 @@ export class TextSplitter {
       mentions.push(match[0]);
     }
 
-    // 替换为占位符
+    // 替換為佔位符
     let processedText = text;
     urls.forEach((url, i) => {
       processedText = processedText.replace(url, `__URL_${i}__`);
@@ -104,7 +104,7 @@ export class TextSplitter {
   }
 
   /**
-   * 还原特殊内容
+   * 還原特殊內容
    */
   private restoreSpecialContent(text: string, special: SpecialContent): string {
     let restored = text;
@@ -123,14 +123,14 @@ export class TextSplitter {
   }
 
   /**
-   * 检测句子边界
+   * 檢測句子邊界
    */
   private detectSentences(text: string): string[] {
-    // 检测是否是中文文本
+    // 檢測是否是中文文字
     const isChinese = /[\u4e00-\u9fa5]/.test(text);
 
     if (isChinese) {
-      // 中文句子分割（按句号、问号、感叹号）
+      // 中文句子分割（按句號、問號、感嘆號）
       return text
         .split(/([。!?！？\n]+)/)
         .filter(s => s.trim())
@@ -142,7 +142,7 @@ export class TextSplitter {
           return acc;
         }, [] as string[]);
     } else {
-      // 英文句子分割（简单实现，可用 compromise.js 改进）
+      // 英文句子分割（簡單實現，可用 compromise.js 改進）
       return text
         .split(/([.!?\n]+\s+)/)
         .filter(s => s.trim())
@@ -157,13 +157,13 @@ export class TextSplitter {
   }
 
   /**
-   * 智能分割文本
+   * 智慧分割文字
    */
   public split(text: string, platform: Platform): SplitResult {
     const config = PLATFORM_LIMITS[platform];
     const maxLength = config.maxLength;
 
-    // 检查是否需要分割
+    // 檢查是否需要分割
     const totalLength = this.calculateLength(text, platform);
     if (totalLength <= maxLength) {
       return {
@@ -173,17 +173,17 @@ export class TextSplitter {
       };
     }
 
-    // 提取特殊内容
+    // 提取特殊內容
     const special = this.extractSpecialContent(text);
 
-    // 句子边界检测
+    // 句子邊界檢測
     const sentences = this.detectSentences(special.text);
 
-    // 预留编号空间（如 " (1/5)" 约 7 字符）
+    // 預留編號空間（如 " (1/5)" 約 7 字元）
     const reservedSpace = 10;
     const effectiveMaxLength = maxLength - reservedSpace;
 
-    // 组合句子为分段
+    // 組合句子為分段
     const chunks: string[] = [];
     let currentChunk = '';
 
@@ -195,19 +195,19 @@ export class TextSplitter {
       if (length <= effectiveMaxLength) {
         currentChunk = testText;
       } else {
-        // 当前句子太长，保存之前的内容
+        // 當前句子太長，儲存之前的內容
         if (currentChunk) {
           chunks.push(currentChunk);
         }
 
-        // 检查单个句子是否超长
+        // 檢查單個句子是否超長
         const sentenceRestored = this.restoreSpecialContent(sentence, special);
         const sentenceLength = this.calculateLength(sentenceRestored, platform);
 
         if (sentenceLength <= effectiveMaxLength) {
           currentChunk = sentence;
         } else {
-          // 句子本身太长，需要按字切分
+          // 句子本身太長，需要按字切分
           const words = sentence.split(/(\s+)/);
           let wordChunk = '';
 
@@ -245,12 +245,12 @@ export class TextSplitter {
       }
     }
 
-    // 添加最后一段
+    // 新增最後一段
     if (currentChunk) {
       chunks.push(currentChunk);
     }
 
-    // 还原特殊内容并添加编号
+    // 還原特殊內容並新增編號
     const restoredChunks = chunks.map((chunk, i) => {
       const restored = this.restoreSpecialContent(chunk, special);
       const totalChunks = chunks.length;
@@ -269,12 +269,12 @@ export class TextSplitter {
   }
 
   /**
-   * 批量分割（为多个平台生成分割结果）
+   * 批次分割（為多個平臺生成分割結果）
    */
   public splitForPlatforms(text: string, platforms: Platform[]): SplitResult[] {
     return platforms.map(platform => this.split(text, platform));
   }
 }
 
-// 导出单例
+// 匯出單例
 export const textSplitter = new TextSplitter();

@@ -6,9 +6,9 @@ import { Providers } from '@/components/providers';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'All-Platform-Post | 多平台发文系统',
-  description: '自建的多平台社交媒体发文系统，支持 Facebook、Instagram、Twitter、Threads',
-  keywords: ['社交媒体', '自动发文', 'Facebook', 'Instagram', 'Twitter', 'Threads'],
+  title: 'All-Platform-Post | 多平臺發文系統',
+  description: '自建的多平臺社交媒體發文系統，支援 Facebook、Instagram、Twitter、Threads',
+  keywords: ['社交媒體', '自動發文', 'Facebook', 'Instagram', 'Twitter', 'Threads'],
 };
 
 export default function RootLayout({

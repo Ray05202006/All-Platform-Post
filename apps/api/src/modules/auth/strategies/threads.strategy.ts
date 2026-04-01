@@ -3,8 +3,8 @@ import { ConfigService } from '@nestjs/config';
 import axios from 'axios';
 
 /**
- * Threads OAuth 2.0 Strategy (手动实现)
- * Threads API 使用 Facebook 的 OAuth 基础设施
+ * Threads OAuth 2.0 Strategy (手動實現)
+ * Threads API 使用 Facebook 的 OAuth 基礎設施
  * 但需要特定的 scope 和 endpoints
  */
 @Injectable()
@@ -20,7 +20,7 @@ export class ThreadsStrategy {
   }
 
   /**
-   * 生成 Threads 授权 URL
+   * 生成 Threads 授權 URL
    */
   getAuthorizationUrl(state: string): string {
     const baseUrl = 'https://threads.net/oauth/authorize';
@@ -36,7 +36,7 @@ export class ThreadsStrategy {
   }
 
   /**
-   * 交换授权码获取 access token
+   * 交換授權碼獲取 access token
    */
   async exchangeCodeForToken(code: string): Promise<{
     accessToken: string;
@@ -65,7 +65,7 @@ export class ThreadsStrategy {
   }
 
   /**
-   * 获取长期 token（60 天）
+   * 獲取長期 token（60 天）
    */
   async getLongLivedToken(shortLivedToken: string): Promise<{
     accessToken: string;
@@ -89,7 +89,7 @@ export class ThreadsStrategy {
   }
 
   /**
-   * 获取用户资料
+   * 獲取使用者資料
    */
   async getUserProfile(accessToken: string): Promise<{
     id: string;

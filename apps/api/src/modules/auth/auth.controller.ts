@@ -38,7 +38,7 @@ export class AuthController {
   }
 
   /**
-   * 开发用：获取临时 JWT token
+   * 開發用：獲取臨時 JWT token
    */
   @Public()
   @Throttle({ default: { ttl: 60000, limit: 5 } })
@@ -58,7 +58,7 @@ export class AuthController {
   @Get('google')
   @UseGuards(AuthGuard('google'))
   async googleAuth() {
-    // Passport 会自动重定向到 Google
+    // Passport 會自動重定向到 Google
   }
 
   @Public()
@@ -99,7 +99,7 @@ export class AuthController {
   @Get('facebook')
   @UseGuards(AuthGuard('facebook'))
   async facebookAuth() {
-    // Passport 会自动重定向到 Facebook
+    // Passport 會自動重定向到 Facebook
   }
 
   @Public()
@@ -109,12 +109,12 @@ export class AuthController {
     try {
       const profile = req.user as OAuthProfile;
 
-      // 获取或创建开发用户（正式环境应从 session 获取）
+      // 獲取或建立開發使用者（正式環境應從 session 獲取）
       const user = await this.authService.getOrCreateDevUser();
 
       await this.authService.handleOAuthCallback(user.id, profile);
 
-      // 重定向回前端设置页面
+      // 重定向回前端設定頁面
       const frontendUrl = this.configService.get<string>('NEXT_PUBLIC_APP_URL');
       res.redirect(`${frontendUrl}/dashboard/settings?connected=facebook`);
     } catch (error) {
@@ -130,7 +130,7 @@ export class AuthController {
   @Get('twitter')
   @UseGuards(AuthGuard('twitter'))
   async twitterAuth() {
-    // Passport 会自动重定向到 Twitter
+    // Passport 會自動重定向到 Twitter
   }
 
   @Public()
@@ -179,25 +179,25 @@ export class AuthController {
     }
 
     try {
-      // TODO: 验证 state 参数
+      // TODO: 驗證 state 引數
 
-      // 交换授权码
+      // 交換授權碼
       const { accessToken } =
         await this.threadsStrategy.exchangeCodeForToken(code);
 
-      // 获取长期 token
+      // 獲取長期 token
       const longLivedToken =
         await this.threadsStrategy.getLongLivedToken(accessToken);
 
-      // 获取用户资料
+      // 獲取使用者資料
       const profile = await this.threadsStrategy.getUserProfile(
         longLivedToken.accessToken,
       );
 
-      // 获取开发用户
+      // 獲取開發使用者
       const user = await this.authService.getOrCreateDevUser();
 
-      // 保存连接
+      // 儲存連線
       await this.authService.handleOAuthCallback(user.id, {
         provider: 'threads',
         providerId: profile.id,
@@ -217,7 +217,7 @@ export class AuthController {
   }
 
   // ==================== Instagram OAuth ====================
-  // Instagram 使用 Facebook OAuth，通过 Facebook Pages 关联
+  // Instagram 使用 Facebook OAuth，透過 Facebook Pages 關聯
 
   @Public()
   @Get('instagram')
@@ -234,7 +234,7 @@ export class AuthController {
       const facebookProfile = req.user as OAuthProfile;
       const user = await this.authService.getOrCreateDevUser();
 
-      // 保存为 Instagram 连接（通过 Facebook 获取 Instagram Business Account）
+      // 儲存為 Instagram 連線（透過 Facebook 獲取 Instagram Business Account）
       await this.authService.handleOAuthCallback(user.id, {
         ...facebookProfile,
         provider: 'instagram',
@@ -249,7 +249,7 @@ export class AuthController {
     }
   }
 
-  // ==================== 连接管理 ====================
+  // ==================== 連線管理 ====================
 
   @Get('connections')
   async getConnections(@CurrentUser() user: any) {

@@ -32,7 +32,7 @@ export class AuthService {
   ) {}
 
   /**
-   * 处理 OAuth 回调，创建或更新平台连接
+   * 處理 OAuth 回撥，建立或更新平臺連線
    */
   async handleOAuthCallback(
     userId: string,
@@ -46,7 +46,7 @@ export class AuthService {
       ? this.encryptionService.encrypt(profile.refreshToken)
       : null;
 
-    // 创建或更新平台连接
+    // 建立或更新平臺連線
     const connection = await this.prisma.platformConnection.upsert({
       where: {
         userId_platform: {
@@ -81,7 +81,7 @@ export class AuthService {
   }
 
   /**
-   * 获取用户的所有平台连接
+   * 獲取使用者的所有平臺連線
    */
   async getUserConnections(userId: string) {
     const connections = await this.prisma.platformConnection.findMany({
@@ -100,7 +100,7 @@ export class AuthService {
   }
 
   /**
-   * 获取解密后的平台 access token
+   * 獲取解密後的平臺 access token
    */
   async getDecryptedToken(
     userId: string,
@@ -116,9 +116,9 @@ export class AuthService {
       return null;
     }
 
-    // 检查 token 是否过期
+    // 檢查 token 是否過期
     if (connection.tokenExpiresAt && connection.tokenExpiresAt < new Date()) {
-      // TODO: 实现 token 刷新逻辑
+      // TODO: 實現 token 重新整理邏輯
       throw new UnauthorizedException(
         `${platform} token has expired. Please reconnect.`,
       );
@@ -128,7 +128,7 @@ export class AuthService {
   }
 
   /**
-   * 断开平台连接
+   * 斷開平臺連線
    */
   async disconnectPlatform(userId: string, platform: string) {
     await this.prisma.platformConnection.update({
@@ -154,14 +154,14 @@ export class AuthService {
   }
 
   /**
-   * 同步验证 JWT token 字符串，返回 payload
+   * 同步驗證 JWT token 字串，返回 payload
    */
   validateJwtTokenSync(token: string): JwtPayload {
     return this.jwtService.verify<JwtPayload>(token);
   }
 
   /**
-   * 验证 JWT token
+   * 驗證 JWT token
    */
   async validateJwtToken(payload: JwtPayload) {
     const user = await this.prisma.user.findUnique({
@@ -176,7 +176,7 @@ export class AuthService {
   }
 
   /**
-   * 获取或创建用户（简化版，用于开发）
+   * 獲取或建立使用者（簡化版，用於開發）
    */
   async getOrCreateDevUser(email: string = 'dev@example.com') {
     let user = await this.prisma.user.findUnique({
@@ -196,7 +196,7 @@ export class AuthService {
   }
 
   /**
-   * 通过 OAuth 信息查找或创建用户（用于登入）
+   * 透過 OAuth 資訊查詢或建立使用者（用於登入）
    */
   async findOrCreateUserByOAuth(
     provider: string,
@@ -205,13 +205,13 @@ export class AuthService {
     name?: string,
     avatarUrl?: string,
   ) {
-    // 先按 provider + providerId 查找
+    // 先按 provider + providerId 查詢
     let user = await this.prisma.user.findFirst({
       where: { provider, providerId },
     });
 
     if (!user) {
-      // 按 email 查找（关联已有帐号）
+      // 按 email 查詢（關聯已有帳號）
       user = await this.prisma.user.findUnique({ where: { email } });
 
       if (user) {
@@ -230,7 +230,7 @@ export class AuthService {
   }
 
   /**
-   * 获取当前用户资料
+   * 獲取當前使用者資料
    */
   async getCurrentUser(userId: string) {
     const user = await this.prisma.user.findUnique({
@@ -246,8 +246,8 @@ export class AuthService {
   }
 
   /**
-   * 生成 OAuth state（用于平台连接时传递用户身份）
-   * 签发一个短期 JWT (5分钟)，包含 userId
+   * 生成 OAuth state（用於平臺連線時傳遞使用者身份）
+   * 簽發一個短期 JWT (5分鐘)，包含 userId
    */
   generateOAuthState(userId: string): string {
     return this.jwtService.sign(
@@ -257,7 +257,7 @@ export class AuthService {
   }
 
   /**
-   * 从 OAuth state 中提取 userId
+   * 從 OAuth state 中提取 userId
    */
   extractUserIdFromState(state: string): string | null {
     try {

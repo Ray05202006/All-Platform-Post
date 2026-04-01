@@ -8,8 +8,8 @@ export interface FacebookPublishResult {
 }
 
 /**
- * Facebook Pages API 服务
- * 文档: https://developers.facebook.com/docs/pages/publishing
+ * Facebook Pages API 服務
+ * 文件: https://developers.facebook.com/docs/pages/publishing
  */
 @Injectable()
 export class FacebookService {
@@ -17,7 +17,7 @@ export class FacebookService {
   private readonly graphApiUrl = 'https://graph.facebook.com/v19.0';
 
   /**
-   * 获取用户的 Facebook Pages
+   * 獲取使用者的 Facebook Pages
    */
   async getPages(accessToken: string): Promise<any[]> {
     try {
@@ -35,7 +35,7 @@ export class FacebookService {
   }
 
   /**
-   * 发布文字贴文到 Facebook Page
+   * 釋出文字貼文到 Facebook Page
    */
   async publishTextPost(
     pageId: string,
@@ -67,7 +67,7 @@ export class FacebookService {
   }
 
   /**
-   * 发布带图片的贴文
+   * 釋出帶圖片的貼文
    */
   async publishPhotoPost(
     pageId: string,
@@ -101,7 +101,7 @@ export class FacebookService {
   }
 
   /**
-   * 发布留言到贴文
+   * 釋出留言到貼文
    */
   async publishComment(
     postId: string,

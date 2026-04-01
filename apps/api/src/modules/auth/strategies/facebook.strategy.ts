@@ -5,7 +5,7 @@ import { ConfigService } from '@nestjs/config';
 
 /**
  * Facebook OAuth 2.0 Strategy
- * 用于连接 Facebook Pages 和 Instagram Business Accounts
+ * 用於連線 Facebook Pages 和 Instagram Business Accounts
  */
 @Injectable()
 export class FacebookStrategy extends PassportStrategy(Strategy, 'facebook') {

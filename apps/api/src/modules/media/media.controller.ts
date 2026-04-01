@@ -22,7 +22,7 @@ export class MediaController {
   constructor(private mediaService: MediaService) {}
 
   /**
-   * 上传单个文件
+   * 上傳單個檔案
    */
   @Post('upload')
 
@@ -40,11 +40,11 @@ export class MediaController {
   }
 
   /**
-   * 上传多个文件
+   * 上傳多個檔案
    */
   @Post('upload-multiple')
 
-  @UseInterceptors(FilesInterceptor('files', 10)) // 最多 10 个文件
+  @UseInterceptors(FilesInterceptor('files', 10)) // 最多 10 個檔案
   async uploadMultipleFiles(@UploadedFiles() files: Express.Multer.File[]) {
     if (!files || files.length === 0) {
       throw new BadRequestException('No files uploaded');
@@ -58,7 +58,7 @@ export class MediaController {
   }
 
   /**
-   * 验证文件是否符合平台要求
+   * 驗證檔案是否符合平臺要求
    */
   @Post('validate')
 
@@ -78,7 +78,7 @@ export class MediaController {
   }
 
   /**
-   * 获取文件信息
+   * 獲取檔案資訊
    */
   @Get(':filename/info')
 
@@ -91,7 +91,7 @@ export class MediaController {
   }
 
   /**
-   * 删除文件
+   * 刪除檔案
    */
   @Delete(':filename')
 
@@ -101,8 +101,8 @@ export class MediaController {
   }
 
   /**
-   * 提供静态文件访问（开发用）
-   * 生产环境应该由 Nginx 或 CDN 提供
+   * 提供靜態檔案訪問（開發用）
+   * 生產環境應該由 Nginx 或 CDN 提供
    */
   @Get(':filename')
 

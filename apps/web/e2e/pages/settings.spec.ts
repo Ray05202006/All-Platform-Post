@@ -6,12 +6,12 @@ test.describe('Settings Page', () => {
   test.describe('Page Structure', () => {
     test('should display settings heading', async ({ authenticatedPage }) => {
       await authenticatedPage.goto('/dashboard/settings');
-      await expect(authenticatedPage.locator('h2')).toContainText('设置');
+      await expect(authenticatedPage.locator('h2')).toContainText('設定');
     });
 
     test('should display platform connections section', async ({ authenticatedPage }) => {
       await authenticatedPage.goto('/dashboard/settings');
-      await expect(authenticatedPage.getByRole('heading', { name: '平台连接' })).toBeVisible();
+      await expect(authenticatedPage.getByRole('heading', { name: '平臺連線' })).toBeVisible();
     });
 
     test('should display all four platforms', async ({ authenticatedPage }) => {
@@ -71,19 +71,19 @@ test.describe('Settings Page', () => {
   test.describe('OAuth Callback Handling', () => {
     test('should show success notification after OAuth callback', async ({ authenticatedPage }) => {
       await authenticatedPage.goto('/dashboard/settings?connected=facebook');
-      await expect(authenticatedPage.getByText(/成功连接|已连接.*facebook/i)).toBeVisible();
+      await expect(authenticatedPage.getByText(/成功連線|已連線.*facebook/i)).toBeVisible();
     });
 
     test('should show error notification on OAuth failure', async ({ authenticatedPage }) => {
       await authenticatedPage.goto('/dashboard/settings?error=facebook_failed');
-      await expect(authenticatedPage.getByText(/连接失败|错误/)).toBeVisible();
+      await expect(authenticatedPage.getByText(/連線失敗|錯誤/)).toBeVisible();
     });
 
     test('should auto-hide notification after delay', async ({ authenticatedPage }) => {
       await authenticatedPage.goto('/dashboard/settings?connected=facebook');
 
       // Look for the notification in the specific notification banner
-      const notification = authenticatedPage.locator('.bg-green-50').getByText(/成功连接|已连接/);
+      const notification = authenticatedPage.locator('.bg-green-50').getByText(/成功連線|已連線/);
       await expect(notification).toBeVisible();
 
       // Wait for notification to disappear (usually 5 seconds)
@@ -114,9 +114,9 @@ test.describe('Settings Page', () => {
 
       // Should have 2 disconnect buttons (for connected platforms)
       await expect(authenticatedPage.locator(SELECTORS.disconnectButton)).toHaveCount(2);
-      // Connect buttons include "连接" text which also appears in "断开连接"
+      // Connect buttons include "連線" text which also appears in "斷開連線"
       // Use exact text match for connect button
-      await expect(authenticatedPage.getByRole('button', { name: '连接', exact: true })).toHaveCount(2);
+      await expect(authenticatedPage.getByRole('button', { name: '連線', exact: true })).toHaveCount(2);
     });
   });
 });
