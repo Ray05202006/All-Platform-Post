@@ -17,7 +17,7 @@ export enum Platform {
 
 export class CreatePostDto {
   @IsString()
-  @MaxLength(63206) // Facebook 最大长度
+  @MaxLength(63206) // Facebook 最大長度
   content: string;
 
   @IsArray()

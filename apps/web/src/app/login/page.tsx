@@ -46,7 +46,7 @@ export default function LoginPage() {
             All-Platform-Post
           </h1>
           <p className="text-gray-600 mt-2">
-            多平台社交媒体发文系统
+            多平臺社交媒體發文系統
           </p>
         </div>
 
@@ -80,7 +80,7 @@ export default function LoginPage() {
               />
             </svg>
             <span className="text-gray-700 font-medium">
-              使用 Google 帐号登入
+              使用 Google 帳號登入
             </span>
           </button>
 
@@ -92,7 +92,7 @@ export default function LoginPage() {
                 </div>
                 <div className="relative flex justify-center text-sm">
                   <span className="px-2 bg-white text-gray-500">
-                    开发模式
+                    開發模式
                   </span>
                 </div>
               </div>

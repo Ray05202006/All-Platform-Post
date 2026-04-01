@@ -7,7 +7,7 @@ test.describe('Post History Page', () => {
   test.describe('Page Structure', () => {
     test('should display history heading', async ({ authenticatedPage }) => {
       await authenticatedPage.goto('/dashboard/history');
-      await expect(authenticatedPage.getByRole('heading', { name: '发文历史' })).toBeVisible();
+      await expect(authenticatedPage.getByRole('heading', { name: '發文歷史' })).toBeVisible();
     });
   });
 
@@ -54,7 +54,7 @@ test.describe('Post History Page', () => {
     test('should show empty state when no posts', async ({ authenticatedPage }) => {
       await setupApiMocks(authenticatedPage, { posts: [] });
       await authenticatedPage.goto('/dashboard/history');
-      await expect(authenticatedPage.getByText('暂无贴文记录')).toBeVisible();
+      await expect(authenticatedPage.getByText('暫無貼文記錄')).toBeVisible();
     });
   });
 
@@ -81,7 +81,7 @@ test.describe('Post History Page', () => {
 
       await expect(authenticatedPage.getByText('My published post')).toBeVisible();
       // Status badge is a span, not a button
-      await expect(authenticatedPage.locator('span:has-text("已发布")')).toBeVisible();
+      await expect(authenticatedPage.locator('span:has-text("已釋出")')).toBeVisible();
     });
 
     test('should show failed status badge', async ({ authenticatedPage }) => {
@@ -95,7 +95,7 @@ test.describe('Post History Page', () => {
 
       await expect(authenticatedPage.getByText('My failed post')).toBeVisible();
       // Status badge is a span, not a button
-      await expect(authenticatedPage.locator('span:has-text("失败")')).toBeVisible();
+      await expect(authenticatedPage.locator('span:has-text("失敗")')).toBeVisible();
     });
 
     test('should show publish results for published posts', async ({ authenticatedPage }) => {
@@ -107,7 +107,7 @@ test.describe('Post History Page', () => {
       });
       await authenticatedPage.goto('/dashboard/history');
 
-      await expect(authenticatedPage.getByText('发布结果')).toBeVisible();
+      await expect(authenticatedPage.getByText('釋出結果')).toBeVisible();
     });
 
     test('should show error message for failed posts', async ({ authenticatedPage }) => {

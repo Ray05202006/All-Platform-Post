@@ -7,7 +7,7 @@ import { randomBytes } from 'crypto';
 import { MediaController } from './media.controller';
 import { MediaService } from './media.service';
 
-// 确保上传目录存在
+// 確保上傳目錄存在
 const uploadDir = join(process.cwd(), 'uploads', 'media');
 if (!existsSync(uploadDir)) {
   mkdirSync(uploadDir, { recursive: true });

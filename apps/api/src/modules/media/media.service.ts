@@ -18,7 +18,7 @@ export interface ProcessedMedia extends MediaFile {
   thumbnail?: string;
 }
 
-// 各平台媒体限制
+// 各平臺媒體限制
 const PLATFORM_LIMITS = {
   facebook: {
     image: { maxSize: 4 * 1024 * 1024, maxDimension: 4096 },
@@ -44,7 +44,7 @@ export class MediaService {
   private readonly uploadDir = join(process.cwd(), 'uploads', 'media');
 
   /**
-   * 处理上传的图片
+   * 處理上傳的圖片
    */
   async processImage(file: Express.Multer.File): Promise<ProcessedMedia> {
     const filePath = file.path;
@@ -58,7 +58,7 @@ export class MediaService {
       let width = metadata.width;
       let height = metadata.height;
 
-      // 如果图片过大，进行压缩
+      // 如果圖片過大，進行壓縮
       needsResize = (width && width > 1440) || (height && height > 1440);
       if (needsResize) {
         const resizedFilename = this.getResizedFilename(file.filename);
@@ -72,7 +72,7 @@ export class MediaService {
           .jpeg({ quality: 85 })
           .toFile(processedPath);
 
-        // 获取调整后的尺寸
+        // 獲取調整後的尺寸
         const resizedMetadata = await sharp(processedPath).metadata();
         width = resizedMetadata.width;
         height = resizedMetadata.height;
@@ -80,7 +80,7 @@ export class MediaService {
         this.logger.log(`Resized image from ${metadata.width}x${metadata.height} to ${width}x${height}`);
       }
 
-      // 生成缩略图
+      // 生成縮圖
       const thumbnailFilename = this.getThumbnailFilename(file.filename);
       const thumbnailPath = join(this.uploadDir, thumbnailFilename);
       const thumbnailImage = sharp(processedPath).resize(200, 200, { fit: 'cover' });
@@ -93,7 +93,7 @@ export class MediaService {
         await thumbnailImage.jpeg({ quality: 70 }).toFile(thumbnailPath);
       }
 
-      // 只有所有处理都成功后才删除原始文件
+      // 只有所有處理都成功後才刪除原始檔案
       if (needsResize && filePath !== processedPath && existsSync(filePath)) {
         unlinkSync(filePath);
       }
@@ -128,10 +128,10 @@ export class MediaService {
   }
 
   /**
-   * 处理上传的视频（目前只做基本验证，不做转码）
+   * 處理上傳的影片（目前只做基本驗證，不做轉碼）
    */
   async processVideo(file: Express.Multer.File): Promise<ProcessedMedia> {
-    // 视频处理暂时只验证大小
+    // 影片處理暫時只驗證大小
     const maxSize = 100 * 1024 * 1024; // 100MB
     if (file.size > maxSize) {
       throw new BadRequestException(`Video size exceeds maximum limit of ${maxSize / 1024 / 1024}MB`);
@@ -148,7 +148,7 @@ export class MediaService {
   }
 
   /**
-   * 处理上传的文件（自动检测类型）
+   * 處理上傳的檔案（自動檢測型別）
    */
   async processUpload(file: Express.Multer.File): Promise<ProcessedMedia> {
     if (file.mimetype.startsWith('image/')) {
@@ -161,14 +161,14 @@ export class MediaService {
   }
 
   /**
-   * 批量处理上传
+   * 批次處理上傳
    */
   async processMultipleUploads(files: Express.Multer.File[]): Promise<ProcessedMedia[]> {
     return Promise.all(files.map((file) => this.processUpload(file)));
   }
 
   /**
-   * 验证媒体文件是否符合平台要求
+   * 驗證媒體檔案是否符合平臺要求
    */
   validateForPlatform(media: ProcessedMedia, platform: string): { valid: boolean; errors: string[] } {
     const errors: string[] = [];
@@ -192,7 +192,7 @@ export class MediaService {
         errors.push(`Image height exceeds ${platform} limit of ${limits.image.maxDimension}px`);
       }
 
-      // Instagram/Threads 宽高比检查
+      // Instagram/Threads 寬高比檢查
       if ('aspectRatio' in limits.image && media.width && media.height) {
         const aspectRatio = media.width / media.height;
         const { min, max } = limits.image.aspectRatio as { min: number; max: number };
@@ -215,7 +215,7 @@ export class MediaService {
   }
 
   /**
-   * 验证媒体文件是否符合所有目标平台要求
+   * 驗證媒體檔案是否符合所有目標平臺要求
    */
   validateForPlatforms(media: ProcessedMedia, platforms: string[]): { valid: boolean; errors: Record<string, string[]> } {
     const allErrors: Record<string, string[]> = {};
@@ -233,7 +233,7 @@ export class MediaService {
   }
 
   /**
-   * 删除媒体文件
+   * 刪除媒體檔案
    */
   async deleteMedia(filename: string): Promise<void> {
     const sanitized = basename(filename);
@@ -254,7 +254,7 @@ export class MediaService {
   }
 
   /**
-   * 获取媒体文件信息
+   * 獲取媒體檔案資訊
    */
   async getMediaInfo(filename: string): Promise<ProcessedMedia | null> {
     const sanitized = basename(filename);

@@ -51,7 +51,7 @@ export default function DashboardLayout({
                 href="/dashboard"
                 className="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
               >
-                发文
+                發文
               </Link>
               <Link
                 href="/dashboard/scheduled"
@@ -63,13 +63,13 @@ export default function DashboardLayout({
                 href="/dashboard/history"
                 className="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
               >
-                历史
+                歷史
               </Link>
               <Link
                 href="/dashboard/settings"
                 className="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
               >
-                设置
+                設定
               </Link>
               <div className="flex items-center space-x-3 ml-4 pl-4 border-l border-gray-200">
                 {user?.avatarUrl && (

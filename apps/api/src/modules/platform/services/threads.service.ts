@@ -8,8 +8,8 @@ export interface ThreadsPublishResult {
 }
 
 /**
- * Threads API 服务
- * 文档: https://developers.facebook.com/docs/threads
+ * Threads API 服務
+ * 文件: https://developers.facebook.com/docs/threads
  */
 @Injectable()
 export class ThreadsService {
@@ -17,7 +17,7 @@ export class ThreadsService {
   private readonly apiUrl = 'https://graph.threads.net/v1.0';
 
   /**
-   * 创建文字 Thread
+   * 建立文字 Thread
    */
   async createTextThread(
     userId: string,
@@ -46,7 +46,7 @@ export class ThreadsService {
   }
 
   /**
-   * 创建图片 Thread
+   * 建立圖片 Thread
    */
   async createImageThread(
     userId: string,
@@ -70,7 +70,7 @@ export class ThreadsService {
   }
 
   /**
-   * 发布 Thread Container
+   * 釋出 Thread Container
    */
   async publishThread(
     userId: string,
@@ -102,7 +102,7 @@ export class ThreadsService {
   }
 
   /**
-   * 发布文字贴文
+   * 釋出文字貼文
    */
   async publishTextPost(
     userId: string,
@@ -110,14 +110,14 @@ export class ThreadsService {
     text: string,
   ): Promise<ThreadsPublishResult> {
     try {
-      // Step 1: 创建容器
+      // Step 1: 建立容器
       const { containerId } = await this.createTextThread(
         userId,
         accessToken,
         text,
       );
 
-      // Step 2: 发布容器
+      // Step 2: 釋出容器
       return await this.publishThread(userId, accessToken, containerId);
     } catch (error) {
       this.logger.error('Threads text post error:', error.response?.data);
@@ -128,7 +128,7 @@ export class ThreadsService {
   }
 
   /**
-   * 发布串文（回复自己形成串联）
+   * 釋出串文（回覆自己形成串聯）
    */
   async publishThreadChain(
     userId: string,
@@ -140,7 +140,7 @@ export class ThreadsService {
 
     for (const text of texts) {
       try {
-        // 创建容器（可能是回复）
+        // 建立容器（可能是回覆）
         const { containerId } = await this.createTextThread(
           userId,
           accessToken,
@@ -148,7 +148,7 @@ export class ThreadsService {
           previousThreadId,
         );
 
-        // 发布
+        // 釋出
         const result = await this.publishThread(userId, accessToken, containerId);
         results.push(result);
 
@@ -158,7 +158,7 @@ export class ThreadsService {
 
         previousThreadId = result.threadId;
 
-        // 添加延迟避免速率限制
+        // 新增延遲避免速率限制
         await new Promise((resolve) => setTimeout(resolve, 1000));
       } catch (error) {
         results.push({
@@ -172,7 +172,7 @@ export class ThreadsService {
   }
 
   /**
-   * 获取用户资料
+   * 獲取使用者資料
    */
   async getUserProfile(accessToken: string): Promise<{
     id: string;

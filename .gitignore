@@ -7,6 +7,8 @@ dist/
 build/
 .next/
 out/
+next-env.d.ts
+tsconfig.tsbuildinfo
 
 # Environment variables
 .env
@@ -47,8 +49,8 @@ prisma/migrations/
 .cache/
 
 # Playwright
-/test-results/
-/playwright-report/
-/blob-report/
-/playwright/.cache/
-/playwright/.auth/
+test-results/
+playwright-report/
+blob-report/
+playwright/.cache/
+playwright/.auth/

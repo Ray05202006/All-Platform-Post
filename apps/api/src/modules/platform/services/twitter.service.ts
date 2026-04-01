@@ -20,8 +20,8 @@ export interface TwitterPublishResult {
 }
 
 /**
- * Twitter API v2 服务
- * 文档: https://developer.twitter.com/en/docs/twitter-api
+ * Twitter API v2 服務
+ * 文件: https://developer.twitter.com/en/docs/twitter-api
  */
 @Injectable()
 export class TwitterService {
@@ -29,8 +29,8 @@ export class TwitterService {
   private readonly apiUrl = 'https://api.twitter.com/2';
 
   /**
-   * 生成 OAuth 1.0a 签名
-   * Twitter API v2 仍需要 OAuth 1.0a 进行用户认证操作
+   * 生成 OAuth 1.0a 簽名
+   * Twitter API v2 仍需要 OAuth 1.0a 進行使用者認證操作
    */
   private generateOAuthSignature(
     method: string,
@@ -92,7 +92,7 @@ export class TwitterService {
   }
 
   /**
-   * 发布推文
+   * 釋出推文
    */
   async publishTweet(
     text: string,
@@ -143,8 +143,8 @@ export class TwitterService {
   }
 
   /**
-   * 发布串文（Thread）
-   * 将长文分割成多条推文串连发布
+   * 釋出串文（Thread）
+   * 將長文分割成多條推文串連發布
    */
   async publishThread(
     tweets: string[],
@@ -169,12 +169,12 @@ export class TwitterService {
       results.push(result);
 
       if (result.error) {
-        break; // 如果有错误，停止发布后续推文
+        break; // 如果有錯誤，停止釋出後續推文
       }
 
       previousTweetId = result.tweetId;
 
-      // 添加延迟避免速率限制
+      // 新增延遲避免速率限制
       await new Promise((resolve) => setTimeout(resolve, 1000));
     }
 
@@ -182,26 +182,26 @@ export class TwitterService {
   }
 
   /**
-   * 计算 Twitter 字符长度
-   * 中日韩字符算 2 字符，URL 固定算 23 字符
+   * 計算 Twitter 字元長度
+   * 中日韓字元算 2 字元，URL 固定算 23 字元
    */
   calculateLength(text: string): number {
     let length = 0;
 
-    // 移除 URL（后面单独计算）
+    // 移除 URL（後面單獨計算）
     const urls = text.match(/https?:\/\/\S+/g) || [];
     let textWithoutUrls = text;
     urls.forEach((url) => {
       textWithoutUrls = textWithoutUrls.replace(url, '');
     });
 
-    // 计算字符权重
+    // 計算字元權重
     for (const char of textWithoutUrls) {
       const code = char.codePointAt(0)!;
       length += isCJKChar(code) ? 2 : 1;
     }
 
-    // URL 固定 23 字符
+    // URL 固定 23 字元
     length += urls.length * 23;
 
     return length;

@@ -1,0 +1,51 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "if echo \"$CLAUDE_FILE_PATH\" | grep -qE '\\.env$'; then echo 'BLOCK: Do not edit .env files directly. Edit .env.example instead and ask the user to update .env manually.' >&2; exit 2; fi"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "if echo \"$CLAUDE_FILE_PATH\" | grep -qE '\\.(ts|tsx|js|jsx)$'; then cd /home/ray0520/All-Platform-Post && npx eslint --fix \"$CLAUDE_FILE_PATH\" 2>/dev/null; exit 0; fi"
+          }
+        ]
+      }
+    ]
+  },
+  "permissions": {
+    "allow": [
+      "Bash(pnpm dev:*)",
+      "Bash(pnpm build:*)",
+      "Bash(pnpm lint:*)",
+      "Bash(pnpm test:*)",
+      "Bash(pnpm install)",
+      "Bash(pnpm add:*)",
+      "Bash(pnpm prisma:*)",
+      "Bash(npx playwright:*)",
+      "Bash(docker compose:*)",
+      "Bash(git pull)",
+      "Bash(git fetch:*)",
+      "Bash(git status)",
+      "Bash(git log:*)",
+      "Bash(git diff:*)",
+      "Bash(git branch:*)",
+      "Bash(make dev)",
+      "Bash(make stop)",
+      "Bash(make db-migrate)",
+      "Bash(make db-studio)",
+      "Bash(jq:*)",
+      "Bash(node:*)"
+    ]
+  }
+}

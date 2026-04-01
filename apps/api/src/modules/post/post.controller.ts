@@ -18,7 +18,7 @@ export class PostController {
   constructor(private postService: PostService) {}
 
   /**
-   * 创建新贴文（草稿或排程）
+   * 建立新貼文（草稿或排程）
    */
   @Post()
   async createPost(@CurrentUser() user: any, @Body() dto: CreatePostDto) {
@@ -26,7 +26,7 @@ export class PostController {
   }
 
   /**
-   * 立即发布贴文
+   * 立即釋出貼文
    */
   @Post(':id/publish')
   async publishPost(@CurrentUser() user: any, @Param('id') postId: string) {
@@ -34,7 +34,7 @@ export class PostController {
   }
 
   /**
-   * 更新排程时间
+   * 更新排程時間
    */
   @Put(':id/schedule')
   async updateSchedule(
@@ -54,7 +54,7 @@ export class PostController {
   }
 
   /**
-   * 获取排程状态
+   * 獲取排程狀態
    */
   @Get(':id/schedule-status')
   async getScheduleStatus(@Param('id') postId: string) {
@@ -62,7 +62,7 @@ export class PostController {
   }
 
   /**
-   * 获取用户的所有贴文
+   * 獲取使用者的所有貼文
    */
   @Get()
   async getUserPosts(
@@ -73,7 +73,7 @@ export class PostController {
   }
 
   /**
-   * 获取单个贴文
+   * 獲取單個貼文
    */
   @Get(':id')
   async getPost(@CurrentUser() user: any, @Param('id') postId: string) {
@@ -81,7 +81,7 @@ export class PostController {
   }
 
   /**
-   * 删除贴文
+   * 刪除貼文
    */
   @Delete(':id')
   async deletePost(@CurrentUser() user: any, @Param('id') postId: string) {
@@ -89,7 +89,7 @@ export class PostController {
   }
 
   /**
-   * 预览分割结果
+   * 預覽分割結果
    */
   @Post('preview-split')
   async previewSplit(

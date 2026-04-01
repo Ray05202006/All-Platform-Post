@@ -6,7 +6,7 @@ export const TEST_POSTS = {
   withHashtags: 'Check out this amazing post! #testing #e2e #playwright #automation',
   withUrl: 'Check out https://example.com for more information about our product!',
   withMention: 'Thanks @testuser for the great feedback on our project!',
-  chinese: '这是一条中文测试贴文，用于测试字符计算功能是否正确处理中文字符。',
+  chinese: '這是一條中文測試貼文，用於測試字元計算功能是否正確處理中文字元。',
   mixed: 'Hello 你好 World 世界! Testing mixed content with #hashtags and https://example.com',
   emoji: 'Great news! 🎉 Our new feature is live! 🚀 Check it out! ✨',
 };
@@ -34,16 +34,16 @@ export const PLATFORM_ICONS = {
 };
 
 export const SELECTORS = {
-  contentTextarea: 'textarea[placeholder="输入贴文内容..."]',
+  contentTextarea: 'textarea[placeholder="輸入貼文內容..."]',
 
   platformLabel: (platform: string) => `label:has-text("${getPlatformDisplayName(platform)}")`,
   platformCheckbox: (platform: string) => `input[type="checkbox"][value="${platform}"]`,
 
-  publishButton: 'button:has-text("立即发布")',
-  scheduleButton: 'button:has-text("排程发布")',
-  saveDraftButton: 'button:has-text("保存草稿")',
+  publishButton: 'button:has-text("立即釋出")',
+  scheduleButton: 'button:has-text("排程釋出")',
+  saveDraftButton: 'button:has-text("儲存草稿")',
 
-  scheduleToggle: 'text=设置排程',
+  scheduleToggle: 'text=設定排程',
   scheduleDateInput: 'input[type="datetime-local"]',
 
   mediaUploadButton: 'button:has-text("+")',
@@ -51,36 +51,36 @@ export const SELECTORS = {
   mediaRemoveButton: 'button:has-text("×")',
 
   // Navigation links (short form in navbar) - use nav context
-  navDashboard: 'nav a:has-text("发文")',
+  navDashboard: 'nav a:has-text("發文")',
   navScheduled: 'nav a:has-text("排程")',
-  navHistory: 'nav a:has-text("历史")',
-  navSettings: 'nav a:has-text("设置")',
+  navHistory: 'nav a:has-text("歷史")',
+  navSettings: 'nav a:has-text("設定")',
 
-  connectButton: 'button:has-text("连接")',
-  disconnectButton: 'button:has-text("断开连接")',
+  connectButton: 'button:has-text("連線")',
+  disconnectButton: 'button:has-text("斷開連線")',
 
   filterAll: 'button:has-text("全部")',
   filterDraft: 'button:has-text("草稿")',
   filterScheduled: 'button:has-text("已排程")',
-  filterPublished: 'button:has-text("已发布")',
-  filterFailed: 'button:has-text("失败")',
+  filterPublished: 'button:has-text("已釋出")',
+  filterFailed: 'button:has-text("失敗")',
 
-  retryButton: 'button:has-text("重试发布")',
-  deleteButton: 'button:has-text("删除")',
-  editTimeButton: 'button:has-text("修改时间")',
+  retryButton: 'button:has-text("重試釋出")',
+  deleteButton: 'button:has-text("刪除")',
+  editTimeButton: 'button:has-text("修改時間")',
   cancelScheduleButton: 'button:has-text("取消排程")',
 
   heading: {
-    dashboard: 'h2:has-text("发文编辑器")',
+    dashboard: 'h2:has-text("發文編輯器")',
     scheduled: 'h1:has-text("排程管理")',
-    history: 'h1:has-text("发文历史")',
-    settings: 'h2:has-text("设置")',
+    history: 'h1:has-text("發文歷史")',
+    settings: 'h2:has-text("設定")',
   },
 
   emptyState: {
-    scheduled: 'text=暂无排程贴文',
-    history: 'text=暂无贴文记录',
-    noPlatforms: 'text=尚未连接任何平台',
+    scheduled: 'text=暫無排程貼文',
+    history: 'text=暫無貼文記錄',
+    noPlatforms: 'text=尚未連線任何平臺',
   },
 };
 

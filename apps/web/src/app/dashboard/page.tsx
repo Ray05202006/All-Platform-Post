@@ -30,10 +30,10 @@ export default function DashboardPage() {
   const [scheduledAt, setScheduledAt] = useState<string>('');
   const [showScheduler, setShowScheduler] = useState(false);
 
-  // 创建并发布贴文
+  // 建立併發布貼文
   const publishMutation = useMutation({
     mutationFn: async () => {
-      // 验证媒体类型一致性
+      // 驗證媒體型別一致性
       const mediaType =
         mediaFiles.length === 0
           ? undefined
@@ -44,33 +44,33 @@ export default function DashboardPage() {
           : undefined;
 
       if (mediaFiles.length > 0 && !mediaType) {
-        throw new Error('不能混合上传图片和视频');
+        throw new Error('不能混合上傳圖片和影片');
       }
 
-      // 1. 创建贴文
+      // 1. 建立貼文
       const post = await api.createPost({
         content,
         platforms: selectedPlatforms,
         mediaUrls: mediaFiles.map((f) => f.url),
         mediaType,
       });
-      // 2. 立即发布
+      // 2. 立即釋出
       return api.publishPost(post.id);
     },
     onSuccess: (data) => {
-      alert('发布成功！');
+      alert('釋出成功！');
       resetForm();
       console.log('Publish results:', data.results);
     },
     onError: (error: Error) => {
-      alert(`发布失败：${error.message}`);
+      alert(`釋出失敗：${error.message}`);
     },
   });
 
-  // 排程发布
+  // 排程釋出
   const scheduleMutation = useMutation({
     mutationFn: async () => {
-      // 验证媒体类型一致性
+      // 驗證媒體型別一致性
       const mediaType =
         mediaFiles.length === 0
           ? undefined
@@ -81,7 +81,7 @@ export default function DashboardPage() {
           : undefined;
 
       if (mediaFiles.length > 0 && !mediaType) {
-        throw new Error('不能混合上传图片和视频');
+        throw new Error('不能混合上傳圖片和影片');
       }
 
       const post = await api.createPost({
@@ -94,18 +94,18 @@ export default function DashboardPage() {
       return post;
     },
     onSuccess: () => {
-      alert('已添加到排程！');
+      alert('已新增到排程！');
       resetForm();
     },
     onError: (error: Error) => {
-      alert(`排程失败：${error.message}`);
+      alert(`排程失敗：${error.message}`);
     },
   });
 
-  // 保存草稿
+  // 儲存草稿
   const saveDraftMutation = useMutation({
     mutationFn: () => {
-      // 验证媒体类型一致性
+      // 驗證媒體型別一致性
       const mediaType =
         mediaFiles.length === 0
           ? undefined
@@ -116,7 +116,7 @@ export default function DashboardPage() {
           : undefined;
 
       if (mediaFiles.length > 0 && !mediaType) {
-        throw new Error('不能混合上传图片和视频');
+        throw new Error('不能混合上傳圖片和影片');
       }
 
       return api.createPost({
@@ -127,14 +127,14 @@ export default function DashboardPage() {
       });
     },
     onSuccess: () => {
-      alert('草稿已保存！');
+      alert('草稿已儲存！');
     },
     onError: (error: Error) => {
-      alert(`保存失败：${error.message}`);
+      alert(`儲存失敗：${error.message}`);
     },
   });
 
-  // 重置表单
+  // 重置表單
   const resetForm = () => {
     setContent('');
     setSelectedPlatforms([]);
@@ -144,7 +144,7 @@ export default function DashboardPage() {
     setShowScheduler(false);
   };
 
-  // 上传媒体文件
+  // 上傳媒體檔案
   const handleFileUpload = async (files: FileList | null) => {
     if (!files || files.length === 0) return;
 
@@ -162,7 +162,7 @@ export default function DashboardPage() {
     }
   };
 
-  // 删除媒体文件
+  // 刪除媒體檔案
   const handleRemoveMedia = async (index: number) => {
     const file = mediaFiles[index];
     try {
@@ -170,18 +170,18 @@ export default function DashboardPage() {
       setMediaFiles((prev) => prev.filter((_, i) => i !== index));
     } catch (error) {
       console.error('Failed to delete media:', error);
-      alert(error instanceof Error ? error.message : '删除媒体文件失败，请稍后重试');
+      alert(error instanceof Error ? error.message : '刪除媒體檔案失敗，請稍後重試');
     }
   };
 
-  // 获取最小排程时间（5 分钟后）
+  // 獲取最小排程時間（5 分鐘後）
   const getMinDateTime = () => {
     const now = new Date();
     now.setMinutes(now.getMinutes() + 5);
     return now.toISOString().slice(0, 16);
   };
 
-  // 预览分割结果（防抖）
+  // 預覽分割結果（防抖）
   const previewSplit = useCallback(async () => {
     if (!content.trim() || selectedPlatforms.length === 0) {
       setSplitPreviews([]);
@@ -209,13 +209,13 @@ export default function DashboardPage() {
     };
   }, []);
 
-  // 内容或平台变化时更新预览
+  // 內容或平臺變化時更新預覽
   useEffect(() => {
     const timer = setTimeout(previewSplit, 500);
     return () => clearTimeout(timer);
   }, [previewSplit]);
 
-  // 切换平台选择
+  // 切換平臺選擇
   const togglePlatform = (platformId: Platform) => {
     setSelectedPlatforms((prev) =>
       prev.includes(platformId)
@@ -224,7 +224,7 @@ export default function DashboardPage() {
     );
   };
 
-  // 计算字符数（简化版）
+  // 計算字元數（簡化版）
   const getCharCount = (text: string, platform: Platform): number => {
     if (platform === 'twitter') {
       const isCJKChar = (code: number) =>
@@ -250,26 +250,26 @@ export default function DashboardPage() {
     return text.length;
   };
 
-  // 获取已连接的平台
+  // 獲取已連線的平臺
   const connectedPlatforms = PLATFORMS.filter((p) => isConnected(p.id));
   const unconnectedPlatforms = PLATFORMS.filter((p) => !isConnected(p.id));
 
   if (authLoading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="text-gray-500">加载中...</div>
+        <div className="text-gray-500">載入中...</div>
       </div>
     );
   }
 
   return (
     <div className="space-y-6">
-      {/* 页面标题和导航 */}
+      {/* 頁面標題和導航 */}
       <div className="flex justify-between items-start">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">发文编辑器</h2>
+          <h2 className="text-2xl font-bold text-gray-900">發文編輯器</h2>
           <p className="mt-1 text-sm text-gray-500">
-            创建新贴文并发布到多个平台
+            建立新貼文併發布到多個平臺
           </p>
         </div>
         <div className="flex gap-2">
@@ -283,31 +283,31 @@ export default function DashboardPage() {
             href="/dashboard/history"
             className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
           >
-            发文历史
+            發文歷史
           </Link>
           <Link
             href="/dashboard/settings"
             className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
           >
-            设置
+            設定
           </Link>
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* 左侧：编辑器 */}
+        {/* 左側：編輯器 */}
         <div className="space-y-4">
           <div className="bg-white shadow rounded-lg p-6 space-y-4">
-            {/* 内容输入 */}
+            {/* 內容輸入 */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                贴文内容
+                貼文內容
               </label>
               <textarea
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
                 className="w-full h-48 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
-                placeholder="输入贴文内容..."
+                placeholder="輸入貼文內容..."
               />
               <div className="mt-1 text-sm text-gray-500 flex justify-between">
                 <span>
@@ -328,10 +328,10 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            {/* 平台选择 */}
+            {/* 平臺選擇 */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                选择平台
+                選擇平臺
               </label>
 
               {connectedPlatforms.length > 0 ? (
@@ -360,32 +360,32 @@ export default function DashboardPage() {
                 </div>
               ) : (
                 <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-md text-sm text-yellow-700">
-                  尚未连接任何平台。
+                  尚未連線任何平臺。
                   <Link href="/dashboard/settings" className="text-yellow-800 underline ml-1">
-                    前往设置连接
+                    前往設定連線
                   </Link>
                 </div>
               )}
 
               {unconnectedPlatforms.length > 0 && connectedPlatforms.length > 0 && (
                 <div className="mt-3 text-sm text-gray-500">
-                  未连接：
+                  未連線：
                   {unconnectedPlatforms.map((p) => (
                     <span key={p.id} className="ml-1">
                       {p.icon} {p.name}
                     </span>
                   ))}
                   <Link href="/dashboard/settings" className="text-blue-600 ml-2">
-                    连接更多
+                    連線更多
                   </Link>
                 </div>
               )}
             </div>
 
-            {/* 媒体上传 */}
+            {/* 媒體上傳 */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                媒体文件
+                媒體檔案
               </label>
               <input
                 ref={fileInputRef}
@@ -428,21 +428,21 @@ export default function DashboardPage() {
                 </button>
               </div>
               <p className="text-xs text-gray-500">
-                支持 JPG、PNG、GIF、MP4，最大 100MB
+                支援 JPG、PNG、GIF、MP4，最大 100MB
               </p>
             </div>
 
-            {/* 排程设置 */}
+            {/* 排程設定 */}
             <div>
               <div className="flex items-center justify-between mb-2">
                 <label className="block text-sm font-medium text-gray-700">
-                  排程发布
+                  排程釋出
                 </label>
                 <button
                   onClick={() => setShowScheduler(!showScheduler)}
                   className="text-sm text-blue-600 hover:underline"
                 >
-                  {showScheduler ? '取消排程' : '设置排程'}
+                  {showScheduler ? '取消排程' : '設定排程'}
                 </button>
               </div>
               {showScheduler && (
@@ -455,20 +455,20 @@ export default function DashboardPage() {
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                   <p className="mt-1 text-xs text-gray-500">
-                    选择发布时间（至少 5 分钟后）
+                    選擇釋出時間（至少 5 分鐘後）
                   </p>
                 </div>
               )}
             </div>
 
-            {/* 操作按钮 */}
+            {/* 操作按鈕 */}
             <div className="pt-4 border-t flex justify-between items-center">
               <button
                 onClick={() => saveDraftMutation.mutate()}
                 disabled={!content.trim() || saveDraftMutation.isPending}
                 className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50"
               >
-                {saveDraftMutation.isPending ? '保存中...' : '保存草稿'}
+                {saveDraftMutation.isPending ? '儲存中...' : '儲存草稿'}
               </button>
 
               <div className="flex gap-2">
@@ -483,7 +483,7 @@ export default function DashboardPage() {
                     }
                     className="px-6 py-2 text-sm font-medium text-white bg-purple-600 rounded-md hover:bg-purple-700 disabled:opacity-50"
                   >
-                    {scheduleMutation.isPending ? '排程中...' : '排程发布'}
+                    {scheduleMutation.isPending ? '排程中...' : '排程釋出'}
                   </button>
                 ) : (
                   <button
@@ -495,7 +495,7 @@ export default function DashboardPage() {
                     }
                     className="px-6 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:opacity-50"
                   >
-                    {publishMutation.isPending ? '发布中...' : '立即发布'}
+                    {publishMutation.isPending ? '釋出中...' : '立即釋出'}
                   </button>
                 )}
               </div>
@@ -503,19 +503,19 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* 右侧：预览 */}
+        {/* 右側：預覽 */}
         <div className="space-y-4">
           <div className="bg-white shadow rounded-lg p-6">
             <h3 className="text-lg font-medium text-gray-900 mb-4">
-              分割预览
+              分割預覽
               {isPreviewLoading && (
-                <span className="ml-2 text-sm text-gray-500">加载中...</span>
+                <span className="ml-2 text-sm text-gray-500">載入中...</span>
               )}
             </h3>
 
             {splitPreviews.length === 0 ? (
               <div className="text-gray-500 text-sm">
-                选择平台并输入内容后，将显示各平台的分割预览
+                選擇平臺並輸入內容後，將顯示各平臺的分割預覽
               </div>
             ) : (
               <div className="space-y-4">
@@ -530,7 +530,7 @@ export default function DashboardPage() {
                         </div>
                         {preview.needsSplitting && (
                           <span className="text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded">
-                            将分割为 {preview.chunks.length} 条
+                            將分割為 {preview.chunks.length} 條
                           </span>
                         )}
                       </div>
@@ -556,11 +556,11 @@ export default function DashboardPage() {
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
             <h4 className="text-sm font-medium text-blue-800 mb-2">使用提示</h4>
             <ul className="text-sm text-blue-700 space-y-1">
-              <li>• Twitter 限制 280 字符（中文算 2 字符）</li>
-              <li>• Threads 限制 500 字符</li>
-              <li>• Instagram 限制 2,200 字符（需要图片）</li>
-              <li>• Facebook 限制 63,206 字符</li>
-              <li>• 超出限制的内容将自动分割成多条</li>
+              <li>• Twitter 限制 280 字元（中文算 2 字元）</li>
+              <li>• Threads 限制 500 字元</li>
+              <li>• Instagram 限制 2,200 字元（需要圖片）</li>
+              <li>• Facebook 限制 63,206 字元</li>
+              <li>• 超出限制的內容將自動分割成多條</li>
             </ul>
           </div>
         </div>

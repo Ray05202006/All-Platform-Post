@@ -7,7 +7,7 @@ test.describe('Dashboard - Post Editor', () => {
   test.describe('Basic UI', () => {
     test('should display post editor heading', async ({ authenticatedPage }) => {
       await authenticatedPage.goto('/dashboard');
-      await expect(authenticatedPage.locator('h2')).toContainText('发文编辑器');
+      await expect(authenticatedPage.locator('h2')).toContainText('發文編輯器');
     });
 
     test('should have content textarea', async ({ authenticatedPage }) => {
@@ -17,12 +17,12 @@ test.describe('Dashboard - Post Editor', () => {
 
     test('should show platform selection section', async ({ authenticatedPage }) => {
       await authenticatedPage.goto('/dashboard');
-      await expect(authenticatedPage.getByText('选择平台', { exact: true })).toBeVisible();
+      await expect(authenticatedPage.getByText('選擇平臺', { exact: true })).toBeVisible();
     });
 
     test('should show media upload section', async ({ authenticatedPage }) => {
       await authenticatedPage.goto('/dashboard');
-      await expect(authenticatedPage.getByText('媒体文件')).toBeVisible();
+      await expect(authenticatedPage.getByText('媒體檔案')).toBeVisible();
     });
 
     test('should have save draft button', async ({ authenticatedPage }) => {
@@ -72,7 +72,7 @@ test.describe('Dashboard - Post Editor', () => {
     test('should show message when no platforms connected', async ({ authenticatedPage }) => {
       await setupApiMocks(authenticatedPage, { connections: [] });
       await authenticatedPage.goto('/dashboard');
-      await expect(authenticatedPage.getByText('尚未连接任何平台')).toBeVisible();
+      await expect(authenticatedPage.getByText('尚未連線任何平臺')).toBeVisible();
     });
 
     test('should display connected platforms', async ({ authenticatedPage }) => {
@@ -115,13 +115,13 @@ test.describe('Dashboard - Post Editor', () => {
   test.describe('Scheduling', () => {
     test('should toggle schedule mode', async ({ authenticatedPage }) => {
       await authenticatedPage.goto('/dashboard');
-      await authenticatedPage.getByText('设置排程').click();
+      await authenticatedPage.getByText('設定排程').click();
       await expect(authenticatedPage.locator(SELECTORS.scheduleDateInput)).toBeVisible();
     });
 
     test('should accept schedule date input', async ({ authenticatedPage }) => {
       await authenticatedPage.goto('/dashboard');
-      await authenticatedPage.getByText('设置排程').click();
+      await authenticatedPage.getByText('設定排程').click();
 
       const futureDate = getMinScheduleDate();
       const dateInput = authenticatedPage.locator(SELECTORS.scheduleDateInput);
@@ -138,7 +138,7 @@ test.describe('Dashboard - Post Editor', () => {
 
       await authenticatedPage.locator(SELECTORS.contentTextarea).fill('Test content');
       await authenticatedPage.locator('label:has-text("Facebook")').click();
-      await authenticatedPage.getByText('设置排程').click();
+      await authenticatedPage.getByText('設定排程').click();
 
       const futureDate = getMinScheduleDate();
       await authenticatedPage.locator(SELECTORS.scheduleDateInput).fill(formatDateTimeLocal(futureDate));

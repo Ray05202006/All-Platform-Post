@@ -23,7 +23,7 @@ test.describe('Post Creation Flow', () => {
 
       // Handle the alert dialog that shows on success
       authenticatedPage.on('dialog', async (dialog) => {
-        expect(dialog.message()).toContain('发布成功');
+        expect(dialog.message()).toContain('釋出成功');
         await dialog.accept();
       });
 
@@ -56,7 +56,7 @@ test.describe('Post Creation Flow', () => {
 
       // Handle the alert dialog that shows on success
       authenticatedPage.on('dialog', async (dialog) => {
-        expect(dialog.message()).toContain('发布成功');
+        expect(dialog.message()).toContain('釋出成功');
         await dialog.accept();
       });
 
@@ -84,7 +84,7 @@ test.describe('Post Creation Flow', () => {
 
       // Handle the alert dialog
       authenticatedPage.on('dialog', async (dialog) => {
-        expect(dialog.message()).toContain('草稿已保存');
+        expect(dialog.message()).toContain('草稿已儲存');
         await dialog.accept();
       });
 
@@ -110,7 +110,7 @@ test.describe('Post Creation Flow', () => {
 
       // Handle the alert dialog
       authenticatedPage.on('dialog', async (dialog) => {
-        expect(dialog.message()).toContain('草稿已保存');
+        expect(dialog.message()).toContain('草稿已儲存');
         await dialog.accept();
       });
 
@@ -137,7 +137,7 @@ test.describe('Post Creation Flow', () => {
       await authenticatedPage.locator('label:has-text("Twitter")').click();
 
       // Enable scheduling
-      await authenticatedPage.getByText('设置排程').click();
+      await authenticatedPage.getByText('設定排程').click();
 
       // Set future time
       const futureDate = getMinScheduleDate();
@@ -145,7 +145,7 @@ test.describe('Post Creation Flow', () => {
 
       // Handle the alert dialog
       authenticatedPage.on('dialog', async (dialog) => {
-        expect(dialog.message()).toContain('已添加到排程');
+        expect(dialog.message()).toContain('已新增到排程');
         await dialog.accept();
       });
 
@@ -174,7 +174,7 @@ test.describe('Post Creation Flow', () => {
       await authenticatedPage.locator('label:has-text("Threads")').click();
 
       // Enable scheduling
-      await authenticatedPage.getByText('设置排程').click();
+      await authenticatedPage.getByText('設定排程').click();
 
       // Set future time (2 hours from now)
       const futureDate = new Date();
@@ -183,7 +183,7 @@ test.describe('Post Creation Flow', () => {
 
       // Handle the alert dialog
       authenticatedPage.on('dialog', async (dialog) => {
-        expect(dialog.message()).toContain('已添加到排程');
+        expect(dialog.message()).toContain('已新增到排程');
         await dialog.accept();
       });
 
@@ -211,7 +211,7 @@ test.describe('Post Creation Flow', () => {
 
       // Handle the alert dialog
       authenticatedPage.on('dialog', async (dialog) => {
-        expect(dialog.message()).toContain('发布成功');
+        expect(dialog.message()).toContain('釋出成功');
         await dialog.accept();
       });
 
@@ -237,7 +237,7 @@ test.describe('Post Creation Flow', () => {
 
       // Handle the alert dialog
       authenticatedPage.on('dialog', async (dialog) => {
-        expect(dialog.message()).toContain('发布成功');
+        expect(dialog.message()).toContain('釋出成功');
         await dialog.accept();
       });
 
@@ -263,7 +263,7 @@ test.describe('Post Creation Flow', () => {
 
       // Handle the alert dialog
       authenticatedPage.on('dialog', async (dialog) => {
-        expect(dialog.message()).toContain('发布成功');
+        expect(dialog.message()).toContain('釋出成功');
         await dialog.accept();
       });
 
@@ -316,7 +316,7 @@ test.describe('Post Creation Flow', () => {
       // Create and schedule
       await authenticatedPage.locator(SELECTORS.contentTextarea).fill(TEST_POSTS.short);
       await authenticatedPage.locator('label:has-text("Facebook")').click();
-      await authenticatedPage.getByText('设置排程').click();
+      await authenticatedPage.getByText('設定排程').click();
 
       const futureDate = getMinScheduleDate();
       await authenticatedPage.locator(SELECTORS.scheduleDateInput).fill(formatDateTimeLocal(futureDate));

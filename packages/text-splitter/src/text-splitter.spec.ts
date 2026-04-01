@@ -79,11 +79,11 @@ describe('TextSplitter', () => {
     });
 
     it('should preserve CJK hashtags', () => {
-      const content = 'Some content. '.repeat(10) + '#中文标签 #测试';
+      const content = 'Some content. '.repeat(10) + '#中文標籤 #測試';
       const result = splitter.split(content, 'twitter');
       const allChunks = result.chunks.join(' ');
-      expect(allChunks).toContain('#中文标签');
-      expect(allChunks).toContain('#测试');
+      expect(allChunks).toContain('#中文標籤');
+      expect(allChunks).toContain('#測試');
     });
 
     it('should include hashtags when content fits in one chunk', () => {
@@ -98,7 +98,7 @@ describe('TextSplitter', () => {
   describe('Mixed CJK/Latin content splitting', () => {
     it('should split mixed content into multiple chunks when over limit', () => {
       // Alternate CJK and Latin to create mixed content over the limit
-      const cjkSentence = '这是一段很长的中文内容，用于测试分割功能是否正确工作。';
+      const cjkSentence = '這是一段很長的中文內容，用於測試分割功能是否正確工作。';
       const latinSentence = 'This is a long English sentence for testing the split function. ';
       const content = (cjkSentence + latinSentence).repeat(5);
       const result = splitter.split(content, 'twitter');

@@ -8,10 +8,10 @@ import { extractFilenameFromUrl, getResultError, getResultPostId, PostResult } f
 const STATUS_LABELS: Record<string, { label: string; color: string }> = {
   draft: { label: '草稿', color: 'bg-gray-500' },
   scheduled: { label: '已排程', color: 'bg-blue-500' },
-  publishing: { label: '发布中', color: 'bg-yellow-500' },
-  published: { label: '已发布', color: 'bg-green-500' },
+  publishing: { label: '釋出中', color: 'bg-yellow-500' },
+  published: { label: '已釋出', color: 'bg-green-500' },
   partial: { label: '部分成功', color: 'bg-orange-500' },
-  failed: { label: '失败', color: 'bg-red-500' },
+  failed: { label: '失敗', color: 'bg-red-500' },
 };
 
 const PLATFORM_ICONS: Record<string, string> = {
@@ -46,7 +46,7 @@ export default function HistoryPage() {
   };
 
   const handleDelete = async (postId: string) => {
-    if (!confirm('确定要删除这个贴文吗？')) return;
+    if (!confirm('確定要刪除這個貼文嗎？')) return;
 
     try {
       await api.deletePost(postId);
@@ -85,16 +85,16 @@ export default function HistoryPage() {
     <div className="min-h-screen bg-gray-900 text-white p-8">
       <div className="max-w-6xl mx-auto">
         <div className="flex justify-between items-center mb-8">
-          <h1 className="text-2xl font-bold">发文历史</h1>
+          <h1 className="text-2xl font-bold">發文歷史</h1>
           <Link
             href="/dashboard"
             className="px-4 py-2 bg-blue-600 rounded hover:bg-blue-700"
           >
-            新增贴文
+            新增貼文
           </Link>
         </div>
 
-        {/* 过滤器 */}
+        {/* 過濾器 */}
         <div className="flex gap-2 mb-6">
           {['all', 'draft', 'scheduled', 'published', 'partial', 'failed'].map((status) => (
             <button
@@ -111,19 +111,19 @@ export default function HistoryPage() {
           ))}
         </div>
 
-        {/* 错误提示 */}
+        {/* 錯誤提示 */}
         {error && (
           <div className="bg-red-900/50 border border-red-600 rounded p-4 mb-6">
             {error}
           </div>
         )}
 
-        {/* 加载状态 */}
+        {/* 載入狀態 */}
         {loading ? (
-          <div className="text-center py-12 text-gray-400">加载中...</div>
+          <div className="text-center py-12 text-gray-400">載入中...</div>
         ) : posts.length === 0 ? (
           <div className="text-center py-12 text-gray-400">
-            暂无贴文记录
+            暫無貼文記錄
           </div>
         ) : (
           <div className="space-y-4">
@@ -134,7 +134,7 @@ export default function HistoryPage() {
               >
                 <div className="flex justify-between items-start mb-4">
                   <div className="flex items-center gap-3">
-                    {/* 状态标签 */}
+                    {/* 狀態標籤 */}
                     <span
                       className={`px-2 py-1 rounded text-sm ${
                         STATUS_LABELS[post.status]?.color || 'bg-gray-500'
@@ -143,7 +143,7 @@ export default function HistoryPage() {
                       {STATUS_LABELS[post.status]?.label || post.status}
                     </span>
 
-                    {/* 平台图标 */}
+                    {/* 平臺圖示 */}
                     <div className="flex gap-1">
                       {post.platforms.map((platform) => (
                         <span key={platform} title={platform}>
@@ -158,12 +158,12 @@ export default function HistoryPage() {
                   </div>
                 </div>
 
-                {/* 贴文内容 */}
+                {/* 貼文內容 */}
                 <div className="text-gray-300 mb-4 whitespace-pre-wrap">
                   {truncateContent(post.content)}
                 </div>
 
-                {/* 媒体预览 */}
+                {/* 媒體預覽 */}
                 {post.mediaUrls && post.mediaUrls.length > 0 && (
                   <div className="flex gap-2 mb-4">
                     {post.mediaUrls.slice(0, 4).map((url, index) => (
@@ -186,20 +186,20 @@ export default function HistoryPage() {
                   </div>
                 )}
 
-                {/* 排程/发布时间 */}
+                {/* 排程/釋出時間 */}
                 <div className="text-sm text-gray-400 mb-4 space-y-1">
                   {post.scheduledAt && (
-                    <div>排程时间：{formatDate(post.scheduledAt)}</div>
+                    <div>排程時間：{formatDate(post.scheduledAt)}</div>
                   )}
                   {post.publishedAt && (
-                    <div>发布时间：{formatDate(post.publishedAt)}</div>
+                    <div>釋出時間：{formatDate(post.publishedAt)}</div>
                   )}
                 </div>
 
-                {/* 发布结果 */}
+                {/* 釋出結果 */}
                 {post.results && (
                   <div className="bg-gray-900/50 rounded p-3 mb-4 text-sm">
-                    <div className="font-medium mb-2">发布结果：</div>
+                    <div className="font-medium mb-2">釋出結果：</div>
                     <div className="space-y-1">
                       {Object.entries(post.results).map(([platform, result]) => {
                         const error = getResultError(result);
@@ -224,7 +224,7 @@ export default function HistoryPage() {
                   </div>
                 )}
 
-                {/* 操作按钮 */}
+                {/* 操作按鈕 */}
                 <div className="flex gap-2">
                   {(post.status === 'draft' || post.status === 'scheduled') && (
                     <>
@@ -232,13 +232,13 @@ export default function HistoryPage() {
                         onClick={() => handlePublish(post.id)}
                         className="px-3 py-1 bg-green-600 rounded hover:bg-green-700 text-sm"
                       >
-                        立即发布
+                        立即釋出
                       </button>
                       <button
                         onClick={() => handleDelete(post.id)}
                         className="px-3 py-1 bg-red-600 rounded hover:bg-red-700 text-sm"
                       >
-                        删除
+                        刪除
                       </button>
                     </>
                   )}
@@ -247,7 +247,7 @@ export default function HistoryPage() {
                       onClick={() => handlePublish(post.id)}
                       className="px-3 py-1 bg-yellow-600 rounded hover:bg-yellow-700 text-sm"
                     >
-                      重试发布
+                      重試釋出
                     </button>
                   )}
                 </div>

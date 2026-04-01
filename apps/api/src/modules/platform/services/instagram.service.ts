@@ -8,8 +8,8 @@ export interface InstagramPublishResult {
 }
 
 /**
- * Instagram Business API 服务
- * 文档: https://developers.facebook.com/docs/instagram-api/guides/content-publishing
+ * Instagram Business API 服務
+ * 文件: https://developers.facebook.com/docs/instagram-api/guides/content-publishing
  */
 @Injectable()
 export class InstagramService {
@@ -17,7 +17,7 @@ export class InstagramService {
   private readonly graphApiUrl = 'https://graph.facebook.com/v19.0';
 
   /**
-   * 通过 Facebook Page 获取关联的 Instagram Business Account
+   * 透過 Facebook Page 獲取關聯的 Instagram Business Account
    */
   async getInstagramBusinessAccount(
     pageId: string,
@@ -47,8 +47,8 @@ export class InstagramService {
   }
 
   /**
-   * 创建图片 Media Container
-   * 注意：Instagram API 不支持直接发布纯文字贴文，必须包含图片
+   * 建立圖片 Media Container
+   * 注意：Instagram API 不支援直接釋出純文字貼文，必須包含圖片
    */
   async createImageContainer(
     igUserId: string,
@@ -71,7 +71,7 @@ export class InstagramService {
   }
 
   /**
-   * 创建视频 Media Container
+   * 建立影片 Media Container
    */
   async createVideoContainer(
     igUserId: string,
@@ -95,12 +95,12 @@ export class InstagramService {
   }
 
   /**
-   * 创建轮播图（Carousel）Container
+   * 建立輪播圖（Carousel）Container
    */
   async createCarouselContainer(
     igUserId: string,
     accessToken: string,
-    children: string[], // 子媒体 ID 列表
+    children: string[], // 子媒體 ID 列表
     caption: string,
   ): Promise<{ containerId: string }> {
     const response = await axios.post(
@@ -119,7 +119,7 @@ export class InstagramService {
   }
 
   /**
-   * 发布 Media Container
+   * 釋出 Media Container
    */
   async publishMedia(
     igUserId: string,
@@ -140,7 +140,7 @@ export class InstagramService {
       const mediaId = response.data.id;
       return {
         mediaId,
-        // Instagram 的帖子 URL 需要用户名，这里先返回 ID
+        // Instagram 的帖子 URL 需要使用者名稱，這裡先返回 ID
         url: `https://www.instagram.com/p/${mediaId}/`,
       };
     } catch (error) {
@@ -152,8 +152,8 @@ export class InstagramService {
   }
 
   /**
-   * 检查 Container 状态
-   * Instagram 的视频容器需要等待处理完成
+   * 檢查 Container 狀態
+   * Instagram 的影片容器需要等待處理完成
    */
   async checkContainerStatus(
     containerId: string,
@@ -176,7 +176,7 @@ export class InstagramService {
   }
 
   /**
-   * 发布图片贴文
+   * 釋出圖片貼文
    */
   async publishImagePost(
     igUserId: string,
@@ -185,7 +185,7 @@ export class InstagramService {
     caption: string,
   ): Promise<InstagramPublishResult> {
     try {
-      // Step 1: 创建容器
+      // Step 1: 建立容器
       const { containerId } = await this.createImageContainer(
         igUserId,
         accessToken,
@@ -193,7 +193,7 @@ export class InstagramService {
         caption,
       );
 
-      // Step 2: 发布容器
+      // Step 2: 釋出容器
       return await this.publishMedia(igUserId, accessToken, containerId);
     } catch (error) {
       this.logger.error('Instagram image post error:', error.response?.data);
@@ -204,7 +204,7 @@ export class InstagramService {
   }
 
   /**
-   * 发布留言
+   * 釋出留言
    */
   async publishComment(
     mediaId: string,

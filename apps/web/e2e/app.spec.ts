@@ -10,20 +10,20 @@ test.describe('Web App Basic Tests', () => {
     await page.goto('/dashboard');
 
     // Check page title or main heading
-    await expect(page.locator('h2')).toContainText('发文编辑器');
+    await expect(page.locator('h2')).toContainText('發文編輯器');
   });
 
   test('dashboard has post editor elements', async ({ page }) => {
     await page.goto('/dashboard');
 
     // Check for content textarea
-    await expect(page.locator('textarea[placeholder="输入贴文内容..."]')).toBeVisible();
+    await expect(page.locator('textarea[placeholder="輸入貼文內容..."]')).toBeVisible();
 
     // Check for platform selection label (exact match to avoid duplicates)
-    await expect(page.getByText('选择平台', { exact: true })).toBeVisible();
+    await expect(page.getByText('選擇平臺', { exact: true })).toBeVisible();
 
     // Check for media file section
-    await expect(page.getByText('媒体文件')).toBeVisible();
+    await expect(page.getByText('媒體檔案')).toBeVisible();
   });
 
   test('dashboard has navigation links', async ({ page }) => {
@@ -32,15 +32,15 @@ test.describe('Web App Basic Tests', () => {
     // Check navigation links in the navbar (using nav element context)
     const nav = page.locator('nav');
     await expect(nav.getByRole('link', { name: '排程' })).toBeVisible();
-    await expect(nav.getByRole('link', { name: '历史' })).toBeVisible();
-    await expect(nav.getByRole('link', { name: '设置' })).toBeVisible();
+    await expect(nav.getByRole('link', { name: '歷史' })).toBeVisible();
+    await expect(nav.getByRole('link', { name: '設定' })).toBeVisible();
   });
 
   test('can navigate to settings page', async ({ page }) => {
     await page.goto('/dashboard');
 
     const nav = page.locator('nav');
-    await nav.getByRole('link', { name: '设置' }).click();
+    await nav.getByRole('link', { name: '設定' }).click();
     await expect(page).toHaveURL('/dashboard/settings');
   });
 
@@ -56,14 +56,14 @@ test.describe('Web App Basic Tests', () => {
     await page.goto('/dashboard');
 
     const nav = page.locator('nav');
-    await nav.getByRole('link', { name: '历史' }).click();
+    await nav.getByRole('link', { name: '歷史' }).click();
     await expect(page).toHaveURL('/dashboard/history');
   });
 
   test('textarea accepts input', async ({ page }) => {
     await page.goto('/dashboard');
 
-    const textarea = page.locator('textarea[placeholder="输入贴文内容..."]');
+    const textarea = page.locator('textarea[placeholder="輸入貼文內容..."]');
     await textarea.fill('Test content for posting');
     await expect(textarea).toHaveValue('Test content for posting');
   });

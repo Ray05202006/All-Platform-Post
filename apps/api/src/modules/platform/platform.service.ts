@@ -8,14 +8,14 @@ import { ThreadsService } from './services/threads.service';
 import { InstagramService } from './services/instagram.service';
 import { EncryptionService } from '../../common/services/encryption.service';
 
-// SplitResult 类型：表示 text-splitter 的分割结果，并对外导出
+// SplitResult 型別：表示 text-splitter 的分割結果，並對外匯出
 export interface SplitResult {
   platform: string;
   chunks: string[];
   needsSplitting: boolean;
 }
 
-// 平台限制配置
+// 平臺限制配置
 const PLATFORM_LIMITS: Record<string, number> = {
   facebook: 63206,
   instagram: 2200,
@@ -38,7 +38,7 @@ export class PlatformService {
   ) {}
 
   /**
-   * 发布到多个平台
+   * 釋出到多個平臺
    */
   async publishToMultiplePlatforms(
     userId: string,
@@ -88,7 +88,7 @@ export class PlatformService {
   }
 
   /**
-   * 发布到 Facebook
+   * 釋出到 Facebook
    */
   private async publishToFacebook(
     userId: string,
@@ -102,13 +102,13 @@ export class PlatformService {
 
     const accessToken = this.encryptionService.decrypt(connection.accessToken);
 
-    // 获取用户的 Facebook Pages
+    // 獲取使用者的 Facebook Pages
     const pages = await this.facebookService.getPages(accessToken);
     if (!pages.length) {
       return { error: 'No Facebook pages found' };
     }
 
-    // 使用第一个 Page（后续可让用户选择）
+    // 使用第一個 Page（後續可讓使用者選擇）
     const page = pages[0];
 
     if (mediaUrl) {
@@ -128,7 +128,7 @@ export class PlatformService {
   }
 
   /**
-   * 发布到 Twitter
+   * 釋出到 Twitter
    */
   private async publishToTwitter(userId: string, content: string) {
     const connection = await this.getConnection(userId, 'twitter');
@@ -149,11 +149,11 @@ export class PlatformService {
       return { error: 'Twitter is not configured. Please contact the administrator.' };
     }
 
-    // 检查是否需要分割成串文
+    // 檢查是否需要分割成串文
     const twitterLength = this.twitterService.calculateLength(content);
 
     if (twitterLength <= 280) {
-      // 单条推文
+      // 單條推文
       return this.twitterService.publishTweet(
         content,
         accessToken,
@@ -172,13 +172,13 @@ export class PlatformService {
         consumerSecret,
       );
 
-      // 返回第一条推文的信息
+      // 返回第一條推文的資訊
       return results[0];
     }
   }
 
   /**
-   * 发布到 Threads
+   * 釋出到 Threads
    */
   private async publishToThreads(userId: string, content: string) {
     const connection = await this.getConnection(userId, 'threads');
@@ -188,7 +188,7 @@ export class PlatformService {
 
     const accessToken = this.encryptionService.decrypt(connection.accessToken);
 
-    // 检查是否需要分割
+    // 檢查是否需要分割
     if (content.length <= 500) {
       return this.threadsService.publishTextPost(
         connection.platformUserId,
@@ -196,7 +196,7 @@ export class PlatformService {
         content,
       );
     } else {
-      // 分割成多条
+      // 分割成多條
       const chunks = this.splitForPlatform(content, 'threads');
       const results = await this.threadsService.publishThreadChain(
         connection.platformUserId,
@@ -208,8 +208,8 @@ export class PlatformService {
   }
 
   /**
-   * 发布到 Instagram
-   * 注意：Instagram 需要图片
+   * 釋出到 Instagram
+   * 注意：Instagram 需要圖片
    */
   private async publishToInstagram(
     userId: string,
@@ -227,7 +227,7 @@ export class PlatformService {
 
     const accessToken = this.encryptionService.decrypt(connection.accessToken);
 
-    // Instagram 的 platformUserId 存储的是 IG User ID
+    // Instagram 的 platformUserId 儲存的是 IG User ID
     return this.instagramService.publishImagePost(
       connection.platformUserId,
       accessToken,
@@ -237,7 +237,7 @@ export class PlatformService {
   }
 
   /**
-   * 获取平台连接（仅返回已激活的连接）
+   * 獲取平臺連線（僅返回已啟用的連線）
    */
   private async getConnection(userId: string, platform: string) {
     return this.prisma.platformConnection.findFirst({
@@ -246,10 +246,10 @@ export class PlatformService {
   }
 
   /**
-   * 简单的文本分割（用于 Twitter）
+   * 簡單的文字分割（用於 Twitter）
    */
   private splitForTwitter(text: string): string[] {
-    const maxLength = 280 - 10; // 预留编号空间
+    const maxLength = 280 - 10; // 預留編號空間
     const chunks: string[] = [];
 
     // 按句子分割
@@ -270,7 +270,7 @@ export class PlatformService {
 
     if (current) chunks.push(current.trim());
 
-    // 添加编号
+    // 新增編號
     if (chunks.length > 1) {
       return chunks.map((chunk, i) => `${chunk} (${i + 1}/${chunks.length})`);
     }
@@ -279,7 +279,7 @@ export class PlatformService {
   }
 
   /**
-   * 通用文本分割
+   * 通用文字分割
    */
   private splitForPlatform(text: string, platform: string): string[] {
     const maxLength = (PLATFORM_LIMITS[platform] || 500) - 10;
@@ -309,7 +309,7 @@ export class PlatformService {
   }
 
   /**
-   * 预览分割结果
+   * 預覽分割結果
    */
   previewSplit(content: string, platforms: string[]): SplitResult[] {
     return platforms.map((platform) => {
