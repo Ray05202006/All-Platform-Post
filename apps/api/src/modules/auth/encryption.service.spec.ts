@@ -77,6 +77,47 @@ describe('EncryptionService', () => {
     });
   });
 
+  describe('createSignedState / verifySignedState', () => {
+    it('should create a state that passes verification', () => {
+      const state = service.createSignedState();
+      expect(service.verifySignedState(state)).toBe(true);
+    });
+
+    it('should return false for a tampered nonce', () => {
+      const state = service.createSignedState();
+      const [, sig] = state.split('.');
+      const tamperedState = `tamperednonce.${sig}`;
+      expect(service.verifySignedState(tamperedState)).toBe(false);
+    });
+
+    it('should return false for a tampered signature', () => {
+      const state = service.createSignedState();
+      const nonce = state.substring(0, state.lastIndexOf('.'));
+      const tamperedState = `${nonce}.${'0'.repeat(64)}`;
+      expect(service.verifySignedState(tamperedState)).toBe(false);
+    });
+
+    it('should return false for an empty string', () => {
+      expect(service.verifySignedState('')).toBe(false);
+    });
+
+    it('should return false for a state with no dot separator', () => {
+      expect(service.verifySignedState('nodothere')).toBe(false);
+    });
+
+    it('should return false for a state signed with a different key', () => {
+      const otherService = makeService('b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3');
+      const state = otherService.createSignedState();
+      expect(service.verifySignedState(state)).toBe(false);
+    });
+
+    it('each call should produce a unique state', () => {
+      const state1 = service.createSignedState();
+      const state2 = service.createSignedState();
+      expect(state1).not.toBe(state2);
+    });
+  });
+
   describe('constructor validation', () => {
     it('should throw when ENCRYPTION_KEY is missing', () => {
       const configService = { get: jest.fn().mockReturnValue(undefined) } as any;

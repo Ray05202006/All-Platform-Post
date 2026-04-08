@@ -91,6 +91,36 @@ export class EncryptionService {
   }
 
   /**
+   * 生成帶 HMAC-SHA256 簽名的 state 引數（stateless CSRF 防護，無需儲存）
+   * 格式：nonce.hmac_hex
+   */
+  createSignedState(): string {
+    const nonce = crypto.randomBytes(32).toString('hex');
+    const hmac = crypto.createHmac('sha256', this.key).update(nonce).digest('hex');
+    return `${nonce}.${hmac}`;
+  }
+
+  /**
+   * 驗證帶 HMAC-SHA256 簽名的 state 引數
+   */
+  verifySignedState(signedState: string): boolean {
+    if (!signedState) return false;
+    const dotIndex = signedState.lastIndexOf('.');
+    if (dotIndex === -1) return false;
+    const nonce = signedState.substring(0, dotIndex);
+    const signature = signedState.substring(dotIndex + 1);
+    try {
+      const expectedHmac = crypto.createHmac('sha256', this.key).update(nonce).digest('hex');
+      const sigBuffer = Buffer.from(signature, 'hex');
+      const expectedBuffer = Buffer.from(expectedHmac, 'hex');
+      if (sigBuffer.length !== expectedBuffer.length) return false;
+      return crypto.timingSafeEqual(sigBuffer, expectedBuffer);
+    } catch {
+      return false;
+    }
+  }
+
+  /**
    * 生成 PKCE code verifier
    */
   generateCodeVerifier(): string {

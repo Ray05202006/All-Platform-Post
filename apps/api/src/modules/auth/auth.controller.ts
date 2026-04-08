@@ -157,8 +157,7 @@ export class AuthController {
   @Public()
   @Get('threads')
   async threadsAuth(@Res() res: Response) {
-    const state = this.encryptionService.generateState();
-    // TODO: store state in DB or signed cookie for CSRF validation
+    const state = this.encryptionService.createSignedState();
     const authUrl = this.threadsStrategy.getAuthorizationUrl(state);
     res.redirect(authUrl);
   }
@@ -179,7 +178,10 @@ export class AuthController {
     }
 
     try {
-      // TODO: 驗證 state 引數
+      if (!this.encryptionService.verifySignedState(state)) {
+        console.error('Threads OAuth error: invalid state parameter');
+        return res.redirect(`${frontendUrl}/dashboard/settings?error=threads_invalid_state`);
+      }
 
       // 交換授權碼
       const { accessToken } =
