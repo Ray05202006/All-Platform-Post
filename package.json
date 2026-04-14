@@ -1,29 +1,16 @@
 {
   "name": "all-platform-post",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "Multi-platform social media posting system",
   "private": true,
-  "pnpm": {
-    "onlyBuiltDependencies": [
-      "@nestjs/core",
-      "@prisma/client",
-      "@prisma/engines",
-      "msgpackr-extract",
-      "prisma",
-      "sharp",
-      "unrs-resolver"
-    ]
-  },
   "scripts": {
-    "dev": "pnpm --parallel -r dev",
-    "build": "pnpm -r build",
-    "start": "pnpm --parallel -r start",
-    "lint": "pnpm -r lint",
-    "test": "pnpm -r test",
-    "test:e2e": "pnpm --filter @all-platform-post/web test:e2e",
-    "test:e2e:ui": "pnpm --filter @all-platform-post/web test:e2e:ui",
-    "test:e2e:headed": "pnpm --filter @all-platform-post/web test:e2e:headed",
-    "clean": "pnpm -r clean && rm -rf node_modules"
+    "dev": "cd v2 && pnpm dev",
+    "build": "cd v2 && pnpm build",
+    "start": "cd v2 && pnpm start",
+    "lint": "cd v2 && pnpm lint",
+    "db:migrate": "cd v2 && npx prisma migrate dev",
+    "db:studio": "cd v2 && npx prisma studio",
+    "db:generate": "cd v2 && npx prisma generate"
   },
   "keywords": [
     "social-media",
@@ -36,13 +23,6 @@
   "author": "",
   "license": "MIT",
   "engines": {
-    "node": ">=18.0.0",
-    "pnpm": ">=8.0.0"
-  },
-  "devDependencies": {
-    "@playwright/test": "^1.57.0",
-    "@types/node": "^20.19.27",
-    "playwright": "^1.57.0",
-    "typescript": "^5.3.3"
+    "node": ">=18.0.0"
   }
 }

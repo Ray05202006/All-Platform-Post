@@ -41,16 +41,9 @@ uploads/
 *.db
 *.sqlite
 
-# Prisma
-prisma/migrations/
+# Prisma generated client
+v2/src/generated/
 
 # Temp files
 *.tmp
 .cache/
-
-# Playwright
-test-results/
-playwright-report/
-blob-report/
-playwright/.cache/
-playwright/.auth/
