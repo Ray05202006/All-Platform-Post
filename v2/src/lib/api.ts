@@ -65,19 +65,32 @@ export interface MediaFile {
 export async function uploadMedia(
   files: FileList | File[]
 ): Promise<{ files: MediaFile[] }> {
-  const formData = new FormData();
-  Array.from(files).forEach((file) => formData.append("files", file));
+  const uploadedFiles = await Promise.all(
+    Array.from(files).map(async (file) => {
+      const formData = new FormData();
+      formData.append("file", file);
 
-  const res = await fetch(`${API_URL}/api/media/upload-multiple`, {
-    method: "POST",
-    credentials: "include",
-    body: formData,
-  });
+      const res = await fetch(`${API_URL}/api/media/upload`, {
+        method: "POST",
+        credentials: "include",
+        body: formData,
+      });
 
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({ message: "Upload failed" }));
-    throw new ApiError(err.message || "Upload failed", res.status, err);
-  }
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ message: "Upload failed" }));
+        throw new ApiError(err.message || "Upload failed", res.status, err);
+      }
 
-  return res.json();
+      const uploaded = await res.json() as { filename: string; url: string };
+      return {
+        filename: uploaded.filename,
+        originalname: file.name,
+        mimetype: file.type,
+        size: file.size,
+        url: uploaded.url,
+      };
+    })
+  );
+
+  return { files: uploadedFiles };
 }

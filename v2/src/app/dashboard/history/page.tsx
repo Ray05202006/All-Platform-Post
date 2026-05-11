@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useSession } from 'next-auth/react';
 import { FileText } from 'lucide-react';
 import { toast } from 'sonner';
@@ -33,9 +33,7 @@ export default function HistoryPage() {
   const [error, setError] = useState<string | null>(null);
   const [filter, setFilter] = useState<string>('all');
 
-  useEffect(() => { fetchPosts(); }, [filter]);
-
-  const fetchPosts = async () => {
+  const fetchPosts = useCallback(async () => {
     setLoading(true);
     try {
       const query = filter === 'all' ? '' : `?status=${filter}`;
@@ -47,7 +45,9 @@ export default function HistoryPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [filter]);
+
+  useEffect(() => { fetchPosts(); }, [fetchPosts]);
 
   const handleDelete = async (postId: string) => {
     try {
@@ -68,6 +68,8 @@ export default function HistoryPage() {
       toastApiError(err, 'Failed to retry');
     }
   };
+
+  const canDeletePost = (status: PostStatus) => status !== 'published';
 
   return (
     <div className="space-y-6">
@@ -94,7 +96,7 @@ export default function HistoryPage() {
             <PostCard
               key={post.id}
               post={post}
-              onDelete={handleDelete}
+              onDelete={canDeletePost(post.status) ? handleDelete : undefined}
               onRetry={(post.status === 'failed' || post.status === 'partial') ? handleRetry : undefined}
               onPublishNow={(post.status === 'draft' || post.status === 'scheduled') ? handleRetry : undefined}
             />
