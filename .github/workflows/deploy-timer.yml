@@ -35,7 +35,7 @@ jobs:
         env:
           TIMER_FUNCTION_NAME: ${{ secrets.AZURE_TIMER_FUNCTION_NAME_STAGING }}
           RESOURCE_GROUP: ${{ secrets.AZURE_RESOURCE_GROUP }}
-          SCHEDULER_APP_URL: ${{ secrets.SCHEDULER_APP_URL_STAGING }}
+          SCHEDULER_APP_URL: ${{ secrets.NEXT_PUBLIC_APP_URL_STAGING }}
           SCHEDULER_API_KEY: ${{ secrets.SCHEDULER_API_KEY_STAGING || secrets.SCHEDULER_API_KEY }}
         run: |
           az functionapp config appsettings set \
