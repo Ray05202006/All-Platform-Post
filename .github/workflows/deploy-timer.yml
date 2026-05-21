@@ -2,14 +2,20 @@ name: Deploy Timer Function
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
+      - staging
     paths:
       - 'v2/timer-function/**'
   workflow_dispatch:
 
 jobs:
-  build-and-deploy:
+  # ── Staging timer function ──────────────────────────────────────────────────
+  deploy_staging_timer:
+    if: github.ref == 'refs/heads/staging' || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/staging')
     runs-on: ubuntu-latest
+    name: Deploy Timer (Staging)
+    environment: staging
     steps:
       - uses: actions/checkout@v4
 
@@ -25,7 +31,48 @@ jobs:
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-      - name: Set function app settings
+      - name: Set staging function app settings
+        env:
+          TIMER_FUNCTION_NAME: ${{ secrets.AZURE_TIMER_FUNCTION_NAME_STAGING }}
+          RESOURCE_GROUP: ${{ secrets.AZURE_RESOURCE_GROUP }}
+          SCHEDULER_APP_URL: ${{ secrets.SCHEDULER_APP_URL_STAGING }}
+          SCHEDULER_API_KEY: ${{ secrets.SCHEDULER_API_KEY_STAGING || secrets.SCHEDULER_API_KEY }}
+        run: |
+          az functionapp config appsettings set \
+            --name "$TIMER_FUNCTION_NAME" \
+            --resource-group "$RESOURCE_GROUP" \
+            --settings \
+              SCHEDULER_APP_URL="$SCHEDULER_APP_URL" \
+              SCHEDULER_API_KEY="$SCHEDULER_API_KEY"
+
+      - name: Deploy to Azure Functions (staging)
+        uses: Azure/functions-action@v1
+        with:
+          app-name: ${{ secrets.AZURE_TIMER_FUNCTION_NAME_STAGING }}
+          package: v2/timer-function
+
+  # ── Production timer function ───────────────────────────────────────────────
+  deploy_production_timer:
+    if: github.ref == 'refs/heads/main' || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main')
+    runs-on: ubuntu-latest
+    name: Deploy Timer (Production)
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install and build
+        run: cd v2/timer-function && npm install && npm run build
+
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Set production function app settings
         env:
           TIMER_FUNCTION_NAME: ${{ secrets.AZURE_TIMER_FUNCTION_NAME }}
           RESOURCE_GROUP: ${{ secrets.AZURE_RESOURCE_GROUP }}
@@ -39,7 +86,7 @@ jobs:
               SCHEDULER_APP_URL="$SCHEDULER_APP_URL" \
               SCHEDULER_API_KEY="$SCHEDULER_API_KEY"
 
-      - name: Deploy to Azure Functions
+      - name: Deploy to Azure Functions (production)
         uses: Azure/functions-action@v1
         with:
           app-name: ${{ secrets.AZURE_TIMER_FUNCTION_NAME }}
