@@ -7,9 +7,55 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 All-Platform-Post is a multi-platform social media automation system for publishing content to Facebook, Instagram, Twitter/X, and Threads. Features intelligent character-count splitting, OAuth authentication, scheduled publishing, and media handling.
 
 **Current deployment architecture:**
-- **Frontend**: GitHub Pages (Next.js static export via `Ray05202006.github.io`)
-- **Backend**: Azure Functions (NestJS wrapped in Azure HTTP trigger)
-- **Scheduling**: DB-based scheduler polled by Azure Timer Trigger (no Redis/BullMQ required)
+- **Frontend**: Azure Static Web Apps (Next.js) — production + staging named environments
+- **Scheduling**: Azure Timer Trigger (polls DB every minute for due scheduled posts)
+- **Database**: PostgreSQL (Azure Database / local Docker)
+
+## Branch Strategy (Staging → Production Gate)
+
+**All changes must pass through staging before production.**
+
+```
+feature/xxx  →  PR to staging  →  merge  →  staging deploy  →  test  →  PR to main  →  production deploy
+```
+
+| Branch | Deploys to | Azure SWA environment |
+|--------|------------|----------------------|
+| `staging` | Staging (persistent) | named environment `staging` |
+| `main` | Production | production slot |
+| Feature PR to `staging` | PR preview | auto `pr-NNN` |
+| Staging PR to `main` | PR preview | auto `pr-NNN` |
+
+### Development Workflow
+
+1. Create feature branch from `staging`
+2. Open PR targeting **`staging`** → CI runs + Azure SWA creates a PR preview URL
+3. Merge to `staging` → deploys to staging environment
+4. Test manually on the staging URL
+5. When stable: open PR `staging` → `main` → deploys PR preview for final check
+6. Merge to `main` → deploys to production
+
+### Required GitHub Secrets for Staging
+
+In addition to existing production secrets, add these:
+
+| Secret | Description |
+|--------|-------------|
+| `NEXT_PUBLIC_APP_URL_STAGING` | Staging Azure SWA URL (set after first staging deploy) |
+| `AZURE_TIMER_FUNCTION_NAME_STAGING` | Staging Azure Function App name |
+| `SCHEDULER_APP_URL_STAGING` | Staging app URL for timer to call (same as staging SWA URL + `/api/scheduler/process`) |
+| `SCHEDULER_API_KEY_STAGING` | (Optional) Separate API key for staging scheduler; falls back to `SCHEDULER_API_KEY` |
+
+### Recommended GitHub Environment Protection Rules
+
+Configure in **Settings → Environments**:
+- `staging` environment: no restrictions (auto-deploys on merge)
+- `production` environment: add **Required reviewers** to require manual approval before production deploys
+
+### Staging Azure Resources to Create
+
+1. **Azure Static Web Apps** — same resource supports named environments; no new resource needed
+2. **Azure Function App** (staging timer) — create a separate function app (e.g. `all-platform-post-timer-staging`)
 
 ## Commands
 
