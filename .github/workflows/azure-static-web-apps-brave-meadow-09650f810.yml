@@ -4,17 +4,25 @@ on:
   push:
     branches:
       - main
+      - staging
   workflow_dispatch:
   pull_request:
     types: [opened, synchronize, reopened, closed]
     branches:
       - main
+      - staging
 
 jobs:
-  build_and_deploy_job:
-    if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.action != 'closed')
+  # ── Staging deployment ──────────────────────────────────────────────────────
+  # Triggered by: push to staging, or PRs targeting staging
+  deploy_staging:
+    if: |
+      (github.event_name == 'push' && github.ref == 'refs/heads/staging') ||
+      (github.event_name == 'pull_request' && github.base_ref == 'staging' && github.event.action != 'closed') ||
+      (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/staging')
     runs-on: ubuntu-latest
-    name: Build and Deploy Job
+    name: Deploy to Staging
+    environment: staging
     permissions:
       contents: read
       pull-requests: write
@@ -40,13 +48,12 @@ jobs:
       - name: Generate Prisma client
         run: cd v2 && npx prisma generate
 
-      - name: Build Next.js
+      - name: Build Next.js (staging)
         env:
-          NEXT_PUBLIC_APP_URL: ${{ secrets.NEXT_PUBLIC_APP_URL }}
+          NEXT_PUBLIC_APP_URL: ${{ secrets.NEXT_PUBLIC_APP_URL_STAGING }}
         run: cd v2 && pnpm build
 
-      - name: Deploy to Azure Static Web Apps
-        id: builddeploy
+      - name: Deploy to Azure Static Web Apps (staging)
         uses: Azure/static-web-apps-deploy@v1
         with:
           azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_BRAVE_MEADOW_09650F810 }}
@@ -56,14 +63,68 @@ jobs:
           api_location: ""
           output_location: ".next"
           skip_app_build: true
+          # Named staging environment — gets a persistent URL separate from production
+          deployment_environment: staging
 
+  # ── Production deployment ───────────────────────────────────────────────────
+  # Triggered by: push to main, or PRs targeting main
+  deploy_production:
+    if: |
+      (github.event_name == 'push' && github.ref == 'refs/heads/main') ||
+      (github.event_name == 'pull_request' && github.base_ref == 'main' && github.event.action != 'closed') ||
+      (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main')
+    runs-on: ubuntu-latest
+    name: Deploy to Production
+    environment: production
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+          lfs: false
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'pnpm'
+          cache-dependency-path: v2/pnpm-lock.yaml
+
+      - name: Install dependencies
+        run: cd v2 && pnpm install
+
+      - name: Generate Prisma client
+        run: cd v2 && npx prisma generate
+
+      - name: Build Next.js (production)
+        env:
+          NEXT_PUBLIC_APP_URL: ${{ secrets.NEXT_PUBLIC_APP_URL }}
+        run: cd v2 && pnpm build
+
+      - name: Deploy to Azure Static Web Apps (production)
+        uses: Azure/static-web-apps-deploy@v1
+        with:
+          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_BRAVE_MEADOW_09650F810 }}
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          action: "upload"
+          app_location: "/v2"
+          api_location: ""
+          output_location: ".next"
+          skip_app_build: true
+          # No deployment_environment = production slot
+
+  # ── Close PR preview environments ──────────────────────────────────────────
   close_pull_request_job:
     if: github.event_name == 'pull_request' && github.event.action == 'closed'
     runs-on: ubuntu-latest
-    name: Close Pull Request Job
+    name: Close Pull Request
     steps:
       - name: Close Pull Request
-        id: closepullrequest
         uses: Azure/static-web-apps-deploy@v1
         with:
           azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_BRAVE_MEADOW_09650F810 }}
