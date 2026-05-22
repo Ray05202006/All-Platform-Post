@@ -13,7 +13,7 @@ app.timer('scheduled-posts-processor', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'x-scheduler-key': SCHEDULER_API_KEY,
+          'x-scheduler-api-key': SCHEDULER_API_KEY,
         },
       });
 
