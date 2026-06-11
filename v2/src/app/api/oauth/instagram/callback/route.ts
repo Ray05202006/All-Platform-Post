@@ -40,7 +40,7 @@ export async function GET(request: NextRequest) {
     const redirectUri = `${appUrl}/api/oauth/instagram/callback`;
 
     const tokenRes = await fetch(
-      `https://graph.facebook.com/v19.0/oauth/access_token?${new URLSearchParams({
+      `https://graph.facebook.com/v25.0/oauth/access_token?${new URLSearchParams({
         client_id: process.env.FACEBOOK_APP_ID!,
         client_secret: process.env.FACEBOOK_APP_SECRET!,
         redirect_uri: redirectUri,
@@ -57,7 +57,7 @@ export async function GET(request: NextRequest) {
     }
 
     const pagesRes = await fetch(
-      `https://graph.facebook.com/v19.0/me/accounts?access_token=${tokenData.access_token}`
+      `https://graph.facebook.com/v25.0/me/accounts?access_token=${tokenData.access_token}`
     );
     const pagesData = await pagesRes.json();
 
@@ -67,7 +67,7 @@ export async function GET(request: NextRequest) {
     if (pagesData.data?.length > 0) {
       for (const page of pagesData.data) {
         const igRes = await fetch(
-          `https://graph.facebook.com/v19.0/${page.id}?fields=instagram_business_account&access_token=${tokenData.access_token}`
+          `https://graph.facebook.com/v25.0/${page.id}?fields=instagram_business_account&access_token=${tokenData.access_token}`
         );
         const igData = await igRes.json();
 
@@ -75,7 +75,7 @@ export async function GET(request: NextRequest) {
           instagramAccountId = igData.instagram_business_account.id;
 
           const igProfileRes = await fetch(
-            `https://graph.facebook.com/v19.0/${instagramAccountId}?fields=username&access_token=${tokenData.access_token}`
+            `https://graph.facebook.com/v25.0/${instagramAccountId}?fields=username&access_token=${tokenData.access_token}`
           );
           const igProfile = await igProfileRes.json();
           instagramUsername = igProfile.username || "";

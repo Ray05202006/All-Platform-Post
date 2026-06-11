@@ -20,6 +20,27 @@ async function createTextContainer(
   return response.data.id;
 }
 
+async function createImageContainer(
+  userId: string,
+  accessToken: string,
+  imageUrl: string,
+  text?: string,
+  replyToId?: string,
+): Promise<string> {
+  const body: any = { media_type: 'IMAGE', image_url: imageUrl };
+  if (text) {
+    body.text = text;
+  }
+  if (replyToId) {
+    body.reply_to_id = replyToId;
+  }
+
+  const response = await axios.post(`${API_URL}/${userId}/threads`, body, {
+    params: { access_token: accessToken },
+  });
+  return response.data.id;
+}
+
 async function publishContainer(
   userId: string,
   accessToken: string,
@@ -50,6 +71,22 @@ export async function publishTextPost(
 ): Promise<PlatformResult> {
   try {
     const containerId = await createTextContainer(userId, accessToken, text);
+    return await publishContainer(userId, accessToken, containerId);
+  } catch (error: any) {
+    return {
+      error: error.response?.data?.error?.message || error.message,
+    };
+  }
+}
+
+export async function publishImagePost(
+  userId: string,
+  accessToken: string,
+  imageUrl: string,
+  text?: string,
+): Promise<PlatformResult> {
+  try {
+    const containerId = await createImageContainer(userId, accessToken, imageUrl, text);
     return await publishContainer(userId, accessToken, containerId);
   } catch (error: any) {
     return {

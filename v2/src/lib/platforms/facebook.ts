@@ -1,7 +1,7 @@
 import axios from 'axios';
 import type { PlatformResult } from '@/lib/types';
 
-const GRAPH_API_URL = 'https://graph.facebook.com/v19.0';
+const GRAPH_API_URL = 'https://graph.facebook.com/v25.0';
 
 export async function getPages(accessToken: string): Promise<any[]> {
   const response = await axios.get(`${GRAPH_API_URL}/me/accounts`, {

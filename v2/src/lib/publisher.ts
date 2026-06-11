@@ -77,7 +77,11 @@ async function publishToTwitter(userId: string, content: string): Promise<Platfo
   return results[0];
 }
 
-async function publishToThreads(userId: string, content: string): Promise<PlatformResult> {
+async function publishToThreads(
+  userId: string,
+  content: string,
+  mediaUrl?: string,
+): Promise<PlatformResult> {
   const connection = await getConnection(userId, 'threads');
   if (!connection) return { error: 'Threads not connected' };
   if (connection.tokenExpiresAt && connection.tokenExpiresAt <= new Date()) {
@@ -85,6 +89,10 @@ async function publishToThreads(userId: string, content: string): Promise<Platfo
   }
 
   const accessToken = decrypt(connection.accessToken);
+
+  if (mediaUrl) {
+    return threads.publishImagePost(connection.platformUserId, accessToken, mediaUrl, content);
+  }
 
   if (content.length <= 500) {
     return threads.publishTextPost(connection.platformUserId, accessToken, content);
@@ -131,7 +139,7 @@ export async function publishToMultiplePlatforms(
           case 'twitter':
             return publishToTwitter(userId, content);
           case 'threads':
-            return publishToThreads(userId, content);
+            return publishToThreads(userId, content, signedMediaUrls?.[0]);
           case 'instagram':
             return publishToInstagram(userId, content, signedMediaUrls?.[0]);
           default:

@@ -49,6 +49,6 @@ export async function GET() {
   });
 
   return NextResponse.redirect(
-    `https://www.facebook.com/v19.0/dialog/oauth?${params.toString()}`
+    `https://www.facebook.com/v25.0/dialog/oauth?${params.toString()}`
   );
 }
