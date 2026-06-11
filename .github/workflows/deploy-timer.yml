@@ -16,6 +16,8 @@ jobs:
     runs-on: ubuntu-latest
     name: Deploy Timer (Staging)
     environment: staging
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@v4
 
@@ -57,6 +59,8 @@ jobs:
     runs-on: ubuntu-latest
     name: Deploy Timer (Production)
     environment: production
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@v4
 
