@@ -1,4 +1,4 @@
-# All-Platform-Post
+# All-Platform-Post v2 — Developer Guide
 
 **[English](#english)** | **[繁體中文](#繁體中文)**
 
@@ -8,208 +8,132 @@
 
 ## English
 
-A self-hosted multi-platform social media management system that lets you write once and publish to Facebook, Instagram, Twitter/X, and Threads simultaneously.
+This is the v2 of All-Platform-Post, rebuilt as a unified Next.js 14 application deployed on Azure Static Web Apps.
 
-**Live Demo**: [https://brave-meadow-09650f810.6.azurestaticapps.net](https://brave-meadow-09650f810.6.azurestaticapps.net)
+### Stack
 
-### Features
+- **Next.js 14** (App Router) — frontend + API routes in one app
+- **NextAuth.js** — Google OAuth login, JWT sessions
+- **Prisma 5** — ORM for PostgreSQL
+- **Azure Blob Storage** — media file storage
+- **Azure Functions** (timer-function) — triggers scheduled post processing every minute
+- **Tailwind CSS** — styling
 
-- **Multi-platform publishing** — Publish to Facebook, Instagram, Twitter/X, and Threads in one click
-- **Smart text splitting** — Automatically splits content to fit each platform's character limit
-- **Scheduled publishing** — Schedule posts to be published at a specific time
-- **Media upload** — Upload images and videos stored on Azure Blob Storage
-- **OAuth authentication** — Securely connect platform accounts; tokens encrypted with AES-256-GCM
-- **Live preview** — See how content splits across platforms as you type
-
-### Tech Stack
-
-| Layer | Technology |
-|-------|-----------|
-| Frontend + API | Next.js 14 (App Router) |
-| Authentication | NextAuth.js (Google OAuth login) |
-| Database | PostgreSQL + Prisma ORM |
-| Media Storage | Azure Blob Storage |
-| Scheduled Jobs | Azure Functions (Timer trigger) |
-| Deployment | Azure Static Web Apps |
-
-### Architecture
+### Directory Layout
 
 ```
-Browser
-  │  HTTPS
-  ▼
-Azure Static Web Apps
-  └── Next.js 14 (App Router)
-        ├── /dashboard        — UI pages
-        └── /api/...          — API routes (connections, posts, OAuth, media)
-
-Azure Functions (Timer trigger, every minute)
-  └── POST /api/scheduler/process  — Triggers due scheduled posts
-
-PostgreSQL (Azure Database)
-  └── Users, Posts, PlatformConnections
+v2/
+├── src/
+│   ├── app/
+│   │   ├── api/
+│   │   │   ├── auth/[...nextauth]/  # NextAuth handler
+│   │   │   ├── connections/         # GET/DELETE platform connections
+│   │   │   ├── media/               # Upload & serve media files
+│   │   │   ├── oauth/               # Facebook / Instagram / Threads / Twitter OAuth flows
+│   │   │   ├── posts/               # Post CRUD, publish, schedule, split preview
+│   │   │   └── scheduler/process    # Called by timer to publish due posts
+│   │   ├── auth/callback/           # Post-OAuth redirect handler
+│   │   ├── dashboard/               # Main UI (compose, history, scheduled, settings)
+│   │   └── login/                   # Login page
+│   ├── components/
+│   │   └── providers.tsx            # SessionProvider wrapper
+│   └── lib/
+│       ├── auth.ts                  # NextAuth config
+│       ├── db.ts                    # Prisma client singleton
+│       ├── encryption.ts            # AES-256-GCM token encryption
+│       ├── publisher.ts             # Multi-platform publish orchestrator
+│       ├── splitter.ts              # Platform-aware text splitter
+│       ├── storage.ts               # Azure Blob Storage client
+│       ├── types.ts                 # Shared TypeScript types
+│       ├── url.ts                   # URL helpers
+│       └── platforms/               # Per-platform API clients
+│           ├── facebook.ts
+│           ├── instagram.ts
+│           ├── threads.ts
+│           └── twitter.ts
+├── prisma/
+│   └── schema.prisma                # Database schema
+└── timer-function/                  # Azure Functions timer trigger
+    └── src/index.ts                 # Calls /api/scheduler/process every minute
 ```
 
-### Project Structure
-
-```
-.
-├── v2/                          # Main application
-│   ├── src/
-│   │   ├── app/
-│   │   │   ├── api/             # Next.js API routes
-│   │   │   │   ├── auth/        # NextAuth
-│   │   │   │   ├── connections/ # Platform OAuth token management
-│   │   │   │   ├── media/       # Media upload / serve
-│   │   │   │   ├── oauth/       # Platform OAuth flows
-│   │   │   │   ├── posts/       # Post CRUD, publish, schedule
-│   │   │   │   └── scheduler/   # Scheduler trigger endpoint
-│   │   │   ├── dashboard/       # Dashboard pages
-│   │   │   └── login/           # Login page
-│   │   ├── components/          # React components
-│   │   └── lib/                 # Platform clients, utilities
-│   ├── prisma/                  # Database schema & migrations
-│   └── timer-function/          # Azure Functions timer
-├── scripts/                     # Key generation utilities
-└── .github/workflows/           # CI/CD pipelines
-```
-
-### Quick Start
-
-**Prerequisites**
-
-- Node.js >= 18
-- pnpm >= 8
-- PostgreSQL >= 15 (local or cloud)
-
-**Setup**
+### Local Development
 
 ```bash
-# Clone the repo
-git clone https://github.com/Ray05202006/All-Platform-Post.git
-cd All-Platform-Post/v2
+# From repo root
+cd v2
 
 # Install dependencies
 pnpm install
 
-# Generate Prisma client
+# Generate Prisma client (required after schema changes)
 npx prisma generate
 
-# Copy and fill in environment variables
+# Set up environment variables
 cp ../.env.example .env
-# Edit .env — see Environment Variables section below
+# Fill in .env with your credentials
 
 # Run database migrations
 npx prisma migrate dev
 
-# Start development server
+# Start dev server (http://localhost:3000)
 pnpm dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) in your browser.
+### Database
 
-**Environment Variables**
+**Schema models:**
+
+- `User` — Google-authenticated users
+- `Post` — Content with target platforms, status (`draft | scheduled | publishing | published | failed | partial`), per-platform results JSON
+- `PlatformConnection` — Encrypted OAuth tokens per platform per user
+
+**Common Prisma commands:**
 
 ```bash
-# NextAuth
-NEXTAUTH_URL=http://localhost:3000
-NEXTAUTH_SECRET=          # openssl rand -hex 32
-
-# Google OAuth (user login)
-GOOGLE_CLIENT_ID=
-GOOGLE_CLIENT_SECRET=
-
-# Platform OAuth
-FACEBOOK_APP_ID=
-FACEBOOK_APP_SECRET=
-TWITTER_CLIENT_ID=
-TWITTER_CLIENT_SECRET=
-TWITTER_API_KEY=
-TWITTER_API_SECRET=
-
-# Database
-DATABASE_URL=postgresql://user:password@localhost:5432/allplatformpost
-
-# Security
-ENCRYPTION_KEY=           # openssl rand -hex 32
-SCHEDULER_API_KEY=        # openssl rand -hex 16
-
-# Azure Blob Storage
-AZURE_STORAGE_CONNECTION_STRING=
-AZURE_STORAGE_CONTAINER=media
+npx prisma migrate dev       # Apply migrations and regenerate client
+npx prisma migrate deploy    # Apply migrations in production (no client regeneration)
+npx prisma studio            # Open Prisma Studio GUI
+npx prisma generate          # Regenerate client after schema edits
 ```
 
-### Platform API Setup
+### Scheduled Posts Flow
 
-**Facebook / Instagram / Threads**
+1. User sets `scheduledAt` on a post → status set to `scheduled`
+2. Azure Functions timer fires every minute → calls `POST /api/scheduler/process` with `SCHEDULER_API_KEY` header
+3. API queries posts where `status = scheduled AND scheduledAt <= now()`
+4. Each post is atomically set to `publishing`, then published to each platform
+5. Result stored in `post.results` JSON; status set to `published`, `failed`, or `partial`
 
-1. Go to [Facebook Developers](https://developers.facebook.com/) and create an app (Consumer type)
-2. Add the **Facebook Login** product
-3. Get the **App ID** and **App Secret** from App Settings
-4. Add callback URIs:
-   - `https://YOUR_APP_URL/api/oauth/facebook/callback`
-   - `https://YOUR_APP_URL/api/oauth/instagram/callback`
-   - `https://YOUR_APP_URL/api/oauth/threads/callback`
-5. Required permissions: `pages_show_list`, `pages_manage_posts`, `instagram_basic`, `instagram_content_publish`, `threads_basic`, `threads_content_publish`
+### Environment Variables
 
-**Twitter/X**
-
-1. Go to [Twitter Developer Portal](https://developer.twitter.com/) and create a project and app
-2. Under **User authentication settings**, set callback URI: `https://YOUR_APP_URL/api/oauth/twitter/callback`
-3. Copy the **Client ID**, **Client Secret**, **API Key**, and **API Secret**
-
-> **Note**: The free tier allows 500 tweets/month, which is sufficient for personal use.
-
-### Character Limits
-
-| Platform | Limit | Notes |
-|----------|-------|-------|
-| Facebook | 63,206 chars | — |
-| Instagram | 2,200 chars | Max 30 hashtags |
-| Twitter/X | 280 chars | CJK = 2 chars; URLs = 23 chars |
-| Threads | 500 chars | — |
+| Variable | Description |
+|----------|-------------|
+| `NEXTAUTH_URL` | App public URL (e.g. `http://localhost:3000`) |
+| `NEXTAUTH_SECRET` | Random secret — `openssl rand -hex 32` |
+| `GOOGLE_CLIENT_ID` | Google OAuth client ID |
+| `GOOGLE_CLIENT_SECRET` | Google OAuth client secret |
+| `FACEBOOK_APP_ID` | Facebook App ID |
+| `FACEBOOK_APP_SECRET` | Facebook App Secret |
+| `TWITTER_CLIENT_ID` | Twitter OAuth 2.0 Client ID |
+| `TWITTER_CLIENT_SECRET` | Twitter OAuth 2.0 Client Secret |
+| `TWITTER_API_KEY` | Twitter OAuth 1.0a API Key |
+| `TWITTER_API_SECRET` | Twitter OAuth 1.0a API Secret |
+| `DATABASE_URL` | PostgreSQL connection string |
+| `ENCRYPTION_KEY` | 32-byte hex key — `openssl rand -hex 32` |
+| `SCHEDULER_API_KEY` | Shared key between timer and app — `openssl rand -hex 16` |
+| `AZURE_STORAGE_CONNECTION_STRING` | Azure Blob Storage connection string |
+| `AZURE_STORAGE_CONTAINER` | Blob container name (default: `media`) |
 
 ### Deployment
 
-**Azure Static Web Apps (Frontend + API)**
+This app is deployed to **Azure Static Web Apps** via `.github/workflows/azure-static-web-apps-*.yml`.
 
-1. Go to **Settings → Pages** is not needed — this app uses Azure Static Web Apps.
-2. Add the following GitHub repository secrets (**Settings → Secrets and variables → Actions**):
+Web deployments are branch-based: `main` deploys production, and `preview` deploys the named preview environment. Pull requests run CI only and do not run the Static Web Apps deploy job.
 
-   | Secret | Description |
-   |--------|-------------|
-   | `AZURE_STATIC_WEB_APPS_API_TOKEN_*` | Azure Static Web Apps deploy token |
-   | `NEXT_PUBLIC_APP_URL_PRODUCTION` | Production app URL used by the `main` build |
-   | `NEXT_PUBLIC_APP_URL_PREVIEW` | Preview app URL used by the `preview` build |
-   | `NEXT_PUBLIC_APP_URL` | Optional fallback app URL |
+The timer is deployed separately to **Azure Functions** via `.github/workflows/deploy-timer.yml`.
 
-3. Push to `main` to deploy production. Push to `preview` to deploy the test environment named `preview`.
-
-Pull requests run CI only; the Azure Static Web Apps deploy workflow does not run for PR events.
-
-**Azure Functions Timer (Scheduled Posts)**
-
-Add the following secrets:
-
-| Secret | Description |
-|--------|-------------|
-| `AZURE_CREDENTIALS` | Azure service principal JSON |
-| `AZURE_TIMER_FUNCTION_NAME` | Azure Function App name |
-| `AZURE_RESOURCE_GROUP` | Azure resource group name |
-| `SCHEDULER_APP_URL` | Your Azure Static Web App URL |
-| `SCHEDULER_API_KEY` | Matches `SCHEDULER_API_KEY` in the app |
-
-### Security
-
-- OAuth 2.0 / OAuth 1.0a authentication flows
-- AES-256-GCM encrypted storage for platform access tokens
-- NextAuth.js session management (JWT)
-- CORS protection
-- Input validation on all API routes
-
-### License
-
-MIT
+See the root [README.md](../README.md) for required GitHub secrets.
 
 ---
 
@@ -217,204 +141,129 @@ MIT
 
 ## 繁體中文
 
-個人自建的多平台社群媒體發文系統，支援 Facebook、Instagram、Twitter/X、Threads 四大平台的統一發文管理。
-
-**線上展示**：[https://brave-meadow-09650f810.6.azurestaticapps.net](https://brave-meadow-09650f810.6.azurestaticapps.net)
-
-### 核心功能
-
-- **多平台發布** — 一次編寫，同時發布到 Facebook、Instagram、Twitter/X、Threads
-- **智慧字數分割** — 自動偵測各平台字數限制，智慧斷句分段
-- **定時發布** — 支援預約發文，自動在指定時間發布
-- **媒體上傳** — 支援圖片與影片上傳，儲存於 Azure Blob Storage
-- **OAuth 認證** — 安全連接平台帳號，存取權杖以 AES-256-GCM 加密儲存
-- **即時預覽** — 編輯時即時查看各平台的分割效果
+這是 All-Platform-Post 的 v2 版本，以統一的 Next.js 14 應用程式重新建構，部署於 Azure Static Web Apps。
 
 ### 技術棧
 
-| 層級 | 技術 |
-|------|------|
-| 前端 + API | Next.js 14（App Router） |
-| 身份驗證 | NextAuth.js（Google OAuth 登入） |
-| 資料庫 | PostgreSQL + Prisma ORM |
-| 媒體儲存 | Azure Blob Storage |
-| 排程任務 | Azure Functions（Timer 觸發器） |
-| 部署 | Azure Static Web Apps |
+- **Next.js 14**（App Router）— 前端與 API 路由整合於同一應用
+- **NextAuth.js** — Google OAuth 登入、JWT 工作階段
+- **Prisma 5** — PostgreSQL ORM
+- **Azure Blob Storage** — 媒體檔案儲存
+- **Azure Functions**（timer-function）— 每分鐘觸發排程貼文處理
+- **Tailwind CSS** — 樣式
 
-### 部署架構
+### 目錄結構
 
 ```
-瀏覽器
-  │  HTTPS
-  ▼
-Azure Static Web Apps
-  └── Next.js 14 (App Router)
-        ├── /dashboard        — 使用者介面頁面
-        └── /api/...          — API 路由（連線、貼文、OAuth、媒體）
-
-Azure Functions（Timer 觸發器，每分鐘執行）
-  └── POST /api/scheduler/process  — 觸發到期的排程貼文
-
-PostgreSQL（Azure Database）
-  └── 使用者、貼文、平台連線
+v2/
+├── src/
+│   ├── app/
+│   │   ├── api/
+│   │   │   ├── auth/[...nextauth]/  # NextAuth 處理器
+│   │   │   ├── connections/         # 平台連線 GET/DELETE
+│   │   │   ├── media/               # 媒體上傳與存取
+│   │   │   ├── oauth/               # Facebook / Instagram / Threads / Twitter OAuth 流程
+│   │   │   ├── posts/               # 貼文 CRUD、發布、排程、分割預覽
+│   │   │   └── scheduler/process    # 計時器觸發端點，發布到期貼文
+│   │   ├── auth/callback/           # OAuth 回呼後的重新導向處理
+│   │   ├── dashboard/               # 主介面（編輯、歷史、排程、設定）
+│   │   └── login/                   # 登入頁面
+│   ├── components/
+│   │   └── providers.tsx            # SessionProvider 包裝元件
+│   └── lib/
+│       ├── auth.ts                  # NextAuth 設定
+│       ├── db.ts                    # Prisma 客戶端單例
+│       ├── encryption.ts            # AES-256-GCM 權杖加密
+│       ├── publisher.ts             # 多平台發布協調器
+│       ├── splitter.ts              # 平台感知文字分割器
+│       ├── storage.ts               # Azure Blob Storage 客戶端
+│       ├── types.ts                 # 共用 TypeScript 型別
+│       ├── url.ts                   # URL 輔助函式
+│       └── platforms/               # 各平台 API 客戶端
+│           ├── facebook.ts
+│           ├── instagram.ts
+│           ├── threads.ts
+│           └── twitter.ts
+├── prisma/
+│   └── schema.prisma                # 資料庫 Schema
+└── timer-function/                  # Azure Functions 計時器觸發器
+    └── src/index.ts                 # 每分鐘呼叫 /api/scheduler/process
 ```
 
-### 專案結構
-
-```
-.
-├── v2/                          # 主應用程式
-│   ├── src/
-│   │   ├── app/
-│   │   │   ├── api/             # Next.js API 路由
-│   │   │   │   ├── auth/        # NextAuth
-│   │   │   │   ├── connections/ # 平台 OAuth 權杖管理
-│   │   │   │   ├── media/       # 媒體上傳 / 存取
-│   │   │   │   ├── oauth/       # 平台 OAuth 流程
-│   │   │   │   ├── posts/       # 貼文 CRUD、發布、排程
-│   │   │   │   └── scheduler/   # 排程觸發端點
-│   │   │   ├── dashboard/       # 主控台頁面
-│   │   │   └── login/           # 登入頁面
-│   │   ├── components/          # React 元件
-│   │   └── lib/                 # 平台客戶端、工具函式
-│   ├── prisma/                  # 資料庫 Schema 與遷移
-│   └── timer-function/          # Azure Functions 計時器
-├── scripts/                     # 金鑰生成工具
-└── .github/workflows/           # CI/CD 流水線
-```
-
-### 快速開始
-
-**前置要求**
-
-- Node.js >= 18
-- pnpm >= 8
-- PostgreSQL >= 15（本機或雲端）
-
-**安裝步驟**
+### 本機開發
 
 ```bash
-# 複製儲存庫
-git clone https://github.com/Ray05202006/All-Platform-Post.git
-cd All-Platform-Post/v2
+# 從儲存庫根目錄
+cd v2
 
 # 安裝相依套件
 pnpm install
 
-# 產生 Prisma 客戶端
+# 產生 Prisma 客戶端（每次修改 schema 後必須執行）
 npx prisma generate
 
-# 複製並填寫環境變數
+# 設定環境變數
 cp ../.env.example .env
-# 編輯 .env，填入各項設定
+# 填寫 .env 中的各項設定
 
 # 執行資料庫遷移
 npx prisma migrate dev
 
-# 啟動開發伺服器
+# 啟動開發伺服器（http://localhost:3000）
 pnpm dev
 ```
 
-開啟瀏覽器前往 [http://localhost:3000](http://localhost:3000)。
+### 資料庫
 
-**環境變數**
+**Schema 資料模型：**
+
+- `User` — 透過 Google 驗證的使用者
+- `Post` — 內容與目標平台、狀態（`draft | scheduled | publishing | published | failed | partial`）、各平台結果 JSON
+- `PlatformConnection` — 每位使用者每個平台的加密 OAuth 權杖
+
+**常用 Prisma 指令：**
 
 ```bash
-# NextAuth
-NEXTAUTH_URL=http://localhost:3000
-NEXTAUTH_SECRET=          # openssl rand -hex 32
-
-# Google OAuth（使用者登入）
-GOOGLE_CLIENT_ID=
-GOOGLE_CLIENT_SECRET=
-
-# 平台 OAuth
-FACEBOOK_APP_ID=
-FACEBOOK_APP_SECRET=
-TWITTER_CLIENT_ID=
-TWITTER_CLIENT_SECRET=
-TWITTER_API_KEY=
-TWITTER_API_SECRET=
-
-# 資料庫
-DATABASE_URL=postgresql://user:password@localhost:5432/allplatformpost
-
-# 安全性
-ENCRYPTION_KEY=           # openssl rand -hex 32
-SCHEDULER_API_KEY=        # openssl rand -hex 16
-
-# Azure Blob Storage
-AZURE_STORAGE_CONNECTION_STRING=
-AZURE_STORAGE_CONTAINER=media
+npx prisma migrate dev       # 套用遷移並重新產生客戶端
+npx prisma migrate deploy    # 生產環境套用遷移（不重新產生客戶端）
+npx prisma studio            # 開啟 Prisma Studio 視覺化介面
+npx prisma generate          # 修改 schema 後重新產生客戶端
 ```
 
-### 平台 API 申請
+### 排程發文流程
 
-**Facebook / Instagram / Threads**
+1. 使用者設定 `scheduledAt` → 狀態設為 `scheduled`
+2. Azure Functions 計時器每分鐘觸發 → 呼叫 `POST /api/scheduler/process`（帶 `SCHEDULER_API_KEY` 標頭）
+3. API 查詢 `status = scheduled AND scheduledAt <= now()` 的貼文
+4. 每則貼文原子性地設為 `publishing`，再發布至各平台
+5. 結果存入 `post.results` JSON；狀態更新為 `published`、`failed` 或 `partial`
 
-1. 前往 [Facebook Developers](https://developers.facebook.com/) 建立應用程式（消費者類型）
-2. 新增 **Facebook Login** 產品
-3. 從應用程式設定取得 **App ID** 和 **App Secret**
-4. 新增回呼 URI：
-   - `https://YOUR_APP_URL/api/oauth/facebook/callback`
-   - `https://YOUR_APP_URL/api/oauth/instagram/callback`
-   - `https://YOUR_APP_URL/api/oauth/threads/callback`
-5. 申請必要權限：`pages_show_list`、`pages_manage_posts`、`instagram_basic`、`instagram_content_publish`、`threads_basic`、`threads_content_publish`
+### 環境變數說明
 
-**Twitter/X**
-
-1. 前往 [Twitter Developer Portal](https://developer.twitter.com/) 建立專案與應用程式
-2. 在「User authentication settings」設定回呼 URI：`https://YOUR_APP_URL/api/oauth/twitter/callback`
-3. 取得 **Client ID**、**Client Secret**、**API Key**、**API Secret**
-
-> **注意**：免費方案每月 500 則推文，個人使用通常已足夠。
-
-### 字數限制
-
-| 平台 | 字數上限 | 備註 |
-|------|---------|------|
-| Facebook | 63,206 字元 | — |
-| Instagram | 2,200 字元 | 最多 30 個 hashtag |
-| Twitter/X | 280 字元 | 中日韓字元算 2 字元；URL 固定算 23 字元 |
-| Threads | 500 字元 | — |
+| 變數 | 說明 |
+|------|------|
+| `NEXTAUTH_URL` | 應用程式公開 URL（例如 `http://localhost:3000`） |
+| `NEXTAUTH_SECRET` | 隨機密鑰 — `openssl rand -hex 32` |
+| `GOOGLE_CLIENT_ID` | Google OAuth 用戶端 ID |
+| `GOOGLE_CLIENT_SECRET` | Google OAuth 用戶端密鑰 |
+| `FACEBOOK_APP_ID` | Facebook App ID |
+| `FACEBOOK_APP_SECRET` | Facebook App Secret |
+| `TWITTER_CLIENT_ID` | Twitter OAuth 2.0 Client ID |
+| `TWITTER_CLIENT_SECRET` | Twitter OAuth 2.0 Client Secret |
+| `TWITTER_API_KEY` | Twitter OAuth 1.0a API Key |
+| `TWITTER_API_SECRET` | Twitter OAuth 1.0a API Secret |
+| `DATABASE_URL` | PostgreSQL 連線字串 |
+| `ENCRYPTION_KEY` | 32 位元組十六進位金鑰 — `openssl rand -hex 32` |
+| `SCHEDULER_API_KEY` | 計時器與應用程式共用金鑰 — `openssl rand -hex 16` |
+| `AZURE_STORAGE_CONNECTION_STRING` | Azure Blob Storage 連線字串 |
+| `AZURE_STORAGE_CONTAINER` | Blob 容器名稱（預設：`media`） |
 
 ### 部署
 
-**Azure Static Web Apps（前端 + API）**
+本應用程式透過 `.github/workflows/azure-static-web-apps-*.yml` 工作流程部署至 **Azure Static Web Apps**。
 
-1. 在 GitHub 儲存庫新增以下 Secrets（**Settings → Secrets and variables → Actions**）：
+網頁部署依分支區分：`main` 部署正式版，`preview` 部署名為 `preview` 的測試環境。PR 階段只跑 CI，不執行 Static Web Apps 部署 job。
 
-   | Secret | 說明 |
-   |--------|------|
-   | `AZURE_STATIC_WEB_APPS_API_TOKEN_*` | Azure Static Web Apps 部署金鑰 |
-   | `NEXT_PUBLIC_APP_URL_PRODUCTION` | `main` 正式版建置使用的公開 URL |
-   | `NEXT_PUBLIC_APP_URL_PREVIEW` | `preview` 測試版建置使用的公開 URL |
-   | `NEXT_PUBLIC_APP_URL` | 選用的備援公開 URL |
+計時器則透過 `.github/workflows/deploy-timer.yml` 單獨部署至 **Azure Functions**。
 
-2. 推送至 `main` 分支會部署正式版；推送至 `preview` 分支會部署名為 `preview` 的測試環境。
-
-PR 階段只執行 CI，不會執行 Azure Static Web Apps 部署 workflow。
-
-**Azure Functions 計時器（排程發文）**
-
-新增以下 Secrets：
-
-| Secret | 說明 |
-|--------|------|
-| `AZURE_CREDENTIALS` | Azure 服務主體 JSON |
-| `AZURE_TIMER_FUNCTION_NAME` | Azure Function App 名稱 |
-| `AZURE_RESOURCE_GROUP` | Azure 資源群組名稱 |
-| `SCHEDULER_APP_URL` | Azure Static Web App 的 URL |
-| `SCHEDULER_API_KEY` | 與應用程式內 `SCHEDULER_API_KEY` 相同 |
-
-### 安全性
-
-- OAuth 2.0 / OAuth 1.0a 認證流程
-- AES-256-GCM 加密儲存平台存取權杖
-- NextAuth.js 工作階段管理（JWT）
-- CORS 保護
-- 所有 API 路由皆有輸入驗證
-
-### 授權
-
-MIT
+所需的 GitHub Secrets 詳見根目錄 [README.md](../README.md)。

@@ -32,6 +32,7 @@ interface SystemLog {
   category: string;
   userId: string | null;
   traceId: string | null;
+  version: string;
   context: any;
   error: any;
 }
@@ -526,8 +527,8 @@ export default function LogsPage() {
             </DialogHeader>
 
             <div className="flex-1 overflow-y-auto p-6 space-y-4">
-              {/* Trace ID & User ID information */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-zinc-50 dark:bg-zinc-850 p-4 rounded-xl border border-zinc-100 dark:border-zinc-800">
+              {/* Trace ID, User ID & Version information */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 bg-zinc-50 dark:bg-zinc-850 p-4 rounded-xl border border-zinc-100 dark:border-zinc-800">
                 <div className="flex flex-col gap-0.5">
                   <span className="text-[10px] font-semibold text-muted-foreground uppercase">Trace ID</span>
                   {selectedLog.traceId ? (
@@ -548,6 +549,13 @@ export default function LogsPage() {
                   <span className="text-xs font-mono font-medium text-zinc-700 dark:text-zinc-300 flex items-center gap-1.5">
                     <User className="w-3.5 h-3.5 text-muted-foreground" />
                     {selectedLog.userId || 'System (Background)'}
+                  </span>
+                </div>
+
+                <div className="flex flex-col gap-0.5">
+                  <span className="text-[10px] font-semibold text-muted-foreground uppercase">App Version</span>
+                  <span className="text-xs font-semibold text-zinc-700 dark:text-zinc-300">
+                    v{selectedLog.version || '1.0.0'}
                   </span>
                 </div>
               </div>

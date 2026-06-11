@@ -70,6 +70,7 @@ model SystemLog {
   category   String   // auth, api, database, publisher, scheduler, frontend
   userId     String?
   traceId    String?
+  version    String   @default("1.0.0")
   context    Json?    // e.g. { className, methodName, path, method, ip, userAgent }
   error      Json?    // e.g. { type, message, stackTrace, innerException }
 

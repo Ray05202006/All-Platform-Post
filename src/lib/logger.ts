@@ -102,6 +102,7 @@ export const logger = {
           message,
           userId,
           traceId,
+          version: '1.0.0',
           context: cleanContext as any,
           error: cleanError as any,
         },

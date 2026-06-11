@@ -38,6 +38,7 @@ describe('logger', () => {
           message: 'User logged in',
           userId: 'u1',
           traceId: 't1',
+          version: '1.0.0',
           context: undefined,
           error: undefined,
         },
@@ -60,6 +61,7 @@ describe('logger', () => {
           message: 'Slow query warning',
           userId: undefined,
           traceId: undefined,
+          version: '1.0.0',
           context,
           error: undefined,
         },
@@ -84,6 +86,7 @@ describe('logger', () => {
           message: 'Query failed',
           userId: undefined,
           traceId: undefined,
+          version: '1.0.0',
           context: undefined,
           error: {
             type: 'Error',

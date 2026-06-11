@@ -6,7 +6,7 @@ on:
       - main
       - staging
     paths:
-      - 'v2/timer-function/**'
+      - 'timer-function/**'
   workflow_dispatch:
 
 jobs:
@@ -26,7 +26,7 @@ jobs:
           node-version: '18'
 
       - name: Install and build
-        run: cd v2/timer-function && npm install && npm run build
+        run: cd timer-function && npm install && npm run build
 
       - name: Azure Login
         uses: azure/login@v2
@@ -51,7 +51,7 @@ jobs:
         uses: Azure/functions-action@v1
         with:
           app-name: ${{ secrets.AZURE_TIMER_FUNCTION_NAME_STAGING }}
-          package: v2/timer-function
+          package: timer-function
 
   # ── Production timer function ───────────────────────────────────────────────
   deploy_production_timer:
@@ -69,7 +69,7 @@ jobs:
           node-version: '18'
 
       - name: Install and build
-        run: cd v2/timer-function && npm install && npm run build
+        run: cd timer-function && npm install && npm run build
 
       - name: Azure Login
         uses: azure/login@v2
@@ -94,4 +94,4 @@ jobs:
         uses: Azure/functions-action@v1
         with:
           app-name: ${{ secrets.AZURE_TIMER_FUNCTION_NAME }}
-          package: v2/timer-function
+          package: timer-function
