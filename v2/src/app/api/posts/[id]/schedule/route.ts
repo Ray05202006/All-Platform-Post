@@ -1,19 +1,9 @@
 import { NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth/next';
-import { authOptions } from '@/lib/auth';
+import { withApiHandler } from '@/lib/api-wrapper';
 import prisma from '@/lib/db';
 
-export async function PUT(
-  request: Request,
-  { params }: { params: Promise<{ id: string }> },
-) {
-  const session = await getServerSession(authOptions);
-  const userId = (session?.user as any)?.id;
-  if (!userId) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
-
-  const { id } = await params;
+export const PUT = withApiHandler('api', async (request, { params, userId }) => {
+  const { id } = params;
 
   const body = await request.json();
   const { scheduledAt } = body;
@@ -48,19 +38,10 @@ export async function PUT(
   });
 
   return NextResponse.json(updatedPost);
-}
+});
 
-export async function DELETE(
-  request: Request,
-  { params }: { params: Promise<{ id: string }> },
-) {
-  const session = await getServerSession(authOptions);
-  const userId = (session?.user as any)?.id;
-  if (!userId) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
-
-  const { id } = await params;
+export const DELETE = withApiHandler('api', async (request, { params, userId }) => {
+  const { id } = params;
 
   const post = await prisma.post.findFirst({
     where: { id, userId },
@@ -83,4 +64,5 @@ export async function DELETE(
   });
 
   return NextResponse.json(updatedPost);
-}
+});
+

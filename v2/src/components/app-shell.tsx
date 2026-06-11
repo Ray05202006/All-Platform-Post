@@ -12,7 +12,9 @@ const NAV_ITEMS = [
   { href: "/dashboard/scheduled", label: "Scheduled" },
   { href: "/dashboard/history", label: "History" },
   { href: "/dashboard/settings", label: "Settings" },
+  { href: "/dashboard/logs", label: "Logs" },
 ];
+
 
 interface AppShellProps {
   children: React.ReactNode;

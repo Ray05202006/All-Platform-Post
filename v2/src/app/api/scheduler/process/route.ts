@@ -3,6 +3,8 @@ import * as crypto from "crypto";
 import prisma from '@/lib/db';
 import { publishToMultiplePlatforms } from '@/lib/publisher';
 
+import { logger } from '@/lib/logger';
+
 export async function POST(request: Request) {
   // Protect with API key
   const apiKey = request.headers.get('x-scheduler-api-key');
@@ -21,6 +23,10 @@ export async function POST(request: Request) {
       status: 'scheduled',
       scheduledAt: { lte: new Date() },
     },
+  });
+
+  await logger.info('scheduler', 'Scheduler process initiated.', {
+    context: { dueCount: duePosts.length },
   });
 
   if (duePosts.length === 0) {
@@ -49,6 +55,24 @@ export async function POST(request: Request) {
       const failCount = Object.values(results).filter((r) => r.error).length;
       const status = failCount === 0 ? 'published' : successCount === 0 ? 'failed' : 'partial';
 
+      if (status === 'published') {
+        await logger.info('scheduler', `Scheduled post ${post.id} published successfully to all platforms: ${post.platforms.join(', ')}`, {
+          userId: post.userId,
+          context: { postId: post.id, platforms: post.platforms, results },
+        });
+      } else if (status === 'partial') {
+        await logger.warn('scheduler', `Scheduled post ${post.id} published with partial success to platforms: ${post.platforms.join(', ')}`, {
+          userId: post.userId,
+          context: { postId: post.id, platforms: post.platforms, results },
+        });
+      } else {
+        await logger.error('scheduler', `Scheduled post ${post.id} failed to publish to all platforms: ${post.platforms.join(', ')}`, {
+          userId: post.userId,
+          error: new Error(`Publish failed: ${JSON.stringify(results)}`),
+          context: { postId: post.id, platforms: post.platforms, results },
+        });
+      }
+
       await prisma.post.update({
         where: { id: post.id },
         data: {
@@ -60,6 +84,12 @@ export async function POST(request: Request) {
 
       processed++;
     } catch (error: any) {
+      await logger.error('scheduler', `Scheduler failed to process post ${post.id}: ${error.message}`, {
+        userId: post.userId,
+        error,
+        context: { postId: post.id },
+      });
+
       await prisma.post.update({
         where: { id: post.id },
         data: {
@@ -69,6 +99,10 @@ export async function POST(request: Request) {
       });
     }
   }
+
+  await logger.info('scheduler', `Scheduler process completed. Processed ${processed}/${duePosts.length} posts.`, {
+    context: { processed, total: duePosts.length },
+  });
 
   return NextResponse.json({ processed, total: duePosts.length });
 }

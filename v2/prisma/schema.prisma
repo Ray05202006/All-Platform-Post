@@ -61,3 +61,21 @@ model Post {
   @@index([userId, status])
   @@index([scheduledAt])
 }
+
+model SystemLog {
+  id         String   @id @default(cuid())
+  timestamp  DateTime @default(now())
+  level      String   // info, warn, error
+  message    String   @db.Text
+  category   String   // auth, api, database, publisher, scheduler, frontend
+  userId     String?
+  traceId    String?
+  context    Json?    // e.g. { className, methodName, path, method, ip, userAgent }
+  error      Json?    // e.g. { type, message, stackTrace, innerException }
+
+  @@index([timestamp])
+  @@index([level])
+  @@index([category])
+  @@index([userId])
+}
+

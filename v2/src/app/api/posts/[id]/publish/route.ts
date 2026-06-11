@@ -4,6 +4,8 @@ import { authOptions } from '@/lib/auth';
 import prisma from '@/lib/db';
 import { publishToMultiplePlatforms } from '@/lib/publisher';
 
+import { logger } from '@/lib/logger';
+
 export async function POST(
   request: Request,
   { params }: { params: Promise<{ id: string }> },
@@ -47,6 +49,24 @@ export async function POST(
     const failCount = Object.values(results).filter((r) => r.error).length;
     const status = failCount === 0 ? 'published' : successCount === 0 ? 'failed' : 'partial';
 
+    if (status === 'published') {
+      await logger.info('publisher', `Post ${id} published successfully to all platforms: ${post.platforms.join(', ')}`, {
+        userId,
+        context: { postId: id, platforms: post.platforms, results },
+      });
+    } else if (status === 'partial') {
+      await logger.warn('publisher', `Post ${id} published with partial success to platforms: ${post.platforms.join(', ')}`, {
+        userId,
+        context: { postId: id, platforms: post.platforms, results },
+      });
+    } else {
+      await logger.error('publisher', `Post ${id} failed to publish to all platforms: ${post.platforms.join(', ')}`, {
+        userId,
+        error: new Error(`Publish failed: ${JSON.stringify(results)}`),
+        context: { postId: id, platforms: post.platforms, results },
+      });
+    }
+
     const updatedPost = await prisma.post.update({
       where: { id },
       data: {
@@ -58,6 +78,12 @@ export async function POST(
 
     return NextResponse.json(updatedPost);
   } catch (error: any) {
+    await logger.error('publisher', `Post ${id} publishing process crashed: ${error.message}`, {
+      userId,
+      error,
+      context: { postId: id },
+    });
+
     await prisma.post.update({
       where: { id },
       data: {

@@ -1,19 +1,12 @@
 import { NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth/next';
-import { authOptions } from '@/lib/auth';
+import { withApiHandler } from '@/lib/api-wrapper';
 import prisma from '@/lib/db';
 import type { Platform } from '@/lib/types';
 import { signUrl } from '@/lib/storage';
 
 const VALID_PLATFORMS: Platform[] = ['facebook', 'instagram', 'twitter', 'threads'];
 
-export async function POST(request: Request) {
-  const session = await getServerSession(authOptions);
-  const userId = (session?.user as any)?.id;
-  if (!userId) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
-
+export const POST = withApiHandler('api', async (request, { userId }) => {
   const body = await request.json();
   const { content, platforms, mediaUrls, mediaType, scheduledAt } = body;
 
@@ -35,7 +28,7 @@ export async function POST(request: Request) {
 
   const post = await prisma.post.create({
     data: {
-      userId,
+      userId: userId!,
       content,
       platforms,
       mediaUrls: mediaUrls || [],
@@ -49,15 +42,9 @@ export async function POST(request: Request) {
     ...post,
     mediaUrls: post.mediaUrls.map(url => signUrl(url)),
   }, { status: 201 });
-}
+});
 
-export async function GET(request: Request) {
-  const session = await getServerSession(authOptions);
-  const userId = (session?.user as any)?.id;
-  if (!userId) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
-
+export const GET = withApiHandler('api', async (request, { userId }) => {
   const { searchParams } = new URL(request.url);
   const status = searchParams.get('status');
 
@@ -75,4 +62,5 @@ export async function GET(request: Request) {
   }));
 
   return NextResponse.json(signedPosts);
-}
+});
+
