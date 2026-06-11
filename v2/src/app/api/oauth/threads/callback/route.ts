@@ -70,23 +70,21 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Exchange for long-lived token
+    // Exchange for long-lived token (must be GET request per Threads API docs)
     const longLivedRes = await fetch(
-      "https://graph.threads.net/access_token",
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: new URLSearchParams({
-          grant_type: "th_exchange_token",
-          client_secret: clientSecret,
-          access_token: tokenData.access_token,
-        }),
-      }
+      `https://graph.threads.net/access_token?${new URLSearchParams({
+        grant_type: "th_exchange_token",
+        client_secret: clientSecret,
+        access_token: tokenData.access_token,
+      })}`,
+      { method: "GET" }
     );
 
     const longLivedData = await longLivedRes.json();
     if (!longLivedRes.ok || !longLivedData.access_token) {
-      throw new Error("Failed to get long-lived Threads token");
+      throw new Error(
+        `Failed to get long-lived Threads token: ${longLivedData.error?.message || JSON.stringify(longLivedData)}`
+      );
     }
 
     // Get user profile
@@ -99,7 +97,9 @@ export async function GET(request: NextRequest) {
 
     const profile = await profileRes.json();
     if (!profileRes.ok || !profile.id) {
-      throw new Error("Failed to get Threads profile");
+      throw new Error(
+        `Failed to get Threads profile: ${profile.error?.message || JSON.stringify(profile)}`
+      );
     }
 
     const encryptedToken = encrypt(longLivedData.access_token);
