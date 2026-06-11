@@ -5,13 +5,15 @@ import prisma from '@/lib/db';
 
 export async function PUT(
   request: Request,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
   const session = await getServerSession(authOptions);
   const userId = (session?.user as any)?.id;
   if (!userId) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
+
+  const { id } = await params;
 
   const body = await request.json();
   const { scheduledAt } = body;
@@ -26,7 +28,7 @@ export async function PUT(
   }
 
   const post = await prisma.post.findFirst({
-    where: { id: params.id, userId },
+    where: { id, userId },
   });
 
   if (!post) {
@@ -38,7 +40,7 @@ export async function PUT(
   }
 
   const updatedPost = await prisma.post.update({
-    where: { id: params.id },
+    where: { id },
     data: {
       scheduledAt: scheduledDate,
       status: 'scheduled',
@@ -50,7 +52,7 @@ export async function PUT(
 
 export async function DELETE(
   request: Request,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
   const session = await getServerSession(authOptions);
   const userId = (session?.user as any)?.id;
@@ -58,8 +60,10 @@ export async function DELETE(
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
+  const { id } = await params;
+
   const post = await prisma.post.findFirst({
-    where: { id: params.id, userId },
+    where: { id, userId },
   });
 
   if (!post) {
@@ -71,7 +75,7 @@ export async function DELETE(
   }
 
   const updatedPost = await prisma.post.update({
-    where: { id: params.id },
+    where: { id },
     data: {
       scheduledAt: null,
       status: 'draft',
