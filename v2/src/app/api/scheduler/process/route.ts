@@ -1,11 +1,18 @@
 import { NextResponse } from 'next/server';
+import * as crypto from "crypto";
 import prisma from '@/lib/db';
 import { publishToMultiplePlatforms } from '@/lib/publisher';
 
 export async function POST(request: Request) {
   // Protect with API key
   const apiKey = request.headers.get('x-scheduler-api-key');
-  if (!apiKey || apiKey !== process.env.SCHEDULER_API_KEY) {
+  const expectedKey = process.env.SCHEDULER_API_KEY;
+  if (
+    !apiKey ||
+    !expectedKey ||
+    apiKey.length !== expectedKey.length ||
+    !crypto.timingSafeEqual(Buffer.from(apiKey), Buffer.from(expectedKey))
+  ) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 

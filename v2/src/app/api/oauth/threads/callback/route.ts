@@ -44,7 +44,7 @@ export async function GET(request: NextRequest) {
 
   try {
     const clientId = process.env.THREADS_APP_ID!;
-    const clientSecret = process.env.THREADS_APP_SECRET ?? process.env.FACEBOOK_APP_SECRET!;
+    const clientSecret = process.env.THREADS_APP_SECRET!;
     const redirectUri = `${appUrl}/api/oauth/threads/callback`;
 
     // Exchange code for short-lived token
@@ -72,11 +72,16 @@ export async function GET(request: NextRequest) {
 
     // Exchange for long-lived token
     const longLivedRes = await fetch(
-      `https://graph.threads.net/access_token?${new URLSearchParams({
-        grant_type: "th_exchange_token",
-        client_secret: clientSecret,
-        access_token: tokenData.access_token,
-      })}`
+      "https://graph.threads.net/access_token",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({
+          grant_type: "th_exchange_token",
+          client_secret: clientSecret,
+          access_token: tokenData.access_token,
+        }),
+      }
     );
 
     const longLivedData = await longLivedRes.json();

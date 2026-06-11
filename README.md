@@ -179,9 +179,13 @@ AZURE_STORAGE_CONTAINER=media
    | Secret | Description |
    |--------|-------------|
    | `AZURE_STATIC_WEB_APPS_API_TOKEN_*` | Azure Static Web Apps deploy token |
-   | `NEXT_PUBLIC_APP_URL` | Public URL of your Azure Static Web App |
+   | `NEXT_PUBLIC_APP_URL_PRODUCTION` | Production app URL used by the `main` build |
+   | `NEXT_PUBLIC_APP_URL_PREVIEW` | Preview app URL used by the `preview` build |
+   | `NEXT_PUBLIC_APP_URL` | Optional fallback app URL |
 
-3. Push to `main` to trigger automatic deployment.
+3. Push to `main` to deploy production. Push to `preview` to deploy the test environment named `preview`.
+
+Pull requests run CI only; the Azure Static Web Apps deploy workflow does not run for PR events.
 
 **Azure Functions Timer (Scheduled Posts)**
 
@@ -383,9 +387,13 @@ AZURE_STORAGE_CONTAINER=media
    | Secret | 說明 |
    |--------|------|
    | `AZURE_STATIC_WEB_APPS_API_TOKEN_*` | Azure Static Web Apps 部署金鑰 |
-   | `NEXT_PUBLIC_APP_URL` | Azure Static Web App 的公開 URL |
+   | `NEXT_PUBLIC_APP_URL_PRODUCTION` | `main` 正式版建置使用的公開 URL |
+   | `NEXT_PUBLIC_APP_URL_PREVIEW` | `preview` 測試版建置使用的公開 URL |
+   | `NEXT_PUBLIC_APP_URL` | 選用的備援公開 URL |
 
-2. 推送至 `main` 分支即自動觸發部署。
+2. 推送至 `main` 分支會部署正式版；推送至 `preview` 分支會部署名為 `preview` 的測試環境。
+
+PR 階段只執行 CI，不會執行 Azure Static Web Apps 部署 workflow。
 
 **Azure Functions 計時器（排程發文）**
 
