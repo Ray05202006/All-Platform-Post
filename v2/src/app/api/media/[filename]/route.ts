@@ -5,7 +5,7 @@ import { deleteFromBlob } from '@/lib/storage';
 
 export async function DELETE(
   request: Request,
-  { params }: { params: { filename: string } },
+  { params }: { params: Promise<{ filename: string }> },
 ) {
   const session = await getServerSession(authOptions);
   const userId = (session?.user as any)?.id;
@@ -13,7 +13,8 @@ export async function DELETE(
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const filename = decodeURIComponent(params.filename);
+  const { filename: rawFilename } = await params;
+  const filename = decodeURIComponent(rawFilename);
   await deleteFromBlob(filename);
   return NextResponse.json({ success: true });
 }

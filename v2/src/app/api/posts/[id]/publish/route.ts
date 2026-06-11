@@ -6,7 +6,7 @@ import { publishToMultiplePlatforms } from '@/lib/publisher';
 
 export async function POST(
   request: Request,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
   const session = await getServerSession(authOptions);
   const userId = (session?.user as any)?.id;
@@ -14,8 +14,10 @@ export async function POST(
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
+  const { id } = await params;
+
   const post = await prisma.post.findFirst({
-    where: { id: params.id, userId },
+    where: { id, userId },
   });
 
   if (!post) {
@@ -28,7 +30,7 @@ export async function POST(
 
   // Set status to publishing
   await prisma.post.update({
-    where: { id: params.id },
+    where: { id },
     data: { status: 'publishing' },
   });
 
@@ -46,7 +48,7 @@ export async function POST(
     const status = failCount === 0 ? 'published' : successCount === 0 ? 'failed' : 'partial';
 
     const updatedPost = await prisma.post.update({
-      where: { id: params.id },
+      where: { id },
       data: {
         status,
         publishedAt: failCount === 0 ? new Date() : undefined,
@@ -57,7 +59,7 @@ export async function POST(
     return NextResponse.json(updatedPost);
   } catch (error: any) {
     await prisma.post.update({
-      where: { id: params.id },
+      where: { id },
       data: {
         status: 'failed',
         results: { error: error.message },
