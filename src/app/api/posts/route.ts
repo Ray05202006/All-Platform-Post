@@ -11,17 +11,30 @@ export const POST = withApiHandler('api', async (request, { userId }) => {
   const { content, platforms, mediaUrls, mediaType, scheduledAt } = body;
 
   // Validation
-  if (!content || typeof content !== 'string') {
-    return NextResponse.json({ error: 'Content is required' }, { status: 400 });
+  const isScheduled = !!scheduledAt;
+
+  if (isScheduled) {
+    if ((!content || typeof content !== 'string' || content.trim() === '') && (!mediaUrls || mediaUrls.length === 0)) {
+      return NextResponse.json({ error: 'Content or media is required for scheduled posts' }, { status: 400 });
+    }
+
+    if (!Array.isArray(platforms) || platforms.length === 0) {
+      return NextResponse.json({ error: 'At least one platform is required for scheduled posts' }, { status: 400 });
+    }
+  } else {
+    if (content !== undefined && typeof content !== 'string') {
+      return NextResponse.json({ error: 'Content must be a string' }, { status: 400 });
+    }
+    if (platforms !== undefined && !Array.isArray(platforms)) {
+      return NextResponse.json({ error: 'Platforms must be an array' }, { status: 400 });
+    }
   }
 
-  if (!Array.isArray(platforms) || platforms.length === 0) {
-    return NextResponse.json({ error: 'At least one platform is required' }, { status: 400 });
-  }
-
-  const invalidPlatforms = platforms.filter((p: string) => !VALID_PLATFORMS.includes(p as Platform));
-  if (invalidPlatforms.length > 0) {
-    return NextResponse.json({ error: `Invalid platforms: ${invalidPlatforms.join(', ')}` }, { status: 400 });
+  if (Array.isArray(platforms) && platforms.length > 0) {
+    const invalidPlatforms = platforms.filter((p: string) => !VALID_PLATFORMS.includes(p as Platform));
+    if (invalidPlatforms.length > 0) {
+      return NextResponse.json({ error: `Invalid platforms: ${invalidPlatforms.join(', ')}` }, { status: 400 });
+    }
   }
 
   const parsedScheduledAt = scheduledAt ? new Date(scheduledAt) : null;
@@ -29,8 +42,8 @@ export const POST = withApiHandler('api', async (request, { userId }) => {
   const post = await prisma.post.create({
     data: {
       userId: userId!,
-      content,
-      platforms,
+      content: content || '',
+      platforms: platforms || [],
       mediaUrls: mediaUrls || [],
       mediaType: mediaType || null,
       scheduledAt: parsedScheduledAt,

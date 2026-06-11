@@ -30,6 +30,14 @@ export async function POST(
     return NextResponse.json({ error: 'Post already published' }, { status: 400 });
   }
 
+  if (!post.platforms || post.platforms.length === 0) {
+    return NextResponse.json({ error: 'Cannot publish a post with no platforms selected' }, { status: 400 });
+  }
+
+  if ((!post.content || post.content.trim() === '') && (!post.mediaUrls || post.mediaUrls.length === 0)) {
+    return NextResponse.json({ error: 'Cannot publish an empty post' }, { status: 400 });
+  }
+
   // Set status to publishing
   await prisma.post.update({
     where: { id },
