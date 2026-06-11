@@ -6,6 +6,7 @@ import * as twitter from '@/lib/platforms/twitter';
 import * as threads from '@/lib/platforms/threads';
 import * as instagram from '@/lib/platforms/instagram';
 import { splitForTwitter, splitForPlatform } from '@/lib/splitter';
+import { signUrl } from '@/lib/storage';
 
 const RETRY_DELAYS = [1000, 2000, 4000];
 
@@ -119,19 +120,20 @@ export async function publishToMultiplePlatforms(
   _mediaType?: string | null,
 ): Promise<Record<string, PlatformResult>> {
   const results: Record<string, PlatformResult> = {};
+  const signedMediaUrls = mediaUrls?.map(url => signUrl(url)) || [];
 
   for (const platform of platforms) {
     try {
       const publish = async (): Promise<PlatformResult> => {
         switch (platform) {
           case 'facebook':
-            return publishToFacebook(userId, content, mediaUrls?.[0]);
+            return publishToFacebook(userId, content, signedMediaUrls?.[0]);
           case 'twitter':
             return publishToTwitter(userId, content);
           case 'threads':
             return publishToThreads(userId, content);
           case 'instagram':
-            return publishToInstagram(userId, content, mediaUrls?.[0]);
+            return publishToInstagram(userId, content, signedMediaUrls?.[0]);
           default:
             return { error: `Unknown platform: ${platform}` };
         }

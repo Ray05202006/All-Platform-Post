@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
 import prisma from '@/lib/db';
 import type { Platform } from '@/lib/types';
+import { signUrl } from '@/lib/storage';
 
 const VALID_PLATFORMS: Platform[] = ['facebook', 'instagram', 'twitter', 'threads'];
 
@@ -44,7 +45,10 @@ export async function POST(request: Request) {
     },
   });
 
-  return NextResponse.json(post, { status: 201 });
+  return NextResponse.json({
+    ...post,
+    mediaUrls: post.mediaUrls.map(url => signUrl(url)),
+  }, { status: 201 });
 }
 
 export async function GET(request: Request) {
@@ -65,5 +69,10 @@ export async function GET(request: Request) {
     orderBy: { createdAt: 'desc' },
   });
 
-  return NextResponse.json(posts);
+  const signedPosts = posts.map(post => ({
+    ...post,
+    mediaUrls: post.mediaUrls.map(url => signUrl(url)),
+  }));
+
+  return NextResponse.json(signedPosts);
 }

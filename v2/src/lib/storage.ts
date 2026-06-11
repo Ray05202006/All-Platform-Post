@@ -24,14 +24,14 @@ export async function uploadToBlob(
 ): Promise<string> {
   const blobServiceClient = getBlobServiceClient();
   const containerClient = blobServiceClient.getContainerClient(getContainerName());
-  await containerClient.createIfNotExists({ access: 'blob' });
+  await containerClient.createIfNotExists();
 
   const blockBlobClient = containerClient.getBlockBlobClient(filename);
   await blockBlobClient.uploadData(buffer, {
     blobHTTPHeaders: { blobContentType: contentType },
   });
 
-  return blockBlobClient.url;
+  return getBlobUrl(filename);
 }
 
 export async function deleteFromBlob(filename: string): Promise<void> {
@@ -60,4 +60,22 @@ export function getBlobUrl(filename: string): string {
   ).toString();
 
   return `${blobClient.url}?${sasToken}`;
+}
+
+export function signUrl(urlOrFilename: string): string {
+  if (!urlOrFilename) return urlOrFilename;
+  
+  const containerName = getContainerName();
+  const marker = `/${containerName}/`;
+  const markerIndex = urlOrFilename.indexOf(marker);
+  
+  let filename = urlOrFilename;
+  if (markerIndex !== -1) {
+    const pathAndQuery = urlOrFilename.substring(markerIndex + marker.length);
+    const queryIndex = pathAndQuery.indexOf('?');
+    filename = queryIndex !== -1 ? pathAndQuery.substring(0, queryIndex) : pathAndQuery;
+  }
+  
+  filename = decodeURIComponent(filename);
+  return getBlobUrl(filename);
 }

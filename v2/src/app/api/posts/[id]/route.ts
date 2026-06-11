@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
 import prisma from '@/lib/db';
+import { signUrl } from '@/lib/storage';
 
 export async function GET(
   request: Request,
@@ -23,7 +24,10 @@ export async function GET(
     return NextResponse.json({ error: 'Post not found' }, { status: 404 });
   }
 
-  return NextResponse.json(post);
+  return NextResponse.json({
+    ...post,
+    mediaUrls: post.mediaUrls.map(url => signUrl(url)),
+  });
 }
 
 export async function DELETE(

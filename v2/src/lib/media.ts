@@ -1,5 +1,3 @@
-import { API_URL } from "@/lib/api";
-
 export interface MediaFile {
   filename: string;
   originalname: string;
@@ -25,5 +23,5 @@ export function validateHomogeneousMedia(
 }
 
 export function getMediaPreviewUrl(file: MediaFile): string {
-  return `${API_URL}/uploads/media/${file.filename}`;
+  return file.url;
 }
