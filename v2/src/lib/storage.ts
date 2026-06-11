@@ -6,7 +6,7 @@ import {
 } from '@azure/storage-blob';
 
 function getBlobServiceClient(): BlobServiceClient {
-  const connectionString = process.env.AZURE_STORAGE_CONNECTION_STRING;
+  const connectionString = process.env.STORAGE_CONNECTION_STRING || process.env.AZURE_STORAGE_CONNECTION_STRING;
   if (!connectionString) {
     throw new Error('AZURE_STORAGE_CONNECTION_STRING is not configured');
   }
