@@ -49,7 +49,9 @@ function SettingsContent() {
       fetchConnections();
       window.history.replaceState({}, '', '/dashboard/settings');
     } else if (error) {
-      toast.error(`Connection failed: ${error.replace(/_/g, ' ')}`);
+      const message = searchParams.get('message');
+      const detail = message ? `: ${message}` : '';
+      toast.error(`Connection failed: ${error.replace(/_/g, ' ')}${detail}`);
       window.history.replaceState({}, '', '/dashboard/settings');
     }
   }, [searchParams]);

@@ -88,10 +88,11 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(
       `${appUrl}/dashboard/settings?connected=facebook`
     );
-  } catch (error) {
+  } catch (error: any) {
     console.error("Facebook OAuth error:", error);
+    const errMsg = error?.message || String(error);
     return NextResponse.redirect(
-      `${appUrl}/dashboard/settings?error=facebook_failed`
+      `${appUrl}/dashboard/settings?error=facebook_failed&message=${encodeURIComponent(errMsg)}`
     );
   }
 }

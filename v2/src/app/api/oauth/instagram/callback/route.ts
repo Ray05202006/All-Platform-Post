@@ -117,10 +117,11 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(
       `${appUrl}/dashboard/settings?connected=instagram`
     );
-  } catch (error) {
+  } catch (error: any) {
     console.error("Instagram OAuth error:", error);
+    const errMsg = error?.message || String(error);
     return NextResponse.redirect(
-      `${appUrl}/dashboard/settings?error=instagram_failed`
+      `${appUrl}/dashboard/settings?error=instagram_failed&message=${encodeURIComponent(errMsg)}`
     );
   }
 }

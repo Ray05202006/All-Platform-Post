@@ -130,10 +130,11 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(
       `${appUrl}/dashboard/settings?connected=threads`
     );
-  } catch (err) {
+  } catch (err: any) {
     console.error("Threads OAuth error:", err);
+    const errMsg = err?.message || String(err);
     return NextResponse.redirect(
-      `${appUrl}/dashboard/settings?error=threads_failed`
+      `${appUrl}/dashboard/settings?error=threads_failed&message=${encodeURIComponent(errMsg)}`
     );
   }
 }
