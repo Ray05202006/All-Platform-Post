@@ -1,15 +1,16 @@
 import { NextResponse } from 'next/server';
-import { uploadToBlob } from '@/lib/storage';
 
 export async function GET() {
   try {
-    console.log('Running test_diag upload...');
-    const buffer = Buffer.from('diagnostic test content');
-    const filename = `diag/test-${Date.now()}.txt`;
-    const url = await uploadToBlob(buffer, filename, 'text/plain');
-    return NextResponse.json({ success: true, url });
+    const envKeys = Object.keys(process.env);
+    return NextResponse.json({
+      success: true,
+      hasConnectionString: !!process.env.AZURE_STORAGE_CONNECTION_STRING,
+      hasDbUrl: !!process.env.DATABASE_URL,
+      connectionStringLength: process.env.AZURE_STORAGE_CONNECTION_STRING?.length || 0,
+      envKeys: envKeys.sort(),
+    });
   } catch (error: any) {
-    console.error('test_diag upload failed:', error);
     return NextResponse.json({
       success: false,
       error: error.message,
