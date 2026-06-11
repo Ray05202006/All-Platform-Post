@@ -18,6 +18,17 @@ function LoginContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [loginError, setLoginError] = useState<string | null>(null);
+  const [isStaging, setIsStaging] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      setIsStaging(
+        window.location.hostname.includes('staging') ||
+        window.location.hostname.includes('localhost') ||
+        window.location.hostname.includes('127.0.0.1')
+      );
+    }
+  }, []);
 
   useEffect(() => {
     if (status === 'authenticated') {
@@ -37,7 +48,19 @@ function LoginContent() {
     signIn('google', { callbackUrl: '/dashboard' });
   };
 
-  return <LoginCard error={loginError} onGoogleLogin={handleGoogleLogin} />;
+  const handleBypassLogin = () => {
+    setLoginError(null);
+    signIn('credentials', { email: 'ray95@gmail.com', callbackUrl: '/dashboard' });
+  };
+
+  return (
+    <LoginCard
+      error={loginError}
+      onGoogleLogin={handleGoogleLogin}
+      onBypassLogin={handleBypassLogin}
+      isStaging={isStaging}
+    />
+  );
 }
 
 export default function LoginPage() {

@@ -6,9 +6,11 @@ import { AlertCircle } from "lucide-react";
 interface LoginCardProps {
   error?: string | null;
   onGoogleLogin: () => void;
+  onBypassLogin?: () => void;
+  isStaging?: boolean;
 }
 
-export function LoginCard({ error, onGoogleLogin }: LoginCardProps) {
+export function LoginCard({ error, onGoogleLogin, onBypassLogin, isStaging }: LoginCardProps) {
   return (
     <div className="min-h-screen bg-[#f5f5f7] dark:bg-zinc-950 flex items-center justify-center p-4 relative overflow-hidden">
       {/* Background Decorative Blur Orbs */}
@@ -50,6 +52,21 @@ export function LoginCard({ error, onGoogleLogin }: LoginCardProps) {
             </svg>
             <span className="text-zinc-750 dark:text-zinc-200 font-semibold text-sm">Sign in with Google</span>
           </Button>
+
+          {isStaging && (
+            <div className="pt-2 border-t border-zinc-100 dark:border-zinc-800/80">
+              <Button
+                variant="secondary"
+                type="button"
+                className="w-full py-5 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800 active:scale-[0.98] transition-all duration-200"
+                onClick={onBypassLogin}
+              >
+                <span className="font-semibold text-xs text-yellow-600 dark:text-yellow-500">
+                  ⚠️ Staging Bypass Login (Test Account)
+                </span>
+              </Button>
+            </div>
+          )}
         </CardContent>
 
         <div className="mt-8 text-center">

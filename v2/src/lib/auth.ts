@@ -1,10 +1,15 @@
 import { NextAuthOptions } from 'next-auth';
 import GoogleProvider from 'next-auth/providers/google';
+import CredentialsProvider from 'next-auth/providers/credentials';
 import prisma from './db';
 
 if (!process.env.NEXTAUTH_SECRET && process.env.NODE_ENV === "production" && process.env.NEXT_PHASE !== "phase-production-build") {
   throw new Error("NEXTAUTH_SECRET must be set");
 }
+
+const isStagingOrDev =
+  process.env.NEXT_PUBLIC_APP_URL?.includes('staging') ||
+  process.env.NODE_ENV === 'development';
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -12,6 +17,26 @@ export const authOptions: NextAuthOptions = {
       clientId: process.env.GOOGLE_CLIENT_ID!,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
     }),
+    ...(isStagingOrDev
+      ? [
+          CredentialsProvider({
+            name: 'Staging Bypass',
+            credentials: {
+              email: { label: 'Email', type: 'text' },
+            },
+            async authorize(credentials) {
+              const email = credentials?.email || 'ray95@gmail.com';
+              // Upsert the user in db so they have a valid database profile
+              const user = await prisma.user.upsert({
+                where: { email },
+                update: { name: 'Staging Tester' },
+                create: { email, name: 'Staging Tester' },
+              });
+              return user;
+            },
+          }),
+        ]
+      : []),
   ],
   session: {
     strategy: 'jwt',
