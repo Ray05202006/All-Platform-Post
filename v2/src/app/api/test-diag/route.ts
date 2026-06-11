@@ -1,15 +1,12 @@
 import { NextResponse } from 'next/server';
+import { uploadToBlob } from '@/lib/storage';
 
 export async function GET() {
   try {
-    const envKeys = Object.keys(process.env);
-    return NextResponse.json({
-      success: true,
-      hasConnectionString: !!process.env.AZURE_STORAGE_CONNECTION_STRING,
-      hasDbUrl: !!process.env.DATABASE_URL,
-      connectionStringLength: process.env.AZURE_STORAGE_CONNECTION_STRING?.length || 0,
-      envKeys: envKeys.sort(),
-    });
+    const buffer = Buffer.from('diagnostic test content');
+    const filename = `diag/test-${Date.now()}.txt`;
+    const url = await uploadToBlob(buffer, filename, 'text/plain');
+    return NextResponse.json({ success: true, url });
   } catch (error: any) {
     return NextResponse.json({
       success: false,
