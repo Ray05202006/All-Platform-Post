@@ -5,7 +5,7 @@ import prisma from '@/lib/db';
 
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
   const session = await getServerSession(authOptions);
   const userId = (session?.user as any)?.id;
@@ -13,8 +13,10 @@ export async function GET(
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
+  const { id } = await params;
+
   const post = await prisma.post.findFirst({
-    where: { id: params.id, userId },
+    where: { id, userId },
   });
 
   if (!post) {
@@ -26,7 +28,7 @@ export async function GET(
 
 export async function DELETE(
   request: Request,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
   const session = await getServerSession(authOptions);
   const userId = (session?.user as any)?.id;
@@ -34,8 +36,10 @@ export async function DELETE(
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
+  const { id } = await params;
+
   const post = await prisma.post.findFirst({
-    where: { id: params.id, userId },
+    where: { id, userId },
   });
 
   if (!post) {
@@ -46,6 +50,6 @@ export async function DELETE(
     return NextResponse.json({ error: 'Cannot delete published post' }, { status: 400 });
   }
 
-  await prisma.post.delete({ where: { id: params.id } });
+  await prisma.post.delete({ where: { id } });
   return NextResponse.json({ success: true });
 }

@@ -37,6 +37,9 @@ async function publishToFacebook(
 ): Promise<PlatformResult> {
   const connection = await getConnection(userId, 'facebook');
   if (!connection) return { error: 'Facebook not connected' };
+  if (connection.tokenExpiresAt && connection.tokenExpiresAt <= new Date()) {
+    return { error: 'Facebook token expired — please reconnect' };
+  }
 
   const accessToken = decrypt(connection.accessToken);
   const pages = await facebook.getPages(accessToken);
@@ -57,6 +60,9 @@ async function publishToFacebook(
 async function publishToTwitter(userId: string, content: string): Promise<PlatformResult> {
   const connection = await getConnection(userId, 'twitter');
   if (!connection) return { error: 'Twitter not connected' };
+  if (connection.tokenExpiresAt && connection.tokenExpiresAt <= new Date()) {
+    return { error: 'Twitter token expired — please reconnect' };
+  }
 
   const accessToken = decrypt(connection.accessToken);
 
@@ -73,6 +79,9 @@ async function publishToTwitter(userId: string, content: string): Promise<Platfo
 async function publishToThreads(userId: string, content: string): Promise<PlatformResult> {
   const connection = await getConnection(userId, 'threads');
   if (!connection) return { error: 'Threads not connected' };
+  if (connection.tokenExpiresAt && connection.tokenExpiresAt <= new Date()) {
+    return { error: 'Threads token expired — please reconnect' };
+  }
 
   const accessToken = decrypt(connection.accessToken);
 
@@ -94,6 +103,9 @@ async function publishToInstagram(
 
   const connection = await getConnection(userId, 'instagram');
   if (!connection) return { error: 'Instagram not connected' };
+  if (connection.tokenExpiresAt && connection.tokenExpiresAt <= new Date()) {
+    return { error: 'Instagram token expired — please reconnect' };
+  }
 
   const accessToken = decrypt(connection.accessToken);
   return instagram.publishImagePost(connection.platformUserId, accessToken, mediaUrl, content);

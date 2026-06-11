@@ -10,6 +10,8 @@ export const metadata: Metadata = {
   description: 'Multi-platform social media posting system',
 };
 
+const isStaging = process.env.NEXT_PUBLIC_APP_URL?.includes('staging');
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -18,6 +20,11 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={inter.className}>
+        {isStaging && (
+          <div className="fixed top-0 left-0 right-0 z-50 bg-yellow-400 text-black text-center text-xs font-bold py-1">
+            ⚠️ STAGING 測試環境 — 此處變更不影響正式版
+          </div>
+        )}
         <Providers>{children}</Providers>
       </body>
     </html>

@@ -56,14 +56,14 @@ describe('POST /api/posts/[id]/publish', () => {
   describe('authentication', () => {
     it('returns 401 when session is null', async () => {
       mockGetServerSession.mockResolvedValue(null);
-      const res = await POST(makeRequest(), { params: { id: 'p1' } });
+      const res = await POST(makeRequest(), { params: Promise.resolve({ id: 'p1' }) });
       expect(res.status).toBe(401);
       expect(await res.json()).toEqual({ error: 'Unauthorized' });
     });
 
     it('returns 401 when session has no user id', async () => {
       mockGetServerSession.mockResolvedValue({ user: {} } as any);
-      const res = await POST(makeRequest(), { params: { id: 'p1' } });
+      const res = await POST(makeRequest(), { params: Promise.resolve({ id: 'p1' }) });
       expect(res.status).toBe(401);
     });
   });
@@ -71,14 +71,14 @@ describe('POST /api/posts/[id]/publish', () => {
   describe('post lookup', () => {
     it('returns 404 when post does not exist', async () => {
       mockFindFirst.mockResolvedValue(null);
-      const res = await POST(makeRequest(), { params: { id: 'nonexistent' } });
+      const res = await POST(makeRequest(), { params: Promise.resolve({ id: 'nonexistent' }) });
       expect(res.status).toBe(404);
       expect(await res.json()).toEqual({ error: 'Post not found' });
     });
 
     it('scopes lookup to the authenticated user', async () => {
       mockPublish.mockResolvedValue({ twitter: { postId: 't1' } } as any);
-      await POST(makeRequest(), { params: { id: 'p1' } });
+      await POST(makeRequest(), { params: Promise.resolve({ id: 'p1' }) });
       expect(mockFindFirst).toHaveBeenCalledWith({
         where: { id: 'p1', userId: 'u1' },
       });
@@ -88,7 +88,7 @@ describe('POST /api/posts/[id]/publish', () => {
   describe('already published guard', () => {
     it('returns 400 when post is already published', async () => {
       mockFindFirst.mockResolvedValue({ ...basePost, status: 'published' } as any);
-      const res = await POST(makeRequest(), { params: { id: 'p1' } });
+      const res = await POST(makeRequest(), { params: Promise.resolve({ id: 'p1' }) });
       expect(res.status).toBe(400);
       expect(await res.json()).toEqual({ error: 'Post already published' });
     });
@@ -97,7 +97,7 @@ describe('POST /api/posts/[id]/publish', () => {
   describe('publish state machine', () => {
     it('sets status to publishing before calling publisher', async () => {
       mockPublish.mockResolvedValue({ twitter: { postId: 't1' } } as any);
-      await POST(makeRequest(), { params: { id: 'p1' } });
+      await POST(makeRequest(), { params: Promise.resolve({ id: 'p1' }) });
       expect(mockUpdate.mock.calls[0][0]).toMatchObject({
         where: { id: 'p1' },
         data: { status: 'publishing' },
@@ -112,7 +112,7 @@ describe('POST /api/posts/[id]/publish', () => {
         threads: { postId: 'th1', url: 'https://threads.net/th1' },
       } as any);
 
-      const res = await POST(makeRequest(), { params: { id: 'p1' } });
+      const res = await POST(makeRequest(), { params: Promise.resolve({ id: 'p1' }) });
       expect(res.status).toBe(200);
 
       const finalUpdate = mockUpdate.mock.calls[1][0];
@@ -128,7 +128,7 @@ describe('POST /api/posts/[id]/publish', () => {
         threads: { error: 'server error' },
       } as any);
 
-      await POST(makeRequest(), { params: { id: 'p1' } });
+      await POST(makeRequest(), { params: Promise.resolve({ id: 'p1' }) });
 
       const finalUpdate = mockUpdate.mock.calls[1][0];
       expect(finalUpdate.data.status).toBe('failed');
@@ -143,7 +143,7 @@ describe('POST /api/posts/[id]/publish', () => {
         threads: { error: 'failed' },
       } as any);
 
-      await POST(makeRequest(), { params: { id: 'p1' } });
+      await POST(makeRequest(), { params: Promise.resolve({ id: 'p1' }) });
 
       const finalUpdate = mockUpdate.mock.calls[1][0];
       expect(finalUpdate.data.status).toBe('partial');
@@ -154,7 +154,7 @@ describe('POST /api/posts/[id]/publish', () => {
     it('catches thrown error → status=failed, returns 500', async () => {
       mockPublish.mockRejectedValue(new Error('Network timeout'));
 
-      const res = await POST(makeRequest(), { params: { id: 'p1' } });
+      const res = await POST(makeRequest(), { params: Promise.resolve({ id: 'p1' }) });
       expect(res.status).toBe(500);
       expect(await res.json()).toEqual({ error: 'Network timeout' });
 

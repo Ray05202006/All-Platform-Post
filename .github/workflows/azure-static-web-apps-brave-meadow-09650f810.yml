@@ -34,11 +34,11 @@ jobs:
 
       - uses: pnpm/action-setup@v4
         with:
-          version: 9
+          version: 10
 
       - uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: '20'
           cache: 'pnpm'
           cache-dependency-path: v2/pnpm-lock.yaml
 
@@ -87,11 +87,11 @@ jobs:
 
       - uses: pnpm/action-setup@v4
         with:
-          version: 9
+          version: 10
 
       - uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: '20'
           cache: 'pnpm'
           cache-dependency-path: v2/pnpm-lock.yaml
 
@@ -123,6 +123,9 @@ jobs:
     if: github.event_name == 'pull_request' && github.event.action == 'closed'
     runs-on: ubuntu-latest
     name: Close Pull Request
+    permissions:
+      contents: read
+      pull-requests: write
     steps:
       - name: Close Pull Request
         uses: Azure/static-web-apps-deploy@v1

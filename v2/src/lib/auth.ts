@@ -2,6 +2,10 @@ import { NextAuthOptions } from 'next-auth';
 import GoogleProvider from 'next-auth/providers/google';
 import prisma from './db';
 
+if (!process.env.NEXTAUTH_SECRET && process.env.NODE_ENV === "production" && process.env.NEXT_PHASE !== "phase-production-build") {
+  throw new Error("NEXTAUTH_SECRET must be set");
+}
+
 export const authOptions: NextAuthOptions = {
   providers: [
     GoogleProvider({

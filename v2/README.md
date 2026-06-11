@@ -127,7 +127,9 @@ npx prisma generate          # Regenerate client after schema edits
 
 ### Deployment
 
-This app is deployed to **Azure Static Web Apps** via the GitHub Actions workflow at `.github/workflows/azure-static-web-apps-*.yml`.
+This app is deployed to **Azure Static Web Apps** via `.github/workflows/azure-static-web-apps-*.yml`.
+
+Web deployments are branch-based: `main` deploys production, and `preview` deploys the named preview environment. Pull requests run CI only and do not run the Static Web Apps deploy job.
 
 The timer is deployed separately to **Azure Functions** via `.github/workflows/deploy-timer.yml`.
 
@@ -259,6 +261,8 @@ npx prisma generate          # 修改 schema 後重新產生客戶端
 ### 部署
 
 本應用程式透過 `.github/workflows/azure-static-web-apps-*.yml` 工作流程部署至 **Azure Static Web Apps**。
+
+網頁部署依分支區分：`main` 部署正式版，`preview` 部署名為 `preview` 的測試環境。PR 階段只跑 CI，不執行 Static Web Apps 部署 job。
 
 計時器則透過 `.github/workflows/deploy-timer.yml` 單獨部署至 **Azure Functions**。
 
