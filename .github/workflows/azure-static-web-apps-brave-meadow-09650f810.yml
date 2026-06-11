@@ -48,6 +48,11 @@ jobs:
       - name: Generate Prisma client
         run: npx prisma generate
 
+      - name: Push Prisma schema to Supabase (staging)
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: npx prisma db push --accept-data-loss
+
       - name: Build Next.js (staging)
         env:
           NEXT_PUBLIC_APP_URL: ${{ secrets.NEXT_PUBLIC_APP_URL_STAGING }}
@@ -103,6 +108,11 @@ jobs:
 
       - name: Generate Prisma client
         run: npx prisma generate
+
+      - name: Push Prisma schema to Supabase (production)
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: npx prisma db push --accept-data-loss
 
       - name: Build Next.js (production)
         env:
