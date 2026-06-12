@@ -136,7 +136,7 @@ export function signUrl(urlOrFilename: string): string {
   }
 
   // Also handle R2 fallback endpoint URL format to extract the filename
-  if (s3Client && !r2PublicUrl && urlOrFilename.includes(r2Endpoint)) {
+  if (s3Client && !r2PublicUrl && r2Endpoint && urlOrFilename.includes(r2Endpoint)) {
     const parts = urlOrFilename.split(`/${r2BucketName}/`);
     if (parts.length > 1) {
       filename = parts[1];
