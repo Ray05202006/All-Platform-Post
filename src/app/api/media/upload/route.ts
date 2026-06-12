@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
 import { uploadToBlob } from '@/lib/storage';
 import { randomUUID } from 'crypto';
+import { logger } from '@/lib/logger';
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'video/mp4'];
@@ -32,8 +33,23 @@ export async function POST(request: Request) {
   const ext = file.name.split('.').pop() || 'bin';
   const filename = `${userId}/${randomUUID()}.${ext}`;
 
-  const buffer = Buffer.from(await file.arrayBuffer());
-  const url = await uploadToBlob(buffer, filename, file.type);
+  try {
+    const buffer = Buffer.from(await file.arrayBuffer());
+    const url = await uploadToBlob(buffer, filename, file.type);
 
-  return NextResponse.json({ url, filename }, { status: 201 });
+    await logger.info('api', `Media file uploaded successfully: ${filename}`, {
+      userId,
+      context: { filename, url },
+    });
+
+    return NextResponse.json({ url, filename }, { status: 201 });
+  } catch (error: any) {
+    await logger.error('api', `Media upload failed: ${error.message}`, {
+      userId,
+      error,
+      context: { filename },
+    });
+    return NextResponse.json({ error: `Upload failed: ${error.message}` }, { status: 500 });
+  }
 }
+
