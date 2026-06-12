@@ -49,6 +49,7 @@ jobs:
         run: npx prisma generate
 
       - name: Push Prisma schema to Supabase (staging)
+        timeout-minutes: 3
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: npx prisma db push --accept-data-loss
@@ -110,6 +111,7 @@ jobs:
         run: npx prisma generate
 
       - name: Push Prisma schema to Supabase (production)
+        timeout-minutes: 3
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: npx prisma db push --accept-data-loss
