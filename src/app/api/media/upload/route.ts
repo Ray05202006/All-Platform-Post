@@ -33,8 +33,13 @@ export async function POST(request: Request) {
   const ext = file.name.split('.').pop() || 'bin';
   const filename = `${userId}/${randomUUID()}.${ext}`;
 
+  const mask = (s?: string) => s ? `${s.slice(0, 4)}...${s.slice(-4)} (len: ${s.length})` : 'undefined';
+
   try {
     const buffer = Buffer.from(await file.arrayBuffer());
+    
+    await logger.info('api', `Attempting R2 upload: ID=${mask(process.env.CLOUDFLARE_R2_ACCESS_KEY_ID)}, SECRET=${mask(process.env.CLOUDFLARE_R2_SECRET_ACCESS_KEY)}, ENDPOINT=${process.env.CLOUDFLARE_R2_ENDPOINT}, BUCKET=${process.env.CLOUDFLARE_R2_BUCKET_NAME}`);
+    
     const url = await uploadToBlob(buffer, filename, file.type);
 
     await logger.info('api', `Media file uploaded successfully: ${filename}`, {

@@ -27,6 +27,7 @@ if (r2AccessKeyId && r2SecretAccessKey && r2Endpoint) {
       accessKeyId: r2AccessKeyId,
       secretAccessKey: r2SecretAccessKey,
     },
+    forcePathStyle: true,
   });
 }
 
