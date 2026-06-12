@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
 import { logger } from '@/lib/logger';
+import { randomUUID } from 'crypto';
 
 interface HandlerOptions {
   requireAuth?: boolean;
@@ -17,7 +18,9 @@ export function withApiHandler(
 ) {
   return async (request: Request, context?: any) => {
     // Generate a unique trace ID for request tracking and observability
-    const traceId = typeof crypto.randomUUID === 'function' ? crypto.randomUUID() : 'trace-' + Math.random().toString(36).substring(2, 15);
+    const traceId = typeof globalThis.crypto?.randomUUID === 'function'
+      ? globalThis.crypto.randomUUID()
+      : randomUUID();
     let userId: string | undefined = undefined;
 
     // Resolve params if it's a promise (Next.js 15 routing params are promises)
