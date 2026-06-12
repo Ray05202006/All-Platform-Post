@@ -10,25 +10,37 @@ import {
   BlobSASPermissions,
 } from '@azure/storage-blob';
 
-// R2 Config
-const r2AccessKeyId = process.env.CLOUDFLARE_R2_ACCESS_KEY_ID;
-const r2SecretAccessKey = process.env.CLOUDFLARE_R2_SECRET_ACCESS_KEY;
-const r2Endpoint = process.env.CLOUDFLARE_R2_ENDPOINT;
-const r2BucketName = process.env.CLOUDFLARE_R2_BUCKET_NAME || 'media';
-const r2PublicUrl = process.env.CLOUDFLARE_R2_PUBLIC_URL;
+function getR2Config() {
+  return {
+    accessKeyId: process.env.CLOUDFLARE_R2_ACCESS_KEY_ID,
+    secretAccessKey: process.env.CLOUDFLARE_R2_SECRET_ACCESS_KEY,
+    endpoint: process.env.CLOUDFLARE_R2_ENDPOINT,
+    bucketName: process.env.CLOUDFLARE_R2_BUCKET_NAME || 'media',
+    publicUrl: process.env.CLOUDFLARE_R2_PUBLIC_URL,
+  };
+}
 
 let s3Client: S3Client | null = null;
+let s3ClientInitialized = false;
 
-if (r2AccessKeyId && r2SecretAccessKey && r2Endpoint) {
-  s3Client = new S3Client({
-    region: 'auto',
-    endpoint: r2Endpoint,
-    credentials: {
-      accessKeyId: r2AccessKeyId,
-      secretAccessKey: r2SecretAccessKey,
-    },
-    forcePathStyle: true,
-  });
+function getS3Client(): S3Client | null {
+  if (s3ClientInitialized) return s3Client;
+
+  const config = getR2Config();
+  if (config.accessKeyId && config.secretAccessKey && config.endpoint) {
+    s3Client = new S3Client({
+      region: 'auto',
+      endpoint: config.endpoint,
+      credentials: {
+        accessKeyId: config.accessKeyId,
+        secretAccessKey: config.secretAccessKey,
+      },
+      forcePathStyle: true,
+      requestChecksumCalculation: "WHEN_REQUIRED",
+    });
+  }
+  s3ClientInitialized = true;
+  return s3Client;
 }
 
 function getBlobServiceClient(): BlobServiceClient {
@@ -48,14 +60,17 @@ export async function uploadToBlob(
   filename: string,
   contentType: string,
 ): Promise<string> {
-  if (s3Client) {
+  const s3 = getS3Client();
+  if (s3) {
+    const config = getR2Config();
     const command = new PutObjectCommand({
-      Bucket: r2BucketName,
+      Bucket: config.bucketName,
       Key: filename,
       Body: buffer,
       ContentType: contentType,
+      ContentLength: buffer.length,
     });
-    await s3Client.send(command);
+    await s3.send(command);
     return getBlobUrl(filename);
   }
 
@@ -72,12 +87,14 @@ export async function uploadToBlob(
 }
 
 export async function deleteFromBlob(filename: string): Promise<void> {
-  if (s3Client) {
+  const s3 = getS3Client();
+  if (s3) {
+    const config = getR2Config();
     const command = new DeleteObjectCommand({
-      Bucket: r2BucketName,
+      Bucket: config.bucketName,
       Key: filename,
     });
-    await s3Client.send(command);
+    await s3.send(command);
     return;
   }
 
@@ -88,13 +105,15 @@ export async function deleteFromBlob(filename: string): Promise<void> {
 }
 
 export function getBlobUrl(filename: string): string {
-  if (s3Client) {
-    if (r2PublicUrl) {
-      const baseUrl = r2PublicUrl.endsWith('/') ? r2PublicUrl.slice(0, -1) : r2PublicUrl;
+  const s3 = getS3Client();
+  if (s3) {
+    const config = getR2Config();
+    if (config.publicUrl) {
+      const baseUrl = config.publicUrl.endsWith('/') ? config.publicUrl.slice(0, -1) : config.publicUrl;
       return `${baseUrl}/${filename}`;
     }
     // Fallback if no public URL configured
-    return `${r2Endpoint}/${r2BucketName}/${filename}`;
+    return `${config.endpoint}/${config.bucketName}/${filename}`;
   }
 
   const blobServiceClient = getBlobServiceClient();
@@ -120,8 +139,11 @@ export function getBlobUrl(filename: string): string {
 export function signUrl(urlOrFilename: string): string {
   if (!urlOrFilename) return urlOrFilename;
 
+  const s3 = getS3Client();
+  const config = getR2Config();
+
   // For R2, if we have a public URL configured and the URL already starts with it, it is already public/signed
-  if (s3Client && r2PublicUrl && urlOrFilename.startsWith(r2PublicUrl)) {
+  if (s3 && config.publicUrl && urlOrFilename.startsWith(config.publicUrl)) {
     return urlOrFilename;
   }
 
@@ -137,8 +159,8 @@ export function signUrl(urlOrFilename: string): string {
   }
 
   // Also handle R2 fallback endpoint URL format to extract the filename
-  if (s3Client && !r2PublicUrl && r2Endpoint && urlOrFilename.includes(r2Endpoint)) {
-    const parts = urlOrFilename.split(`/${r2BucketName}/`);
+  if (s3 && !config.publicUrl && config.endpoint && urlOrFilename.includes(config.endpoint)) {
+    const parts = urlOrFilename.split(`/${config.bucketName}/`);
     if (parts.length > 1) {
       filename = parts[1];
     }
