@@ -1,0 +1,40 @@
+name: Deploy Cloudflare Worker Scheduler
+
+on:
+  push:
+    branches:
+      - main
+      - staging
+    paths:
+      - 'cloudflare-scheduler/**'
+      - '.github/workflows/deploy-scheduler.yml'
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    name: Deploy Scheduler Worker
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Deploy Staging Worker
+        if: github.ref == 'refs/heads/staging'
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: 'cloudflare-scheduler'
+          vars: |
+            SCHEDULER_APP_URL: ${{ secrets.NEXT_PUBLIC_APP_URL_STAGING }}
+            SCHEDULER_API_KEY: ${{ secrets.SCHEDULER_API_KEY_STAGING || secrets.SCHEDULER_API_KEY }}
+
+      - name: Deploy Production Worker
+        if: github.ref == 'refs/heads/main'
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: 'cloudflare-scheduler'
+          vars: |
+            SCHEDULER_APP_URL: ${{ secrets.SCHEDULER_APP_URL }}
+            SCHEDULER_API_KEY: ${{ secrets.SCHEDULER_API_KEY }}
