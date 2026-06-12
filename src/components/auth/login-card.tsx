@@ -1,16 +1,22 @@
+import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
+import { Turnstile } from "./turnstile";
 
 interface LoginCardProps {
   error?: string | null;
   onGoogleLogin: () => void;
-  onBypassLogin?: () => void;
+  onBypassLogin?: (turnstileToken?: string) => void;
   isStaging?: boolean;
 }
 
 export function LoginCard({ error, onGoogleLogin, onBypassLogin, isStaging }: LoginCardProps) {
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
+  const siteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
+  const isLocked = !!siteKey && !turnstileToken;
+
   return (
     <div className="min-h-screen bg-[#f5f5f7] dark:bg-zinc-950 flex items-center justify-center p-4 relative overflow-hidden">
       {/* Background Decorative Blur Orbs */}
@@ -39,9 +45,19 @@ export function LoginCard({ error, onGoogleLogin, onBypassLogin, isStaging }: Lo
               <AlertDescription className="font-semibold text-xs">{error}</AlertDescription>
             </Alert>
           )}
+
+          {siteKey && (
+            <Turnstile
+              onVerify={(token) => setTurnstileToken(token)}
+              onExpire={() => setTurnstileToken(null)}
+              onError={() => setTurnstileToken(null)}
+            />
+          )}
+
           <Button
             variant="outline"
-            className="w-full gap-3.5 py-6 border-zinc-200 dark:border-zinc-800 rounded-full shadow-[0_1px_2px_rgba(0,0,0,0.05)] bg-white dark:bg-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-700/80 active:scale-[0.98] transition-all duration-200"
+            disabled={isLocked}
+            className="w-full gap-3.5 py-6 border-zinc-200 dark:border-zinc-800 rounded-full shadow-[0_1px_2px_rgba(0,0,0,0.05)] bg-white dark:bg-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-700/80 active:scale-[0.98] transition-all duration-200 disabled:opacity-50 disabled:pointer-events-none"
             onClick={onGoogleLogin}
           >
             <svg className="h-5 w-5" viewBox="0 0 24 24">
@@ -53,13 +69,14 @@ export function LoginCard({ error, onGoogleLogin, onBypassLogin, isStaging }: Lo
             <span className="text-zinc-750 dark:text-zinc-200 font-semibold text-sm">Sign in with Google</span>
           </Button>
 
-          {isStaging && (
+          {isStaging && onBypassLogin && (
             <div className="pt-2 border-t border-zinc-100 dark:border-zinc-800/80">
               <Button
                 variant="secondary"
                 type="button"
-                className="w-full py-5 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800 active:scale-[0.98] transition-all duration-200"
-                onClick={onBypassLogin}
+                disabled={isLocked}
+                className="w-full py-5 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800 active:scale-[0.98] transition-all duration-200 disabled:opacity-50 disabled:pointer-events-none"
+                onClick={() => onBypassLogin(turnstileToken || undefined)}
               >
                 <span className="font-semibold text-xs text-yellow-600 dark:text-yellow-500">
                   ⚠️ Staging Bypass Login (Test Account)

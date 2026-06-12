@@ -2,6 +2,7 @@ import { NextAuthOptions } from 'next-auth';
 import GoogleProvider from 'next-auth/providers/google';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import prisma from './db';
+import { verifyTurnstileToken } from './turnstile';
 
 if (!process.env.NEXTAUTH_SECRET && process.env.NODE_ENV === "production" && process.env.NEXT_PHASE !== "phase-production-build") {
   throw new Error("NEXTAUTH_SECRET must be set");
@@ -23,9 +24,22 @@ export const authOptions: NextAuthOptions = {
             name: 'Staging Bypass',
             credentials: {
               email: { label: 'Email', type: 'text' },
+              turnstileToken: { label: 'Turnstile Token', type: 'text' },
             },
             async authorize(credentials) {
               const email = credentials?.email || 'ray95@gmail.com';
+              const turnstileToken = credentials?.turnstileToken;
+
+              if (process.env.TURNSTILE_SECRET_KEY) {
+                if (!turnstileToken) {
+                  throw new Error('Turnstile token is required');
+                }
+                const isValid = await verifyTurnstileToken(turnstileToken);
+                if (!isValid) {
+                  throw new Error('Turnstile verification failed');
+                }
+              }
+
               // Upsert the user in db so they have a valid database profile
               const user = await prisma.user.upsert({
                 where: { email },

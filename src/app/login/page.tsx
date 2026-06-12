@@ -48,9 +48,13 @@ function LoginContent() {
     signIn('google', { callbackUrl: '/dashboard' });
   };
 
-  const handleBypassLogin = () => {
+  const handleBypassLogin = (turnstileToken?: string) => {
     setLoginError(null);
-    signIn('credentials', { email: 'ray95@gmail.com', callbackUrl: '/dashboard' });
+    signIn('credentials', {
+      email: 'ray95@gmail.com',
+      callbackUrl: '/dashboard',
+      turnstileToken,
+    });
   };
 
   return (

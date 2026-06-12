@@ -1,0 +1,10 @@
+name = "all-platform-post-scheduler"
+main = "index.ts"
+compatibility_date = "2024-01-01"
+
+[triggers]
+crons = [ "* * * * *" ] # Trigger every minute
+
+[vars]
+SCHEDULER_APP_URL = "http://localhost:3000"
+SCHEDULER_API_KEY = "37a1f26a8d8c227ba13f890250df789a"
