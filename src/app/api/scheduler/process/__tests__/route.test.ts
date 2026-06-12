@@ -13,13 +13,29 @@ vi.mock('@/lib/publisher', () => ({
   publishToMultiplePlatforms: vi.fn(),
 }));
 
+vi.mock('@/lib/redis', () => ({
+  default: {
+    set: vi.fn(() => 'OK'),
+    get: vi.fn(),
+    del: vi.fn(),
+  },
+  redis: {
+    set: vi.fn(() => 'OK'),
+    get: vi.fn(),
+    del: vi.fn(),
+  }
+}));
+
 import prisma from '@/lib/db';
 import { publishToMultiplePlatforms } from '@/lib/publisher';
+import redis from '@/lib/redis';
 import { POST } from '@/app/api/scheduler/process/route';
 
 const mockFindMany = vi.mocked(prisma.post.findMany);
 const mockUpdate = vi.mocked(prisma.post.update);
 const mockPublish = vi.mocked(publishToMultiplePlatforms);
+const mockRedis = vi.mocked(redis);
+
 
 const VALID_KEY = 'test-scheduler-key-123';
 
@@ -43,6 +59,7 @@ beforeEach(() => {
   vi.clearAllMocks();
   process.env.SCHEDULER_API_KEY = VALID_KEY;
   mockUpdate.mockImplementation(async ({ data }) => ({ ...scheduledPost, ...data }) as any);
+  mockRedis.set.mockResolvedValue('OK');
 });
 
 describe('POST /api/scheduler/process', () => {
@@ -181,4 +198,44 @@ describe('POST /api/scheduler/process', () => {
       expect(body).toEqual({ processed: 1, total: 2 });
     });
   });
+
+  describe('Redis lock', () => {
+    it('skips execution if lock cannot be acquired', async () => {
+      mockRedis.set.mockResolvedValue(null);
+      mockFindMany.mockResolvedValue([]);
+
+      const res = await POST(makeRequest(VALID_KEY));
+      expect(res.status).toBe(200);
+      
+      const body = await res.json();
+      expect(body).toEqual({ message: 'Another scheduler process is already running', skipped: true });
+      expect(mockFindMany).not.toHaveBeenCalled();
+    });
+
+    it('acquires lock, processes, and releases lock on success', async () => {
+      let capturedLockValue: any = null;
+      mockRedis.set.mockImplementation(async (key: string, value: any) => {
+        capturedLockValue = value;
+        return 'OK';
+      });
+      mockRedis.get.mockImplementation(async () => capturedLockValue);
+      mockFindMany.mockResolvedValue([]);
+
+      const res = await POST(makeRequest(VALID_KEY));
+      expect(res.status).toBe(200);
+      expect(mockFindMany).toHaveBeenCalled();
+      expect(mockRedis.set).toHaveBeenCalledWith('scheduler:lock', expect.any(String), { nx: true, ex: 55 });
+      expect(mockRedis.del).toHaveBeenCalledWith('scheduler:lock');
+    });
+
+    it('proceeds with execution if Redis throws an error', async () => {
+      mockRedis.set.mockRejectedValue(new Error('Redis connection lost'));
+      mockFindMany.mockResolvedValue([]);
+
+      const res = await POST(makeRequest(VALID_KEY));
+      expect(res.status).toBe(200);
+      expect(mockFindMany).toHaveBeenCalled(); // Should proceed without lock
+    });
+  });
 });
+
