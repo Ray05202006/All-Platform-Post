@@ -81,11 +81,11 @@ export const logger = {
     const consoleMessage = `${logPrefix}${traceInfo}${userInfo} ${message}`;
     
     if (level === 'error') {
-      console.error(consoleMessage, cleanContext ? JSON.stringify(cleanContext) : '', cleanError ? JSON.stringify(cleanError) : '');
+      console.error('%s', consoleMessage, cleanContext ? JSON.stringify(cleanContext) : '', cleanError ? JSON.stringify(cleanError) : '');
     } else if (level === 'warn') {
-      console.warn(consoleMessage, cleanContext ? JSON.stringify(cleanContext) : '');
+      console.warn('%s', consoleMessage, cleanContext ? JSON.stringify(cleanContext) : '');
     } else {
-      console.log(consoleMessage, cleanContext ? JSON.stringify(cleanContext) : '');
+      console.log('%s', consoleMessage, cleanContext ? JSON.stringify(cleanContext) : '');
     }
 
     // 2. Database Output (Safe write)
@@ -109,7 +109,7 @@ export const logger = {
       });
     } catch (dbError) {
       // Don't let database logging failures crash the app
-      console.error(`[LOGGER_FAILED_TO_WRITE_TO_DB] ${dbError}`);
+      console.error('[LOGGER_FAILED_TO_WRITE_TO_DB] %s', dbError);
     }
   },
 
