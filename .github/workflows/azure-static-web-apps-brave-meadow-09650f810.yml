@@ -52,6 +52,7 @@ jobs:
         timeout-minutes: 3
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          DIRECT_URL: ${{ secrets.DIRECT_URL }}
         run: npx prisma db push --accept-data-loss
 
       - name: Build Next.js (staging)
@@ -114,6 +115,7 @@ jobs:
         timeout-minutes: 3
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          DIRECT_URL: ${{ secrets.DIRECT_URL }}
         run: npx prisma db push --accept-data-loss
 
       - name: Build Next.js (production)
